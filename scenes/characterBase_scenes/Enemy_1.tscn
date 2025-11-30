@@ -1,0 +1,132 @@
+[gd_scene load_steps=20 format=3 uid="uid://dp7yile35s8s7"]
+
+[ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/enemy.gd" id="1_gj3g1"]
+[ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
+[ext_resource type="Texture2D" uid="uid://bpwqbhulp6ig0" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Run.png" id="3_3kun7"]
+[ext_resource type="Script" uid="uid://vrup8lqv07a4" path="res://script/player_state/node_state_machine.gd" id="6_bmd1h"]
+[ext_resource type="Script" uid="uid://con1jucromyi5" path="res://script/Enemy_state/enemy_idle_state.gd" id="7_jerxs"]
+[ext_resource type="Script" uid="uid://bsm7u84fsmw44" path="res://script/Enemy_state/enemy_walk_state.gd.gd" id="8_6sfd3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wqkjm"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ihm7"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uagpu"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vtfoo"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2kejv"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hfx3f"]
+atlas = ExtResource("2_b37dv")
+region = Rect2(960, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0h1wf"]
+atlas = ExtResource("3_3kun7")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7ghrf"]
+atlas = ExtResource("3_3kun7")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fhfpx"]
+atlas = ExtResource("3_3kun7")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3qfla"]
+atlas = ExtResource("3_3kun7")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hhs0w"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wqkjm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ihm7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uagpu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vtfoo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2kejv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hfx3f")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0h1wf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7ghrf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fhfpx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3qfla")
+}],
+"loop": true,
+"name": &"Walk",
+"speed": 12.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v3h1r"]
+size = Vector2(64, 91)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
+radius = 203.002
+
+[node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
+y_sort_enabled = true
+script = ExtResource("1_gj3g1")
+character_type = 2
+sprite = NodePath("AnimatedSprite2D")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_hhs0w")
+animation = &"Idle"
+autoplay = "Idle"
+frame_progress = 0.672337
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-5, -0.5)
+shape = SubResource("RectangleShape2D_v3h1r")
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
+script = ExtResource("6_bmd1h")
+initial_node_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy_1", "animated_Sprite_2d")]
+script = ExtResource("7_jerxs")
+enemy_1 = NodePath("../..")
+animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
+
+[node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy_1", "animated_Sprite_2d")]
+script = ExtResource("8_6sfd3")
+enemy_1 = NodePath("../..")
+animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+
+[node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("CircleShape2D_8lvt1")
