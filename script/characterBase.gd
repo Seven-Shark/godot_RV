@@ -19,8 +19,9 @@ enum CharacterType{
 var invincible : bool = false
 var is_dead : bool = false
 
-@onready var detection_Area = $DetectionArea
 
+@onready var detection_Area = $DetectionArea
+@onready var direction_Sign = $DirectionSign
 
 
 #func _ready():
@@ -73,6 +74,25 @@ func get_closest_target() -> CharacterBase:
 	return closest_target
 
 	
+func Target_Lock_On(target: CharacterBase):
+	
+	if is_instance_valid(direction_Sign):
+		
+		if target:
+			# 1、计算方向向量 (目标位置 - 自身位置)
+			var direction_vector:Vector2 = target.global_position - global_position
+			
+			# 2、将方向向量转换为旋转角度（弧度）
+			var target_rotation:float = direction_vector.angle()
+			
+			# 3、应用并旋转角度
+			direction_Sign.rotation = target_rotation
+			direction_Sign.visible = true
+				
+			pass
+		else:
+			# 没有目标的时候隐藏
+			direction_Sign.visible = false
 
 
 
@@ -118,5 +138,7 @@ func get_closest_target() -> CharacterBase:
 	#await get_tree().create_timer(1.0).timeout
 	#if is_instance_valid(self) and not is_in_group("Player"):
 		#queue_free()
+
+
 
 #endregion

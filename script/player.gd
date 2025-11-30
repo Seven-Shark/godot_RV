@@ -5,6 +5,7 @@ var enter_Character : Array[CharacterBase] = []
 var current_target : CharacterBase = null
 
 
+
 func _init() -> void:
 	character_type = CharacterType.PLAYER
 
@@ -26,6 +27,10 @@ func _process(_delta):
 	elif not nearest_target and current_target:
 		print("[目标丢失] 目标 ",current_target.name,"已离开或不再是最近目标。")
 		current_target = null
+		
+	#朝向范围内最近的对象
+	Target_Lock_On(nearest_target)
+
 
 #region 角色攻击范围内识别对象的功能
 	#1、先识别是否有物体进入区域

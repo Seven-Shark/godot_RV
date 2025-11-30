@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=38 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/player.gd" id="1_yv1sj"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
@@ -9,7 +9,6 @@
 [ext_resource type="Script" uid="uid://c6t22f40o226g" path="res://script/player_state/idle_state.gd" id="7_asxtk"]
 [ext_resource type="Script" uid="uid://bmsubqutohj6q" path="res://script/player_state/walk_state.gd" id="8_p2gdj"]
 [ext_resource type="Script" uid="uid://dia2qt3dxsgbl" path="res://script/player_state/dash_state.gd" id="9_2holh"]
-[ext_resource type="Script" uid="uid://wiev6wr8kfx3" path="res://scenes/characterBase_scenes/player_attack_area.gd" id="10_5je8t"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
@@ -248,12 +247,11 @@ animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
 
 [node name="DirectionSign" type="Node2D" parent="."]
 
-[node name="OrientationArrows" type="Sprite2D" parent="DirectionSign"]
+[node name="Arrows" type="Sprite2D" parent="DirectionSign"]
 position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
 
 [node name="DetectionArea" type="Area2D" parent="."]
-script = ExtResource("10_5je8t")
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
