@@ -50,7 +50,7 @@ func _on_playerAttack_Area_body_entered(body: Node2D):
 		enter_Character.append(enemy_Character)
 		#打上进入标签
 		var enter_ID = enter_Character.size()
-		enemy_Character.set_taget_tag(enter_ID)
+		enemy_Character.set_target_tag(enter_ID)
 		print(enemy_Character.name ,"进入区域" +"    "+"ID：" ,enemy_Character.current_tag)
 		
 
