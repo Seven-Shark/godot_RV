@@ -1,7 +1,7 @@
 extends CharacterBody2D
 class_name CharacterBase
 
-
+#定义场景上所有物件的类型
 enum CharacterType{
 	ITEM,
 	PLAYER,
@@ -19,13 +19,22 @@ enum CharacterType{
 var invincible : bool = false
 var is_dead : bool = false
 
-
+#定义一个侦查区的变量
 @onready var detection_Area = $DetectionArea
-@onready var direction_Sign = $DirectionSign
+#定义一个判断敌人方位的箭头
+@onready var direction_Sign = get_node_or_null("DirectionSign")
+#定义一个列表，存储当前进入侦查区内的所有对象
+var enter_Character : Array[CharacterBase] = []
+#定义当前距离最近的敌人对象
+var current_target : CharacterBase = null
+#定义一个列表，存储当前侦查区内所有对象的类型
+@export var target_types: Array[CharacterType] = []
 
 
-#func _ready():
-	#init_character()
+func _ready():
+	var playerAttack_Area = $DetectionArea
+	playerAttack_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
+	playerAttack_Area.body_exited.connect(_on_playerAttack_Area_body_exited)
 	
 	
 #Add anything here that needs to be initialized on the character
@@ -43,12 +52,42 @@ func Turn():
 	elif(velocity.x > 0):
 		sprite.scale.x = direction
 
+
+#判断进入侦查区域的对象
+func _on_playerAttack_Area_body_entered(body: Node2D):
+	
+	#判断是不是敌人
+	if body is CharacterBase and body.character_type == CharacterType.ENEMY:
+		var enemy_Character : CharacterBase = body
+		#将敌人加入对象组
+		enter_Character.append(enemy_Character)
+		#打上进入标签
+		var enter_ID = enter_Character.size()
+		enemy_Character.set_target_tag(enter_ID)
+		print(enemy_Character.name ,"进入区域" +"    "+"ID：" ,enemy_Character.current_tag)
+#判断离开入侦查区域的对象
+func _on_playerAttack_Area_body_exited(body: Node2D):
+	
+	#判断是不是敌人
+	if body is CharacterBase and body.character_type == CharacterType.ENEMY:
+		var enemy_Character : CharacterBase = body
+		
+		#是的话找到他在数组中的位置，然后删除
+		var index = enter_Character.find(enemy_Character)
+		if index != -1:
+			#移除
+			enter_Character.remove_at(index)
+			print(enemy_Character.name,"离开区域","    ","ID：",enemy_Character.current_tag )
+
 #用于判断距离角色最近的对象
 #1、记录进入角色判定范围内的对象实时距离的
 #2、距离最近的对象视为“目标者”
 #3、距离相同的话，优先锁定前者
 #4、实时更新
 func get_closest_target() -> CharacterBase:
+
+	#获取需要识别的对象类型
+	var need_target_type = target_types
 
 	# 1、获取侦测区域内重叠的所有 Body 对象
 	var overlapping_bodies:Array = detection_Area.get_overlapping_bodies()
@@ -60,7 +99,8 @@ func get_closest_target() -> CharacterBase:
 
 	# 3、遍历所有重叠的物体
 	for body in overlapping_bodies:
-		if body is CharacterBase and body != self:
+		#判断目标对象是characterbase、不是自己、并且在对象池子里面
+		if body is CharacterBase and body != self and need_target_type.has(body.character_type):
 			var target:CharacterBase = body
 
 			#4、计算距离的平方
@@ -72,8 +112,7 @@ func get_closest_target() -> CharacterBase:
 				closest_target = target
 
 	return closest_target
-
-	
+#用于旋转箭头指向距离自己最近的对象
 func Target_Lock_On(target: CharacterBase):
 	
 	if is_instance_valid(direction_Sign):
