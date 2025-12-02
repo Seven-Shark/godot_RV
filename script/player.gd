@@ -8,6 +8,8 @@ class_name Player
 
 func _init() -> void:
 	character_type = CharacterType.PLAYER
+	#设置该角色追踪的目标
+	target_types = [CharacterType.ITEM,CharacterType.ENEMY]
 
 #func _ready() -> void:
 	#var playerAttack_Area = $DetectionArea
@@ -21,6 +23,7 @@ func _process(_delta):
 	
 	#寻找范围内最近的目标，并打印出来
 	var nearest_target = get_closest_target()
+	#var current_target = current_target.name if current_target else ""
 	if nearest_target and nearest_target != current_target:
 		print("找到最近的目标:",nearest_target.name)
 		current_target = nearest_target
