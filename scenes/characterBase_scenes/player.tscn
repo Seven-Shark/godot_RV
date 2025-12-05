@@ -261,3 +261,5 @@ texture = ExtResource("10_w5jik")
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
