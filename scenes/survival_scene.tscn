@@ -3,8 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="2_h8imf"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_mgbde"]
-size = Vector2(2160, 1766)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 
 [node name="SurvivalScene" type="Node2D"]
 
@@ -16,5 +15,19 @@ position = Vector2(820, -196)
 [node name="Enemy2" parent="." instance=ExtResource("2_h8imf")]
 position = Vector2(504, 120)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_mgbde")
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CheckButton" type="CheckButton" parent="CanvasLayer"]
+offset_left = 1108.0
+offset_right = 1152.0
+offset_bottom = 24.0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
+
+[node name="Label" type="Label" parent="CanvasLayer/CheckButton"]
+layout_mode = 0
+offset_left = -89.0
+offset_top = 4.0
+offset_right = 4.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 11
+text = "自动瞄准/鼠标瞄准"
