@@ -5,8 +5,8 @@ extends CheckButton
 
 
 	
-func _ready() -> void:
-	pressed.connect(_on_pressed)
+#func _ready() -> void:
+	#pressed.connect(_on_pressed)
 
 func _on_pressed() -> void:
 	if player and is_instance_valid(player):

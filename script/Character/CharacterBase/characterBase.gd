@@ -39,7 +39,7 @@ var enter_Character : Array[CharacterBase] = []
 
 #鼠标辅助瞄准的参数
 const ASSIST_ANGLE = 30.0 #辅助瞄准角度
-const ASSIST_RANGE = 150.0 #辅助瞄准范围
+const ASSIST_RANGE = 150.0 #辅助瞄准
 
 
 

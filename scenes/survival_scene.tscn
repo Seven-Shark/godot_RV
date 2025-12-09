@@ -22,6 +22,7 @@ position = Vector2(504, 120)
 offset_left = 1108.0
 offset_right = 1152.0
 offset_bottom = 24.0
+focus_mode = 0
 theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
 script = ExtResource("3_xj6wy")
 metadata/_edit_use_anchors_ = true
