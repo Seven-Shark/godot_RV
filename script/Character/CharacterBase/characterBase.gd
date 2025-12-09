@@ -9,6 +9,13 @@ enum CharacterType{
 }
 @export var character_type:CharacterType = CharacterType.ITEM
 
+enum AimMode_Type {
+	AUTO_NEAREST,
+	MOUSE_ASSIST
+}
+var player_current_aim_mode = AimMode_Type.AUTO_NEAREST
+
+
 
 @export var sprite : AnimatedSprite2D
 @export var healthbar : ProgressBar
@@ -28,6 +35,12 @@ var current_target : CharacterBase = null
 var enter_Character : Array[CharacterBase] = []
 #定义一个列表，存储当前侦查区内所有对象的类型
 @export var target_types: Array[CharacterType] = []
+
+
+#鼠标辅助瞄准的参数
+const ASSIST_ANGLE = 30.0 #辅助瞄准角度
+const ASSIST_RANGE = 150.0 #辅助瞄准范围
+
 
 
 func _ready():
@@ -145,7 +158,14 @@ func Target_Lock_On(target: CharacterBase):
 			# 没有目标的时候隐藏
 			direction_Sign.visible = false
 
-
+#切换瞄准模式
+func toggle_aim_mode():
+	if player_current_aim_mode == AimMode_Type.AUTO_NEAREST:
+		player_current_aim_mode = AimMode_Type.MOUSE_ASSIST
+		print("当前模式：鼠标瞄准")
+	else:
+		player_current_aim_mode = AimMode_Type.AUTO_NEAREST
+		print("当前模式：自动瞄准")
 
 
 
