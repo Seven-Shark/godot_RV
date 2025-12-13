@@ -9,12 +9,6 @@ enum CharacterType{
 }
 @export var character_type:CharacterType = CharacterType.ITEM
 
-enum AimMode_Type {
-	AUTO_NEAREST,
-	MOUSE_ASSIST
-}
-var player_current_aim_mode = AimMode_Type.AUTO_NEAREST
-
 
 
 @export var sprite : AnimatedSprite2D
@@ -159,14 +153,8 @@ func Target_Lock_On(target: CharacterBase):
 			# 没有目标的时候隐藏
 			direction_Sign.visible = false
 
-#切换瞄准模式
-func toggle_aim_mode():
-	if player_current_aim_mode == AimMode_Type.AUTO_NEAREST:
-		player_current_aim_mode = AimMode_Type.MOUSE_ASSIST
-		print("当前模式：鼠标瞄准")
-	else:
-		player_current_aim_mode = AimMode_Type.AUTO_NEAREST
-		print("当前模式：自动瞄准")
+
+
 
 
 
@@ -227,7 +215,7 @@ func get_mouse_assist_target(mouse_position:Vector2) -> CharacterBase:
 	
 	#必须是 CharacterBase, 不是自己, 且是该角色要追踪的类型
 	for body in target_array:
-		if body is CharacterBase and body != self and target_types.has(body.charactertype):
+		if body is CharacterBase and body != self and target_types.has(body.CharacterType):
 			var target_vec = body.global_position - self_pos
 			var dist_sq = target_vec.length_squared()
 			
