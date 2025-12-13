@@ -150,7 +150,7 @@ func Target_Lock_On(target: CharacterBase):
 			direction_Sign.rotation = target_rotation
 			direction_Sign.visible = true
 		else:
-			# 没有目标的时候隐藏
+			#没有目标的时候隐藏
 			direction_Sign.visible = false
 
 
@@ -215,7 +215,7 @@ func get_mouse_assist_target(mouse_position:Vector2) -> CharacterBase:
 	
 	#必须是 CharacterBase, 不是自己, 且是该角色要追踪的类型
 	for body in target_array:
-		if body is CharacterBase and body != self and target_types.has(body.CharacterType):
+		if body is CharacterBase and body != self and target_types.has(body.character_type):
 			var target_vec = body.global_position - self_pos
 			var dist_sq = target_vec.length_squared()
 			

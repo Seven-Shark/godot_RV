@@ -48,11 +48,9 @@ func _process(_delta):
 	
 	#箭头朝向逻辑：
 	if player_current_aim_mode == AimMode_Type.MOUSE_ASSIST and current_target == null:
-		look_at(mouse_pos)
+		_look_at_mouse(mouse_pos)
 	else:
 		Target_Lock_On(current_target)
-	
-	
 	
 	#寻找范围内最近的目标，并打印出来
 	var nearest_target = get_closest_target()
@@ -67,15 +65,23 @@ func _process(_delta):
 	#朝向范围内最近的对象
 	Target_Lock_On(nearest_target)
 
-
+#新增方法：当鼠标模式下，未锁定目标时，箭头指向鼠标
+func _look_at_mouse(mouse_position:Vector2):
+	if is_instance_valid(direction_Sign):
+		var direction_vector = mouse_position - global_position
+		direction_Sign.rotation = direction_vector.angle()
+		direction_Sign.visible = true
+		
 
 #切换瞄准模式
 func toggle_aim_mode():
 	if player_current_aim_mode == AimMode_Type.AUTO_NEAREST:
 		player_current_aim_mode = AimMode_Type.MOUSE_ASSIST
+		direction_Sign.visible = true
 		print("当前模式：鼠标瞄准")
 	else:
 		player_current_aim_mode = AimMode_Type.AUTO_NEAREST
+		direction_Sign.visible = false
 		print("当前模式：自动瞄准")
 
 #将对象组重新补位排序（未完成版，暂未用到）

@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://xk5htmcg3umc"]
+
+[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
+[ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="2_h8imf"]
+[ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
+
+[node name="SurvivalScene" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_8jv7c")]
+health = null
+flipped_horizontal = null
+target_types = null
+
+[node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
+position = Vector2(820, -196)
+
+[node name="Enemy2" parent="." instance=ExtResource("2_h8imf")]
+position = Vector2(504, 120)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="AimSwitchButton" type="CheckButton" parent="HUD"]
+offset_left = 1108.0
+offset_right = 1152.0
+offset_bottom = 24.0
+focus_mode = 0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
+script = ExtResource("3_xj6wy")
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="HUD/AimSwitchButton"]
+layout_mode = 0
+offset_left = -42.0
+offset_top = 4.0
+offset_right = 4.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 11
+text = "自动瞄准"
+
+[connection signal="pressed" from="HUD/AimSwitchButton" to="HUD/AimSwitchButton" method="_on_pressed"]
+[connection signal="toggled" from="HUD/AimSwitchButton" to="HUD/AimSwitchButton" method="_on_toggled"]
