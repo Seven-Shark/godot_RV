@@ -13,11 +13,13 @@ enum AimMode_Type {
 #默认瞄准模式
 var player_current_aim_mode = AimMode_Type.AUTO_NEAREST
 
+#初始化
 func _init() -> void:
 	character_type = CharacterType.PLAYER
 	#设置该角色追踪的目标
 	target_types = [CharacterType.ITEM,CharacterType.ENEMY]
 
+#update
 func _process(_delta):
 	
 	#根据移动方向改变图片朝向
@@ -140,7 +142,7 @@ func _draw():
 		draw_line(Vector2.ZERO , to_mouse.rotated(angle) * ASSIST_RANGE,Color(1,0,0,0.5),2)
 		draw_line(Vector2.ZERO , to_mouse.rotated(-angle) * ASSIST_RANGE,Color(1,0,0,0.5),2)
 
-#处理角色朝向的方法
+#处理角色朝向的逻辑，根据不同瞄准模式切换
 func _update_facing_direction():
 	var look_at_point = null
 	

@@ -1,6 +1,7 @@
 [gd_scene load_steps=39 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
+[ext_resource type="PackedScene" uid="uid://b6kjc4k7tu7d0" path="res://scenes/weapon_scenes/axe.tscn" id="2_5je8t"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
 [ext_resource type="Texture2D" uid="uid://cl2lsjnoar4c6" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Guard.png" id="3_qlt84"]
 [ext_resource type="Texture2D" uid="uid://djwqdxjrgo54f" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="4_kmu0q"]
@@ -208,14 +209,18 @@ size = Vector2(64, 91)
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 258.43567
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_w5jik"]
-size = Vector2(118, 19)
-
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
 y_sort_enabled = true
 script = ExtResource("1_yv1sj")
 character_type = 1
 sprite = NodePath("AnimatedSprite2D")
+
+[node name="EquipAttackPos" type="Node2D" parent="."]
+rotation = 0.0042428374
+
+[node name="Axe" parent="EquipAttackPos" instance=ExtResource("2_5je8t")]
+position = Vector2(19, 17)
+rotation = 0.50019675
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(4, 3)
@@ -267,11 +272,3 @@ visible = false
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
-
-[node name="EquipAttackPos" type="Node2D" parent="."]
-
-[node name="Axe" type="Area2D" parent="EquipAttackPos"]
-
-[node name="AxeArea" type="CollisionShape2D" parent="EquipAttackPos/Axe"]
-position = Vector2(87, 0)
-shape = SubResource("RectangleShape2D_w5jik")
