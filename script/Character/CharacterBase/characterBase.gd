@@ -31,12 +31,6 @@ var enter_Character : Array[CharacterBase] = []
 @export var target_types: Array[CharacterType] = []
 
 
-#鼠标辅助瞄准的参数
-const ASSIST_ANGLE = 30.0 #辅助瞄准角度
-const ASSIST_RANGE = 150.0 #辅助瞄准
-const ASSIST_RANGE_SQ = ASSIST_RANGE * ASSIST_RANGE #辅助瞄准
-
-
 
 func _ready():
 	var playerAttack_Area = $DetectionArea
@@ -199,39 +193,7 @@ func Target_Lock_On(target: CharacterBase):
 	#if is_instance_valid(self) and not is_in_group("Player"):
 		#queue_free()
 
-#鼠标瞄准辅助攻击逻辑
-func get_mouse_assist_target(mouse_position:Vector2) -> CharacterBase:
-	
-	#确认瞄准中心方向：玩家到鼠标方向向量
-	var self_pos = global_position
-	var to_mouse_dir = (mouse_position - self_pos).normalized()
-	
-	var closest_assist_target:CharacterBase = null
-	var closest_dist_sq = INF
-	
-	#扇形一半角度（弧度制）
-	var half_angle_rad = deg_to_rad(ASSIST_ANGLE / 2.0)
-	var target_array:Array = detection_Area.get_overlapping_bodies()
-	
-	#必须是 CharacterBase, 不是自己, 且是该角色要追踪的类型
-	for body in target_array:
-		if body is CharacterBase and body != self and target_types.has(body.character_type):
-			var target_vec = body.global_position - self_pos
-			var dist_sq = target_vec.length_squared()
-			
-			# 条件 A: 距离在辅助范围内 (150px)
-			if dist_sq <= ASSIST_RANGE_SQ:
-				
-				# 条件 B: 角度在鼠标指向的扇形范围内 (30度)
-				# angle_to 返回两个向量的夹角弧度
-				if abs(to_mouse_dir.angle_to(target_vec)) <= half_angle_rad:
-					
-					# 条件 C: 在满足 A/B 的所有目标中，找出距离最近的那个
-					if dist_sq < closest_dist_sq:
-						closest_dist_sq = dist_sq
-						closest_assist_target = body
-						
-	return closest_assist_target
+
 	
 
 #endregion
