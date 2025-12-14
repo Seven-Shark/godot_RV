@@ -215,13 +215,6 @@ script = ExtResource("1_yv1sj")
 character_type = 1
 sprite = NodePath("AnimatedSprite2D")
 
-[node name="EquipAttackPos" type="Node2D" parent="."]
-rotation = 0.0042428374
-
-[node name="Axe" parent="EquipAttackPos" instance=ExtResource("2_5je8t")]
-position = Vector2(19, 17)
-rotation = 0.50019675
-
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(4, 3)
 
@@ -272,3 +265,13 @@ visible = false
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
+
+[node name="EquipPos" type="Node2D" parent="."]
+rotation = -0.14042161
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="RightHandPos" type="Node2D" parent="EquipPos"]
+position = Vector2(17.692692, 14.831343)
+rotation = 0.5010798
+
+[node name="Axe" parent="EquipPos/RightHandPos" instance=ExtResource("2_5je8t")]
