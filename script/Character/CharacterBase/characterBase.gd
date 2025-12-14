@@ -45,9 +45,7 @@ func _ready():
 
 #根据角色移动方向翻转角色图片
 func Turn():
-	#This ternary lets us flip a sprite if its drawn the wrong way
-	var direction = -1 if flipped_horizontal == true else 1
-
+	var direction = -1 if flipped_horizontal  else 1
 	if(velocity.x < 0):
 		sprite.scale.x = -direction
 	elif(velocity.x > 0):

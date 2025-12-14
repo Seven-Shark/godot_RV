@@ -21,7 +21,7 @@ func _init() -> void:
 func _process(_delta):
 	
 	#根据移动方向改变图片朝向
-	Turn()
+	_update_facing_direction()
 
 	#获取不同瞄准模式下的目标
 	var final_target:CharacterBase = null
@@ -139,6 +139,32 @@ func _draw():
 		var angle = deg_to_rad(ASSIST_ANGLE / 2.0)
 		draw_line(Vector2.ZERO , to_mouse.rotated(angle) * ASSIST_RANGE,Color(1,0,0,0.5),2)
 		draw_line(Vector2.ZERO , to_mouse.rotated(-angle) * ASSIST_RANGE,Color(1,0,0,0.5),2)
+
+#处理角色朝向的方法
+func _update_facing_direction():
+	var look_at_point = null
+	
+	#根据瞄准模式，决定角色该盯着哪里看
+	match player_current_aim_mode:
+		AimMode_Type.MOUSE_ASSIST:
+			look_at_point = get_global_mouse_position()
+			
+		AimMode_Type.AUTO_NEAREST:
+			if is_instance_valid(current_target):
+				look_at_point = current_target.global_position
+			else :
+				look_at_point = null
+	
+	#执行翻转的逻辑
+	if look_at_point != null:
+		var direction_factor = -1 if flipped_horizontal  else 1
+		
+		if look_at_point.x > global_position.x:
+			sprite.scale.x = direction_factor
+		elif look_at_point.x < global_position.x:
+			sprite.scale.x = -direction_factor
+	else :
+		Turn()
 
 #将对象组重新补位排序（未完成版，暂未用到）
 func _updata_all_enter_Character():
