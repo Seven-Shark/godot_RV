@@ -192,8 +192,3 @@ func Target_Lock_On(target: CharacterBase):
 	#await get_tree().create_timer(1.0).timeout
 	#if is_instance_valid(self) and not is_in_group("Player"):
 		#queue_free()
-
-
-	
-
-#endregion
