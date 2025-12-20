@@ -1,6 +1,6 @@
 @icon("res://Resource/Icon/StateSprite.png")
 
-extends 
+extends NodeState
 
 @export var enemy_1:CharacterBody2D
 @export var animated_Sprite_2d:AnimatedSprite2D

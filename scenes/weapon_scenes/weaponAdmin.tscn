@@ -1,5 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://b6kjc4k7tu7d0"]
+[gd_scene load_steps=7 format=3 uid="uid://b6kjc4k7tu7d0"]
 
+[ext_resource type="Script" uid="uid://dmtceiwjlqlas" path="res://scenes/weapon_scenes/weapon_admin.gd" id="1_kjf5e"]
 [ext_resource type="Script" uid="uid://vrup8lqv07a4" path="res://script/Character/CharacterBase/node_state_machine.gd" id="1_mrvjy"]
 [ext_resource type="Script" uid="uid://cwpam8yovv567" path="res://script/Character/Weapon/weapon_idle_state.gd" id="2_bf3f0"]
 [ext_resource type="Script" uid="uid://bwutm3s0vh2sk" path="res://script/Character/Weapon/weapon_attack_state.gd" id="3_kjf5e"]
@@ -7,15 +8,19 @@
 [ext_resource type="PackedScene" uid="uid://3yof3iwuhdxn" path="res://scenes/weapon_scenes/weapon_sword.tscn" id="5_bf3f0"]
 
 [node name="WeaponAdmin" type="Node2D"]
+script = ExtResource("1_kjf5e")
 
-[node name="WeaponStateMachine" type="Node" parent="."]
+[node name="WeaponStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("1_mrvjy")
+initial_node_state = NodePath("Weapon_Idle")
 
-[node name="Weapon_Idle" type="Node" parent="WeaponStateMachine"]
+[node name="Weapon_Idle" type="Node" parent="WeaponStateMachine" node_paths=PackedStringArray("weapon_admin")]
 script = ExtResource("2_bf3f0")
+weapon_admin = NodePath("../..")
 
-[node name="Weapon_Attack" type="Node" parent="WeaponStateMachine"]
+[node name="Weapon_Attack" type="Node" parent="WeaponStateMachine" node_paths=PackedStringArray("weapon_admin")]
 script = ExtResource("3_kjf5e")
+weapon_admin = NodePath("../..")
 
 [node name="WeaponCurrent" type="Node2D" parent="."]
 

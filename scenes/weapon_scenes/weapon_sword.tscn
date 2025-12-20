@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://3yof3iwuhdxn"]
+[gd_scene load_steps=7 format=3 uid="uid://3yof3iwuhdxn"]
 
-[ext_resource type="Texture2D" uid="uid://bdn4nd7t2ril7" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/tools/axe.png" id="1_r88tb"]
+[ext_resource type="Script" uid="uid://cb67a0jbf78hh" path="res://script/Character/Weapon/weapon_sword.gd" id="1_tvdi2"]
+[ext_resource type="Texture2D" uid="uid://c6hedj3pssadm" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/sword.png" id="2_tvdi2"]
 
 [sub_resource type="Animation" id="Animation_etxyd"]
 resource_name = "Axe_Attack"
@@ -29,6 +30,7 @@ animations = [{
 }]
 
 [node name="Weapon_Sword" type="Node2D"]
+script = ExtResource("1_tvdi2")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -47,5 +49,5 @@ rotation = -1.1454811
 position = Vector2(23, 17)
 rotation = -1.9473577
 scale = Vector2(3.517, -3.517)
-texture = ExtResource("1_r88tb")
+texture = ExtResource("2_tvdi2")
 offset = Vector2(4.689754, -5.4836597)

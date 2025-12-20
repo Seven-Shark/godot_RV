@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=39 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://bmsubqutohj6q" path="res://script/Character/Player_state/walk_state.gd" id="8_p2gdj"]
 [ext_resource type="Script" uid="uid://dia2qt3dxsgbl" path="res://script/Character/Player_state/dash_state.gd" id="9_2holh"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
+[ext_resource type="PackedScene" uid="uid://b6kjc4k7tu7d0" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
 atlas = ExtResource("2_wdqqy")
@@ -215,7 +216,6 @@ character_type = 1
 sprite = NodePath("AnimatedSprite2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(4, 3)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_vuht5")
@@ -264,3 +264,7 @@ visible = false
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
+
+[node name="Right_Hand" type="Node2D" parent="."]
+
+[node name="WeaponAdmin" parent="Right_Hand" instance=ExtResource("11_5je8t")]
