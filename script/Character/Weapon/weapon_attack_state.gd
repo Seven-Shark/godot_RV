@@ -1,8 +1,8 @@
 @icon("res://Resource/Icon/StateSprite.png")
 
-extends 
+extends NodeState
 
-@export var enemy_1:CharacterBody2D
+@export var player:CharacterBody2D
 @export var animated_Sprite_2d:AnimatedSprite2D
 
 var moving_right : bool = true
@@ -16,8 +16,12 @@ func _on_process(_delta : float) -> void:
 
 func _on_physics_process(_delta : float) -> void:
 	pass
+	
 func _on_next_transitions() -> void:
-	pass
+
+	if GameInputEvents.is_movement_input() == true:
+		transition.emit("Walk")
+
 		
 func _on_exit() -> void:
 	pass

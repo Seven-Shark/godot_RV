@@ -1,7 +1,6 @@
-[gd_scene load_steps=39 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=38 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
-[ext_resource type="PackedScene" uid="uid://b6kjc4k7tu7d0" path="res://scenes/weapon_scenes/axe.tscn" id="2_5je8t"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
 [ext_resource type="Texture2D" uid="uid://cl2lsjnoar4c6" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Guard.png" id="3_qlt84"]
 [ext_resource type="Texture2D" uid="uid://djwqdxjrgo54f" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="4_kmu0q"]
@@ -265,13 +264,3 @@ visible = false
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
-
-[node name="EquipPos" type="Node2D" parent="."]
-rotation = -0.14042161
-scale = Vector2(0.99999994, 0.99999994)
-
-[node name="RightHandPos" type="Node2D" parent="EquipPos"]
-position = Vector2(17.692692, 14.831343)
-rotation = 0.5010798
-
-[node name="Axe" parent="EquipPos/RightHandPos" instance=ExtResource("2_5je8t")]

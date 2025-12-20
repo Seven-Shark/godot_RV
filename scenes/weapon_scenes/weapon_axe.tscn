@@ -1,0 +1,51 @@
+[gd_scene load_steps=6 format=3 uid="uid://djcadwcopwbcs"]
+
+[ext_resource type="Texture2D" uid="uid://bdn4nd7t2ril7" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/tools/axe.png" id="1_lggjw"]
+
+[sub_resource type="Animation" id="Animation_etxyd"]
+resource_name = "Axe_Attack"
+length = 0.3
+
+[sub_resource type="Animation" id="Animation_2rtvx"]
+length = 0.001
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_noa2k"]
+_data = {
+&"Axe_Attack": SubResource("Animation_etxyd"),
+&"RESET": SubResource("Animation_2rtvx")
+}
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gm4s7"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"Axe_Attack",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"Axe_Idle",
+"speed": 5.0
+}]
+
+[node name="Weapon_Axe" type="Node2D"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_noa2k")
+}
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_gm4s7")
+animation = &"Axe_Idle"
+autoplay = "Axe_Attack"
+
+[node name="RotationPos" type="Node2D" parent="."]
+rotation = -1.1454811
+
+[node name="Sprite2D" type="Sprite2D" parent="RotationPos"]
+position = Vector2(23, 17)
+rotation = -1.9473577
+scale = Vector2(3.517, -3.517)
+texture = ExtResource("1_lggjw")
+offset = Vector2(4.689754, -5.4836597)
