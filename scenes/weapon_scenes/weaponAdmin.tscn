@@ -27,4 +27,3 @@ weapon_admin = NodePath("../..")
 [node name="Weapon_Axe" parent="WeaponCurrent" instance=ExtResource("4_mrvjy")]
 
 [node name="Weapon_Sword" parent="WeaponCurrent" instance=ExtResource("5_bf3f0")]
-visible = false

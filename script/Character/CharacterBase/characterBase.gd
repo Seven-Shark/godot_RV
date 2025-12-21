@@ -36,8 +36,8 @@ func _ready():
 	var playerAttack_Area = $DetectionArea
 	playerAttack_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
 	playerAttack_Area.body_exited.connect(_on_playerAttack_Area_body_exited)
-	
-	
+
+
 #Add anything here that needs to be initialized on the character
 #func init_character():
 	#healthbar.max_value = health
@@ -54,7 +54,7 @@ func Turn():
 
 #判断进入侦查区域的对象
 func _on_playerAttack_Area_body_entered(body: Node2D):
-	
+
 	#判断是不是敌人
 	if body is CharacterBase and target_types.has(body.character_type):
 		var object_Character : CharacterBase = body
@@ -67,11 +67,11 @@ func _on_playerAttack_Area_body_entered(body: Node2D):
 
 #判断离开入侦查区域的对象
 func _on_playerAttack_Area_body_exited(body: Node2D):
-	
+
 	#判断是不是敌人
 	if body is CharacterBase and target_types.has(body.character_type):
 		var object_Character : CharacterBase = body
-		
+
 		#是的话找到他在数组中的位置，然后删除
 		var index = enter_Character.find(object_Character)
 		if index != -1:
@@ -79,10 +79,10 @@ func _on_playerAttack_Area_body_exited(body: Node2D):
 			#移除
 			enter_Character.remove_at(index)
 			print(object_Character.name,"离开区域","    ","ID：",object_Character.current_tag )
-			
+
 			#重新对所有剩余目标打标签，并自动补位
 			_update_all_enter_Character()
-			
+
 			#通知离开的对象清除ID
 			object_Character.clear_target_tag()
 
@@ -90,7 +90,7 @@ func _on_playerAttack_Area_body_exited(body: Node2D):
 func _update_all_enter_Character():
 	for i in range(enter_Character.size()):
 		var target: CharacterBase = enter_Character[i]
-		var new_tag = i + 1 
+		var new_tag = i + 1
 		# 傳遞新的 ID
 		target.set_target_tag(new_tag)
 
@@ -130,14 +130,14 @@ func get_closest_target() -> CharacterBase:
 
 #用于旋转箭头指向距离自己最近的对象
 func Target_Lock_On(target: CharacterBase):
-	
+
 	if is_instance_valid(direction_Sign):
-		
+
 		if target:
 			# 1、计算方向向量 (目标位置 - 自身位置)
 			var direction_vector:Vector2 = target.global_position - global_position
 			# 2、将方向向量转换为旋转角度（弧度）
-			var target_rotation:float = direction_vector.angle()	
+			var target_rotation:float = direction_vector.angle()
 			# 3、应用并旋转角度
 			direction_Sign.rotation = target_rotation
 			direction_Sign.visible = true

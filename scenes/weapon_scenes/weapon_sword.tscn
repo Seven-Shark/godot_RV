@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://3yof3iwuhdxn"]
+[gd_scene load_steps=6 format=3 uid="uid://3yof3iwuhdxn"]
 
 [ext_resource type="Script" uid="uid://cb67a0jbf78hh" path="res://script/Character/Weapon/weapon_sword.gd" id="1_tvdi2"]
 [ext_resource type="Texture2D" uid="uid://c6hedj3pssadm" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/sword.png" id="2_tvdi2"]
@@ -16,19 +16,6 @@ _data = {
 &"RESET": SubResource("Animation_2rtvx")
 }
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_gm4s7"]
-animations = [{
-"frames": [],
-"loop": true,
-"name": &"Axe_Attack",
-"speed": 5.0
-}, {
-"frames": [],
-"loop": true,
-"name": &"Axe_Idle",
-"speed": 5.0
-}]
-
 [node name="Weapon_Sword" type="Node2D"]
 script = ExtResource("1_tvdi2")
 
@@ -36,11 +23,6 @@ script = ExtResource("1_tvdi2")
 libraries = {
 &"": SubResource("AnimationLibrary_noa2k")
 }
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-sprite_frames = SubResource("SpriteFrames_gm4s7")
-animation = &"Axe_Idle"
-autoplay = "Axe_Attack"
 
 [node name="RotationPos" type="Node2D" parent="."]
 rotation = -1.1454811

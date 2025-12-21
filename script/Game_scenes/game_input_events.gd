@@ -19,11 +19,21 @@ static func is_movement_input() -> bool:
 		return true
 
 static func is_dash_input() -> bool:
-	
+
 	#按下空格，并且冲刺CD满足的情况下
 	if Input.is_action_just_pressed("dash") && canDash == true:
 		isDashing = true
 	return isDashing
-	
-	
-	
+
+static func attack_input() -> bool:
+	return Input.is_action_just_pressed("attack")
+
+static func switch_weapons() -> int:
+
+	var weaponID : int = -1
+
+	if Input.is_action_just_pressed("weapon_1"):
+		weaponID = 0
+	elif Input.is_action_just_pressed("weapon_2"):
+		weaponID = 1
+	return weaponID
