@@ -99,6 +99,7 @@ radius = 203.002
 
 [node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
 y_sort_enabled = true
+collision_layer = 2
 script = ExtResource("1_gj3g1")
 character_type = 2
 sprite = NodePath("AnimatedSprite2D")
