@@ -211,6 +211,7 @@ radius = 258.43567
 
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
 y_sort_enabled = true
+collision_mask = 3
 script = ExtResource("1_yv1sj")
 character_type = 1
 sprite = NodePath("AnimatedSprite2D")

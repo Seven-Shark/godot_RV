@@ -10,6 +10,9 @@ var current_weapon:Node2D
 
 @onready var weaponlist = $WeaponCurrent
 
+@onready var direction_sign: Node2D = $"../../DirectionSign"
+
+
 func _process(_delta):
 
 	#切换武器
@@ -67,6 +70,7 @@ func _sync_weapon_facing_direction():
 	if is_instance_valid(owner) and owner is CharacterBase and is_instance_valid(current_weapon):
 		if is_instance_valid(owner.sprite):
 			current_weapon.scale.x = owner.sprite.scale.x
+
 
 
 #接收子武器的信号，并转发给 WeaponAdmin
