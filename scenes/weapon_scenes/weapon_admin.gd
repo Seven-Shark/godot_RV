@@ -25,6 +25,9 @@ func _process(_delta):
 
 func _ready() -> void:
 
+	#确认武器的所有者是谁
+	_check_owner()
+	
 	# 获取所有子节点作为武器
 	# 注意：默认武器是列表中的第一个。请确保在场景树中，Axe是 WeaponCurrent 下的第一个节点。
 	for child in weaponlist.get_children():
