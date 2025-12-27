@@ -18,6 +18,8 @@ func _process(_delta):
 	switch_weapons()
 	#武器朝向与角色一致
 	_sync_weapon_facing_direction()
+	#攻击判定框与攻击方向保持一致
+	_sync_hitbox_rotation()
 
 func _ready() -> void:
 
@@ -68,6 +70,25 @@ func _sync_weapon_facing_direction():
 	if is_instance_valid(owner) and owner is CharacterBase and is_instance_valid(current_weapon):
 		if is_instance_valid(owner.sprite):
 			current_weapon.scale.x = owner.sprite.scale.x
+
+# 让武器攻击判断框与攻击方向同步旋转,并在攻击时禁止旋转，攻击束后再旋转
+func _sync_hitbox_rotation():
+	
+	#确保有武器
+	if not is_instance_valid(current_weapon):
+		return
+	var hitbox = current_weapon.get_node_or_null("Weapon_Hitbox")
+	if not hitbox:
+		return
+	
+	var player = owner
+	var direction_sign = player.get_node_or_null("DirectionSign")
+	
+	if direction_sign:
+		hitbox.global_rotation = direction_sign.global_rotation 
+	
+	var state_machine = player.get_node_or_null("WeaponStateMachine")
+	
 	
 
 #接收子武器的信号，并转发给 WeaponAdmin

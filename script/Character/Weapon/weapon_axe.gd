@@ -2,7 +2,7 @@ extends Node2D
 
 
 @onready var anim = $AnimationPlayer
-@onready var hitbox = $Hitbox
+@onready var hitbox: Area2D = $Weapon_Hitbox
 @export var damage_amount : int = 10 # 定义伤害值
 
 func _ready():
