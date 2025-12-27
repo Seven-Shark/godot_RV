@@ -84,7 +84,7 @@ tracks/5/keys = {
 tracks/6/type = "value"
 tracks/6/imported = false
 tracks/6/enabled = true
-tracks/6/path = NodePath("Hitbox:visible")
+tracks/6/path = NodePath("Weapon_Hitbox:visible")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
 tracks/6/keys = {
@@ -247,7 +247,7 @@ tracks/5/keys = {
 tracks/6/type = "value"
 tracks/6/imported = false
 tracks/6/enabled = true
-tracks/6/path = NodePath("Hitbox:visible")
+tracks/6/path = NodePath("Weapon_Hitbox:visible")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
 tracks/6/keys = {
@@ -481,12 +481,12 @@ scale = Vector2(3.517, -3.517)
 texture = ExtResource("1_lggjw")
 offset = Vector2(4.689754, -5.4836597)
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Weapon_Hitbox" type="Area2D" parent="."]
 visible = false
 scale = Vector2(1.0000001, 1.0000001)
 collision_mask = 2
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Hitbox"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Weapon_Hitbox"]
 position = Vector2(12.281252, 0)
 scale = Vector2(1.7443184, 1)
 polygon = PackedVector2Array(-7.040717, 0, 38.249172, -75.99999, 38.249172, 75.99999)
