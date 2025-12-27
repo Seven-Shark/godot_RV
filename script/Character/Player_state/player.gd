@@ -173,6 +173,9 @@ func _updata_all_enter_Character():
 	pass
 	#for i in range(enter_Character.size())
 
+
+
+
 ##寻找范围内最近的目标，并打印出来
 #func _update_target_locking(new_target: CharacterBase):
 	#var nearest_target = get_closest_target()

@@ -7,6 +7,8 @@ signal action_finished
 
 var weapons:Array[Node2D] = []
 var current_weapon:Node2D
+var character_owner:CharacterBase
+
 
 @onready var weaponlist = $WeaponCurrent
 
@@ -34,6 +36,15 @@ func _ready() -> void:
 	if weapons.size() > 0:
 		equip_weapon(weapons[0])
 
+func _check_owner() -> CharacterBase:
+	if owner is CharacterBase:
+		character_owner = owner
+	elif get_parent() is CharacterBase:
+		character_owner = get_parent()
+	if not character_owner:
+		push_error("WeaponAdmin 未找到 CharacterBase 类型的持有者！")
+	return character_owner
+
 #监听数字键切换武器
 func switch_weapons():
 
@@ -60,6 +71,11 @@ func equip_weapon(weapon_node:Node2D) -> void:
 
 	current_weapon = weapon_node
 	current_weapon.visible = true
+	
+	#检查武器是否有belonger变量，有得话就把持有者信息同步给它
+	if "belonger" in current_weapon:
+		current_weapon.belonger = character_owner
+	
 	# 装备武器后，播放其待机动画
 	if current_weapon.has_method("play_idle"):
 		current_weapon.play_idle()

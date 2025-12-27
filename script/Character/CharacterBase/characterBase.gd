@@ -18,6 +18,8 @@ enum CharacterType{
 @export var hit_particles : GPUParticles2D
 var invincible : bool = false
 var is_dead : bool = false
+var current_tag: int = 0 #当前被分配的ID
+
 
 #定义一个侦查区的变量
 @onready var detection_Area = $DetectionArea
@@ -31,14 +33,19 @@ var enter_Character : Array[CharacterBase] = []
 @export var target_types: Array[CharacterType] = []
 
 
+signal on_dead
+
 
 func _ready():
 	var playerAttack_Area = $DetectionArea
 	playerAttack_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
 	playerAttack_Area.body_exited.connect(_on_playerAttack_Area_body_exited)
+	
+	if healthbar:
+		healthbar.max_value = health
+		healthbar.value = health
 
 
-#Add anything here that needs to be initialized on the character
 #func init_character():
 	#healthbar.max_value = health
 	#healthbar.value = health
@@ -144,11 +151,80 @@ func Target_Lock_On(target: CharacterBase):
 		else:
 			#没有目标的时候隐藏
 			direction_Sign.visible = false
+			
+func take_damage(amount:int,attacker_type:CharacterType) -> void:
+	
+	#如果无敌或者已经死了则跳过
+	if invincible or is_dead:
+		return
+	
+	#友军伤害免疫（可选）
+	if attacker_type == character_type:
+		return
+	
+	#扣血逻辑
+	health -= amount
+	print(name + "受到伤害：" + str(amount) + "————剩余血量：" +str(health))
+	
+	if healthbar:
+		healthbar.value = health
+	
+	#受伤表现
+	damage_effects()
+	
+	#死亡判定
+	if health <= 0:
+		_die()
+
+#受伤效果：无敌帧、特效
+func damage_effects():
+	invincible = true
+	
+	if hit_particles:
+		hit_particles.emitting = true
+	# 颜色闪烁 (Godot 4 Tween 写法)
+	var tween = create_tween()
+	# 变红 -> 变回原色 -> 变红 -> 变回原色
+	tween.tween_property(sprite, "modulate", Color(10, 10, 10), 0.1) # 甚至可以高亮变白
+	tween.tween_property(sprite, "modulate", Color.RED, 0.1)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.1)
+	await tween.finished
+	
+	invincible = false
 
 
+#死亡逻辑
+func _die():
+	if is_dead:return
+	is_dead = true
+	on_dead.emit()
+	print(name + "已死亡")
+	
+	#播放死亡特效
+	die_effects()
 
+# 如果是敌人，延迟销毁；如果是玩家，可能需要处理游戏结束逻辑
+	if character_type == CharacterType.ENEMY:
+		# 禁用碰撞防止诈尸
+		$CollisionShape2D.set_deferred("disabled", true) 
+		await get_tree().create_timer(1.0).timeout
+		queue_free()
+	elif character_type == CharacterType.PLAYER:
+		print("玩家死亡，游戏结束流程...")
+		# 不要 destroy 玩家，通常是弹窗重开
 
+#死亡特效，暂未启用
+func die_effects():
+	pass
 
+# 设置标签（父类通用方法）
+func set_target_tag(tag: int) -> void:
+	current_tag = tag
+	# print(name + " 被标记为 ID: " + str(tag)) # 调试用
+
+# 清除标签（父类通用方法）
+func clear_target_tag() -> void:
+	current_tag = 0
 
 #region Taking Damage
 
@@ -190,3 +266,4 @@ func Target_Lock_On(target: CharacterBase):
 	#await get_tree().create_timer(1.0).timeout
 	#if is_instance_valid(self) and not is_in_group("Player"):
 		#queue_free()
+#endregion

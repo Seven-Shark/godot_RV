@@ -1,14 +1,13 @@
 extends CharacterBase
 class_name Enemy
 
-var current_tag:int = 0
 
 func _init() -> void:
 	character_type = CharacterType.ENEMY
 	target_types = [CharacterType.PLAYER]
 
 func _ready() -> void:
-	pass
+	super._ready()
 	
 func _process(_delta) -> void:
 	
@@ -22,8 +21,3 @@ func _process(_delta) -> void:
 		current_target = null
 	Target_Lock_On(nearest_target)
 	
-func set_target_tag(tag: int) -> void:
-	current_tag = tag
-	
-func clear_target_tag() -> void:
-	current_tag = 0
