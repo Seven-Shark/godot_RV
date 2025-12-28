@@ -64,6 +64,7 @@ func _update_DirectionSign_Visible(mouse_pos:Vector2):
 					Target_Lock_On(current_target)
 				else:
 					direction_Sign.visible = false
+					Target_Lock_On(null)
 			#【鼠标模式】：箭头常驻
 			AimMode_Type.MOUSE_ASSIST:
 				direction_Sign.visible = true

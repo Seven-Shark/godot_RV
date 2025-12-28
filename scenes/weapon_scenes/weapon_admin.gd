@@ -35,7 +35,7 @@ func _ready() -> void:
 			weapons.append(child)
 			child.visible = false
 
-	#默认装备第一把武器
+	#默认装备第一把武器d
 	if weapons.size() > 0:
 		equip_weapon(weapons[0])
 

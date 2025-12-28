@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://dp7yile35s8s7"]
+[gd_scene load_steps=23 format=3 uid="uid://dp7yile35s8s7"]
 
 [ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_gj3g1"]
 [ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
@@ -97,12 +97,19 @@ size = Vector2(64, 91)
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 203.002
 
-[node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wavxh"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nr6f4"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "healthbar")]
 y_sort_enabled = true
 collision_layer = 2
 script = ExtResource("1_gj3g1")
 character_type = 2
 sprite = NodePath("AnimatedSprite2D")
+healthbar = NodePath("ProgressBar")
 health = 20
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
@@ -139,3 +146,12 @@ shape = SubResource("CircleShape2D_8lvt1")
 [node name="Arrows" type="Sprite2D" parent="DirectionSign"]
 position = Vector2(61, -2)
 texture = ExtResource("7_wavxh")
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+offset_left = -50.0
+offset_top = -65.0
+offset_right = 50.0
+offset_bottom = -55.0
+theme_override_styles/background = SubResource("StyleBoxFlat_wavxh")
+theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
+show_percentage = false

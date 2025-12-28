@@ -514,4 +514,4 @@ monitoring = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Weapon_Hitbox"]
 position = Vector2(12.281252, 0)
 scale = Vector2(1.7443184, 1)
-polygon = PackedVector2Array(-7.040717, 0, 38.249172, -75.99999, 38.249172, 75.99999)
+polygon = PackedVector2Array(-7.040717, 0, 55.447865, -110.999985, 56.594444, 106.999985)

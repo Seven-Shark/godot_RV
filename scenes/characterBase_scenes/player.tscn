@@ -1,16 +1,16 @@
-[gd_scene load_steps=39 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=41 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
 [ext_resource type="Texture2D" uid="uid://cl2lsjnoar4c6" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Guard.png" id="3_qlt84"]
 [ext_resource type="Texture2D" uid="uid://djwqdxjrgo54f" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="4_kmu0q"]
 [ext_resource type="Texture2D" uid="uid://c0u7wyktfc3mq" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png" id="5_8hwlb"]
-[ext_resource type="Script" path="res://script/Character/CharacterBase/node_state_machine.gd" id="6_w5jik"]
+[ext_resource type="Script" uid="uid://vrup8lqv07a4" path="res://script/Character/CharacterBase/node_state_machine.gd" id="6_w5jik"]
 [ext_resource type="Script" uid="uid://c6t22f40o226g" path="res://script/Character/Player_state/idle_state.gd" id="7_asxtk"]
 [ext_resource type="Script" uid="uid://bmsubqutohj6q" path="res://script/Character/Player_state/walk_state.gd" id="8_p2gdj"]
 [ext_resource type="Script" uid="uid://dia2qt3dxsgbl" path="res://script/Character/Player_state/dash_state.gd" id="9_2holh"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
-[ext_resource type="PackedScene" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
+[ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
 atlas = ExtResource("2_wdqqy")
@@ -209,15 +209,20 @@ size = Vector2(64, 91)
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 258.43567
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxg0l"]
+bg_color = Color(2.0214916e-06, 0.7261122, 0.17636192, 1)
+
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "healthbar")]
 y_sort_enabled = true
 collision_mask = 3
 script = ExtResource("1_yv1sj")
 character_type = 1
 sprite = NodePath("AnimatedSprite2D")
-health = null
-flipped_horizontal = null
-target_types = null
+healthbar = NodePath("ProgressBar")
+health = 100
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 
@@ -232,6 +237,7 @@ position = Vector2(-5, -0.5)
 shape = SubResource("RectangleShape2D_v3h1r")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.8, 0.8)
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("6_w5jik")
@@ -273,3 +279,12 @@ shape = SubResource("CircleShape2D_8lvt1")
 [node name="Right_Hand" type="Node2D" parent="."]
 
 [node name="WeaponAdmin" parent="Right_Hand" instance=ExtResource("11_5je8t")]
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+offset_left = -50.0
+offset_top = -65.0
+offset_right = 50.0
+offset_bottom = -55.0
+theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
+theme_override_styles/fill = SubResource("StyleBoxFlat_kxg0l")
+show_percentage = false

@@ -149,8 +149,14 @@ func Target_Lock_On(target: CharacterBase):
 			direction_Sign.rotation = target_rotation
 			direction_Sign.visible = true
 		else:
-			#没有目标的时候隐藏
-			direction_Sign.visible = false
+			#判断当前是否有速度（防止静止时箭头归零或乱转）
+			if velocity.length_squared() > 10.0:
+				direction_Sign.rotation = velocity.angle()
+				direction_Sign.visible = true
+				
+			else:
+				#没有目标的时候隐藏
+				direction_Sign.visible = false
 			
 			
 #用于判断受伤的逻辑
