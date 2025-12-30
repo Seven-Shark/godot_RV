@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://dp7yile35s8s7"]
+[gd_scene load_steps=24 format=3 uid="uid://dp7yile35s8s7"]
 
 [ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_gj3g1"]
 [ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://con1jucromyi5" path="res://script/Character/Enemy_state/enemy_idle_state.gd" id="7_jerxs"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="7_wavxh"]
 [ext_resource type="Script" uid="uid://bsm7u84fsmw44" path="res://script/Character/Enemy_state/enemy_walk_state.gd.gd" id="8_6sfd3"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="8_nr6f4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqkjm"]
 atlas = ExtResource("2_b37dv")
@@ -155,3 +156,7 @@ offset_bottom = -55.0
 theme_override_styles/background = SubResource("StyleBoxFlat_wavxh")
 theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
 show_percentage = false
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("8_nr6f4")
+enable_stamina = false

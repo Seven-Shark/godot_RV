@@ -9,8 +9,6 @@ enum CharacterType{
 }
 @export var character_type:CharacterType = CharacterType.ITEM
 
-
-
 @export var sprite : AnimatedSprite2D
 @export var healthbar : ProgressBar
 @export var health : int
@@ -20,20 +18,18 @@ var invincible : bool = false
 var is_dead : bool = false
 var current_tag: int = 0 #当前被分配的ID
 
-
-#定义一个侦查区的变量
-@onready var detection_Area = $DetectionArea
-#定义一个判断敌人方位的箭头
-@onready var direction_Sign = get_node_or_null("DirectionSign")
-#定义当前距离最近的敌人对象
-var current_target : CharacterBase = null
-#定义一个列表，存储当前进入侦查区内的所有对象
-var enter_Character : Array[CharacterBase] = []
-#定义一个列表，存储当前侦查区内所有对象的类型
-@export var target_types: Array[CharacterType] = []
+var current_target : CharacterBase = null   #定义当前距离最近的敌人对象
+var enter_Character : Array[CharacterBase] = []   #定义一个列表，存储当前进入侦查区内的所有对象
+@onready var detection_Area = $DetectionArea   #定义一个侦查区的变量
+@onready var direction_Sign = get_node_or_null("DirectionSign")   #定义一个判断敌人方位的箭头
+@export var target_types: Array[CharacterType] = []   #定义一个列表，存储当前侦查区内所有对象的类型
 
 
-signal on_dead
+@onready var stats: StatsComponent = get_node_or_null("StatsComponent")   #获取属性相关节点
+
+
+
+signal on_dead  #死亡信号
 
 
 func _ready():
@@ -41,14 +37,18 @@ func _ready():
 	playerAttack_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
 	playerAttack_Area.body_exited.connect(_on_playerAttack_Area_body_exited)
 	
+# 初始化血条连接
+	if stats and healthbar:
+		healthbar.max_value = stats.max_health
+		healthbar.value = stats.current_health
+		 # 连接信号：当组件血量变化时，自动刷新血条
+		stats.health_changed.connect(_on_health_changed)
+		stats.died.connect(_die)
+		
+# 信号回调：自动刷新血条
+func _on_health_changed(current, max_val):
 	if healthbar:
-		healthbar.max_value = health
-		healthbar.value = health
-
-
-#func init_character():
-	#healthbar.max_value = health
-	#healthbar.value = health
+		healthbar.value = current
 
 #根据角色移动方向翻转角色图片
 func Turn():
@@ -157,8 +157,7 @@ func Target_Lock_On(target: CharacterBase):
 			else:
 				#没有目标的时候隐藏
 				direction_Sign.visible = false
-			
-			
+
 #用于判断受伤的逻辑
 func take_damage(amount:int,attacker_type:CharacterType) -> void:
 	
@@ -170,10 +169,13 @@ func take_damage(amount:int,attacker_type:CharacterType) -> void:
 	if attacker_type == character_type:
 		return
 	
-	#扣血逻辑
-	health -= amount
-	print(name + "受到伤害：" + str(amount) + "————剩余血量：" +str(health))
-	
+	#调用组件扣血
+	if stats:
+		stats.take_damage(float(amount))
+		print(name + "受到伤害：" + str(amount) + "————剩余血量：" +str(health))
+	else:
+		# 如果没有组件（比如箱子），可能直接销毁或者走简易逻辑
+		print("非组件物体，直接销毁")
 	if healthbar:
 		healthbar.value = health
 	
