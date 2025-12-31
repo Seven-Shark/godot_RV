@@ -177,13 +177,13 @@ func take_damage(amount:int,attacker_type:CharacterType) -> void:
 		# 如果没有组件（比如箱子），可能直接销毁或者走简易逻辑
 		print("非组件物体，直接销毁")
 	if healthbar:
-		healthbar.value = health
+		healthbar.value = stats.current_health
 	
 	#受伤表现
 	damage_effects()
 	
 	#死亡判定
-	if health <= 0:
+	if stats.current_health <= 0:
 		_die()
 
 #受伤效果：无敌帧、特效
@@ -212,7 +212,6 @@ func _die():
 	
 	#播放死亡特效
 	die_effects()
-
 # 如果是敌人，延迟销毁；如果是玩家，可能需要处理游戏结束逻辑
 	if character_type == CharacterType.ENEMY:
 		# 禁用碰撞防止诈尸

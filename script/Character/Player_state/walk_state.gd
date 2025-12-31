@@ -2,9 +2,9 @@
 extends NodeState
 
 @export var player:CharacterBody2D
+@export var player_stats:CharacterBase
 @export var animated_sprite_2d:AnimatedSprite2D
-@export var player_speed:float = 200.0
-
+#@export var player_speed:float = 200.0
 
 
 func _on_enter() -> void:
@@ -18,8 +18,9 @@ func _on_physics_process(_delta : float) -> void:
 
 	#if GameInputEvents.is_dash_input() == false:
 		if GameInputEvents.is_movement_input():
-			player.velocity = GameInputEvents.movement_input() * player_speed
-			player.move_and_slide()
+			if player_stats.stats:
+				player.velocity = GameInputEvents.movement_input() * player_stats.stats.base_walk_speed
+				player.move_and_slide()
 		
 func _on_next_transitions() -> void:
 

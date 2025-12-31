@@ -481,6 +481,7 @@ animations = [{
 
 [node name="Weapon_Axe" type="Node2D"]
 script = ExtResource("1_gm4s7")
+damage_amount = 110
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

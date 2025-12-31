@@ -30,7 +30,7 @@ var regen_delay_timer: float = 0.0 # 内部计时器
 # 3. 移动与负重系统
 # --------------------------------------------------------
 @export_group("Movement & Weight")
-@export var base_walk_speed: float = 150.0
+@export var base_walk_speed: float = 150.0 #基础移动速度
 @export var sprint_speed: float = 250.0
 @export var sprint_cd: float = 3.0 # 冲刺冷却时间
 @export var max_weight: float = 50.0

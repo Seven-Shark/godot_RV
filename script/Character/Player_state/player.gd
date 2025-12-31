@@ -6,6 +6,7 @@ const ASSIST_ANGLE = 90.0 #辅助瞄准角度
 const ASSIST_RANGE = 250.0 #辅助瞄准
 const ASSIST_RANGE_SQ = ASSIST_RANGE * ASSIST_RANGE #
 
+
 enum AimMode_Type {
 	AUTO_NEAREST,#自动瞄准
 	MOUSE_ASSIST #鼠标辅助
