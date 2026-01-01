@@ -9,10 +9,7 @@ var weapons:Array[Node2D] = []
 var current_weapon:Node2D
 var character_owner:CharacterBase
 
-
 @onready var weaponlist = $WeaponCurrent
-
-
 
 func _process(_delta):
 
@@ -52,7 +49,6 @@ func _check_owner() -> CharacterBase:
 func switch_weapons():
 
 	var weapon_id_input = GameInputEvents.switch_weapons()
-
 	if weapon_id_input == -1:
 		return
 	if weapon_id_input == 0 and weapons.size()>0:

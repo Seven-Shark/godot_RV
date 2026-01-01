@@ -1,40 +1,86 @@
 extends Node2D
 
-
 @onready var anim = $AnimationPlayer
 @onready var hitbox: Area2D = $Weapon_Hitbox
-@export var damage_amount : int = 10 # 定义伤害值
+@export var damage_amount : int = 10 
+@export var gravity_force : float = 400.0 
+@export var damage_interval : float = 0.5 
 
-#定义武器的归属者是谁
-var belonger:CharacterBase
-
+var belonger: CharacterBase
+var damage_timer : float = 0.0
+var captured_bodies: Array[Node2D] = []
 
 func _ready():
-	# 连接 Area2D 的 body_entered 信号
-	hitbox.body_entered.connect(_on_hitbox_body_entered)
-
+	pass
 
 func play_idle():
-	anim.play("Axe_Idle")
-	
+	anim.play("Gravitation_Idle") 
+
+# 这个函数只负责播放动画，具体的逻辑在 process_gravity_tick 里
+func play_holdattack():
+	anim.play("Gravitataion_Attract")
+
 func play_attack():
-	anim.play("Gravitataion_Attack")
+	anim.play("Gravitataion_Shock")
 
-func _on_hitbox_body_entered(body: Node2D):
+# --- 新增：专门供状态机调用的“每帧执行”函数 ---
+func process_gravity_tick(delta: float):
 	
-	print("【调试】斧头撞到了：", body.name, " 类型：", body.get_class())
-	#确保有所有者
-	#if not belonger or not(body is CharacterBase):
-		#return
-	if body == belonger:
-		return
-	#调用对方的 take_damage，并传入持有者的类型
-	if body.has_method("take_damage"):
-		print(name + "攻击命中:",body.name)
-		body.take_damage(damage_amount,belonger.character_type,belonger)
-	#确保打到的是characterbase
-	#if body is CharacterBase :
-		#排除自己，防止自残
-
-
+	if not hitbox.monitoring and not hitbox.visible:
+		hitbox.visible = true
+		hitbox.monitoring = true
 	
+	# 更新伤害计时器
+	damage_timer -= delta
+	var can_deal_damage = damage_timer <= 0
+	if can_deal_damage:
+		damage_timer = damage_interval 
+	
+	var current_bodies = hitbox.get_overlapping_bodies()
+	var current_targets: Array[Node2D] = []
+	
+	for body in current_bodies:
+		if body == belonger: continue 
+		
+		# 处理 ObjectBase
+		if body is ObjectBase:
+			current_targets.append(body)
+			# A. 物理吸引
+			var direction = (belonger.global_position - body.global_position).normalized()
+			if body is RigidBody2D:
+				body.apply_central_force(direction * gravity_force * body.mass * 2.0)
+			# B. 视觉拉伸
+			body.apply_gravity_visual(belonger.global_position)
+			# C. 伤害
+			if can_deal_damage and body.stats:
+				body.take_damage(damage_amount, belonger.character_type, belonger)
+				
+		# 处理 CharacterBase
+		elif body is CharacterBase and body.has_method("take_damage"):
+			if can_deal_damage:
+				body.take_damage(damage_amount, belonger.character_type, belonger)
+
+	# 检查逃逸物体
+	for old_body in captured_bodies:
+		if old_body not in current_targets:
+			if old_body.has_method("recover_from_gravity"):
+				old_body.recover_from_gravity()
+	
+	captured_bodies = current_targets.duplicate()
+
+# --- 停止开火 (供状态机退出时调用) ---
+# 把原本的 _stop_gravity_firing 改名并公开，或者直接用这个
+func stop_gravity_firing():
+	
+	hitbox.visible = false
+	hitbox.monitoring = false
+	
+	if anim.current_animation == "Gravitataion_Attract":
+		play_idle()
+	
+	# 清理所有被抓取物体的状态
+	if captured_bodies.size() > 0:
+		for body in captured_bodies:
+			if is_instance_valid(body) and body.has_method("recover_from_gravity"):
+				body.recover_from_gravity()
+		captured_bodies.clear()

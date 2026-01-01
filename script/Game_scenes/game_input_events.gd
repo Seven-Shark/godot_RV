@@ -28,6 +28,14 @@ static func is_dash_input() -> bool:
 static func attack_input() -> bool:
 	return Input.is_action_just_pressed("attack")
 
+static func special_attack_input() -> bool:
+	# 假设你的右键没有绑定 InputMap，直接检测鼠标右键
+	return Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+	
+	# 如果你在项目设置里绑定了 "attack_2" 或 "special_attack"，也可以改成：
+	# return Input.is_action_pressed("attack_2") # 注意是 pressed 不是 just_pressed
+
+
 static func switch_weapons() -> int:
 
 	var weaponID : int = -1

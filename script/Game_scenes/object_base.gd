@@ -35,6 +35,8 @@ var default_pos: Vector2
 # 用于存储当前的 Tween，方便打断
 var current_tween: Tween
 
+# 标记当前是否正在被引力枪控制
+var is_under_gravity: bool = false
 
 func _ready() -> void:
 	# 1. 初始化物理属性
@@ -147,6 +149,42 @@ func _play_hit_effect():
 		tween.tween_property(sprite, "scale", Vector2(1.1, 1.1), 0.05)
 		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.05)
 
+# 持续受到引力影响（每一帧都会被武器调用）
+func apply_gravity_visual(attractor_pos: Vector2):
+	# 1. 标记状态
+	is_under_gravity = true
+	
+	# 2. 杀掉之前的回弹动画，确保完全由物理和代码接管
+	if current_tween:
+		current_tween.kill()
+		
+	# 3. 计算朝向：让树顶 (Vector2.UP) 指向玩家
+	var direction = attractor_pos - global_position
+	var target_angle = Vector2.UP.angle_to(direction)
+	# 限制角度，防止360度乱转，限制在 +/- 45度内
+	rotation = clamp(angle_difference(0, target_angle), deg_to_rad(-45), deg_to_rad(45))
+	
+	# 4. 持续拉伸：变得细长 (模拟被吸住的张力)
+	# 这里直接修改属性，不使用 Tween，因为位置每帧都在变
+	sprite.scale = default_scale * Vector2(0.7, 1.4) 
+	sprite.modulate = Color(0.8, 0.8, 2.0) # 变蓝一点，提示受到引力
+
+# 引力波断开（松开鼠标 或 离开范围）
+func recover_from_gravity():
+	if not is_under_gravity: 
+		return
+		
+	is_under_gravity = false
+	
+	# 播放回弹动画 (Snap Back)
+	if current_tween: current_tween.kill()
+	current_tween = create_tween()
+	
+	current_tween.set_parallel(true)
+	# 快速回弹
+	current_tween.tween_property(sprite, "rotation", 0.0, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	current_tween.tween_property(sprite, "scale", default_scale, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	current_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
 
 # --- 新增：果冻效果逻辑 ---
 # attacker_pos: 攻击者的位置，用于计算吸引方向
