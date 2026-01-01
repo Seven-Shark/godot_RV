@@ -107,6 +107,7 @@ bg_color = Color(1, 0, 0, 1)
 [node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "healthbar")]
 y_sort_enabled = true
 collision_layer = 2
+collision_mask = 7
 script = ExtResource("1_gj3g1")
 character_type = 2
 sprite = NodePath("AnimatedSprite2D")

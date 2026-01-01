@@ -10,8 +10,6 @@ var belonger:CharacterBase
 
 
 func _ready():
-	print("Axe Hitbox 节点是: ", hitbox) # 确保这里打印出来的不是 null
-	print("Hitbox Monitoring 状态: ", hitbox.monitoring) # 确保这里打印的是 true
 	# 连接 Area2D 的 body_entered 信号
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 
@@ -20,7 +18,7 @@ func play_idle():
 	anim.play("Axe_Idle")
 	
 func play_attack():
-	anim.play("Axe_Attack")
+	anim.play("Gravitataion_Attack")
 
 func _on_hitbox_body_entered(body: Node2D):
 	

@@ -12,7 +12,7 @@ enum AimMode_Type {
 	MOUSE_ASSIST #鼠标辅助
 }
 #默认瞄准模式
-var player_current_aim_mode = AimMode_Type.AUTO_NEAREST
+var player_current_aim_mode = AimMode_Type.MOUSE_ASSIST
 
 #初始化
 func _init() -> void:

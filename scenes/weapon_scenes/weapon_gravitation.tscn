@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://djcadwcopwbcs"]
+[gd_scene load_steps=8 format=3 uid="uid://c3ud1u75u0vfw"]
 
-[ext_resource type="Script" uid="uid://bkwjpohsd8alt" path="res://script/Character/Weapon/weapon_axe.gd" id="1_gm4s7"]
-[ext_resource type="Texture2D" uid="uid://bdn4nd7t2ril7" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/tools/axe.png" id="1_lggjw"]
+[ext_resource type="Script" uid="uid://kwhmt3jfdawg" path="res://scenes/weapon_scenes/weapon_gravitation.gd" id="1_8bf87"]
+[ext_resource type="Texture2D" uid="uid://dq5tnm05bt3dl" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/staff.png" id="1_eaxpg"]
 
 [sub_resource type="Animation" id="Animation_etxyd"]
 resource_name = "Axe_Attack"
@@ -291,8 +291,8 @@ _data = {
 &"RESET": SubResource("Animation_2rtvx")
 }
 
-[node name="Weapon_Axe" type="Node2D"]
-script = ExtResource("1_gm4s7")
+[node name="Weapon_Gravitation" type="Node2D"]
+script = ExtResource("1_8bf87")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -306,8 +306,8 @@ rotation = -1.1454811
 position = Vector2(23, 17)
 rotation = -1.9473577
 scale = Vector2(3.517, -3.517)
-texture = ExtResource("1_lggjw")
-offset = Vector2(4.689754, -5.4836597)
+texture = ExtResource("1_eaxpg")
+offset = Vector2(7.999999, -8)
 
 [node name="Weapon_Hitbox" type="Area2D" parent="."]
 visible = false
@@ -318,4 +318,4 @@ monitoring = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Weapon_Hitbox"]
 position = Vector2(12.281252, 0)
 scale = Vector2(1.7443184, 1)
-polygon = PackedVector2Array(-7.040717, 0, 55.447865, -110.999985, 56.594444, 106.999985)
+polygon = PackedVector2Array(-7.040717, 0, 127.68238, -124.999985, 140.29475, 22.999998)

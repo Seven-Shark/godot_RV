@@ -1,0 +1,112 @@
+[gd_scene load_steps=16 format=3 uid="uid://dsgxntkdfgi3r"]
+
+[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Game_scenes/object_base.gd" id="1_b3atn"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="1_ubghj"]
+[ext_resource type="Texture2D" uid="uid://cacbcliwfiw70" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Trees/Tree3.png" id="2_tvrq0"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_23u7u"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mw7fa"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e0ptd"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lmagp"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hx1nr"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wlw7a"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(960, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eri2u"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(1152, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jmnir"]
+atlas = ExtResource("2_tvrq0")
+region = Rect2(1344, 0, 192, 192)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4ankd"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_23u7u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mw7fa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e0ptd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lmagp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hx1nr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wlw7a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eri2u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jmnir")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 12.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
+size = Vector2(42, 72)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yeaph"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vct1u"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="Object_Tree_1" type="RigidBody2D" node_paths=PackedStringArray("sprite")]
+collision_layer = 4
+collision_mask = 7
+gravity_scale = 0.0
+freeze = true
+linear_damp = 5.0
+angular_damp = 3.0
+script = ExtResource("1_b3atn")
+sprite = NodePath("AnimatedSprite2D")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_4ankd")
+animation = &"Idle"
+autoplay = "Idle"
+offset = Vector2(0, -70)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -36)
+shape = SubResource("RectangleShape2D_b3atn")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+offset_left = -50.0
+offset_top = -65.0
+offset_right = 50.0
+offset_bottom = -55.0
+theme_override_styles/background = SubResource("StyleBoxFlat_yeaph")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vct1u")
+show_percentage = false
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("1_ubghj")

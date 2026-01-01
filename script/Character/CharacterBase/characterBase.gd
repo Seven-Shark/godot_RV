@@ -159,7 +159,7 @@ func Target_Lock_On(target: CharacterBase):
 				direction_Sign.visible = false
 
 #用于判断受伤的逻辑
-func take_damage(amount:int,attacker_type:CharacterType) -> void:
+func take_damage(amount:int,attacker_type:CharacterType,attacker_node: Node2D = null) -> void:
 	
 	#如果无敌或者已经死了则跳过
 	if invincible or is_dead:
