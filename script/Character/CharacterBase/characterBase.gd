@@ -28,6 +28,10 @@ var enter_Character : Array[CharacterBase] = []   #定义一个列表，存储�
 @onready var stats: StatsComponent = get_node_or_null("StatsComponent")   #获取属性相关节点
 
 
+# --- 新增：击退相关变量 ---
+var knockback_velocity: Vector2 = Vector2.ZERO # 当前的击退速度向量
+@export var knockback_friction: float = 1000.0 # 击退摩擦力（衰减速度）
+
 
 signal on_dead  #死亡信号
 
@@ -44,7 +48,38 @@ func _ready():
 		 # 连接信号：当组件血量变化时，自动刷新血条
 		stats.health_changed.connect(_on_health_changed)
 		stats.died.connect(_die)
-		
+
+func _physics_process(delta: float) -> void:
+	#处理击退衰减
+	_handle_knockback(delta)
+
+# 处理击退衰减逻辑
+func _handle_knockback(delta: float):
+	if knockback_velocity.length() > 0:
+		# 施加摩擦力，让击退速度逐渐归零
+		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, knockback_friction * delta)
+
+# --- 新增：接收击退 ---
+# direction: 击退方向 (归一化向量)
+# force: 基础击退力度
+func apply_knockback(direction: Vector2, force: float):
+	# 1. 获取重量
+	var weight = 1.0
+	if stats:
+		# 防止除以0，设定最小重量为 1.0
+		# 这里假设 max_weight 代表角色的"质量/重量"
+		weight = max(1.0, stats.max_weight)
+	
+	# 2. 计算受力后的实际速度
+	# 公式：最终速度 = 力度 / 重量因子
+	# 为了让手感更好，可以给重量乘一个系数 (比如 0.1)，避免重敌人完全推不动
+	var weight_factor = weight * 0.1 
+	var final_knockback_speed = force / max(0.1, weight_factor)
+	
+	# 3. 施加击退速度
+	knockback_velocity = direction * final_knockback_speed
+	print(name + " 被击退，速度: " + str(final_knockback_speed) + " (重量: " + str(weight) + ")")
+
 # 信号回调：自动刷新血条
 func _on_health_changed(current, max_val):
 	if healthbar:
@@ -201,7 +236,6 @@ func damage_effects():
 	await tween.finished
 	
 	invincible = false
-
 
 #死亡逻辑
 func _die():

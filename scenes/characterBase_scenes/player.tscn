@@ -204,8 +204,9 @@ animations = [{
 "speed": 12.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_v3h1r"]
-size = Vector2(64, 91)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kxg0l"]
+radius = 43.0
+height = 94.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 258.43567
@@ -234,8 +235,8 @@ autoplay = "Idle"
 frame_progress = 0.23046832
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-5, -0.5)
-shape = SubResource("RectangleShape2D_v3h1r")
+scale = Vector2(0.8800007, 0.8800007)
+shape = SubResource("CapsuleShape2D_kxg0l")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(0.8, 0.8)

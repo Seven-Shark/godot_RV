@@ -2,16 +2,23 @@ extends Node2D
 
 @onready var anim = $AnimationPlayer
 @onready var hitbox: Area2D = $Weapon_Hitbox
-@export var damage_amount : int = 10 
+@export var gravitation_damage_amount : int = 10
+@export var shock_damage_amount : int = 50 
 @export var gravity_force : float = 400.0 
 @export var damage_interval : float = 0.5 
+
+#震荡波的基础击退力度
+@export var shock_knockback_force : float = 1200.0
 
 var belonger: CharacterBase
 var damage_timer : float = 0.0
 var captured_bodies: Array[Node2D] = []
 
 func _ready():
-	pass
+	hitbox.body_entered.connect(_on_hitbox_body_entered)
+	# 确保 ready 时关闭 hitbox，避免误触
+	hitbox.monitoring = false
+	hitbox.visible = false
 
 func play_idle():
 	anim.play("Gravitation_Idle") 
@@ -23,7 +30,39 @@ func play_holdattack():
 func play_attack():
 	anim.play("Gravitataion_Shock")
 
-# --- 新增：专门供状态机调用的“每帧执行”函数 ---
+#单次震荡波攻击
+func _on_hitbox_body_entered(body: Node2D):
+	
+	if body == belonger:
+		return
+	
+	if anim.current_animation != "Gravitataion_Shock":
+		return
+	
+
+
+
+	# 2. 处理伤害与反馈
+	if body.has_method("take_damage"):
+		print(name + " 震荡波命中:", body.name)
+		body.take_damage(shock_damage_amount, belonger.character_type, belonger)
+		
+		# --- 反馈逻辑 ---
+		# 1. 计算击退方向 (从持有者指向受击者)
+		var knockback_dir = (body.global_position - belonger.global_position).normalized()
+		
+		# 情况 A：打到了物件 (ObjectBase)
+		if body is ObjectBase:
+			# 调用物件专属的震荡回弹函数
+			if body.has_method("trigger_shockwave_shake"):
+				body.trigger_shockwave_shake(knockback_dir)
+				
+		# 情况 B：打到了敌人 (CharacterBase)
+		# 调用角色的击退函数，传入方向和基础力度
+		elif body is CharacterBase and body.has_method("apply_knockback"):
+				body.apply_knockback(knockback_dir, shock_knockback_force)
+
+# --- 专门供状态机调用的“每帧执行”函数 ---
 func process_gravity_tick(delta: float):
 	
 	if not hitbox.monitoring and not hitbox.visible:
@@ -53,15 +92,18 @@ func process_gravity_tick(delta: float):
 			body.apply_gravity_visual(belonger.global_position)
 			# C. 伤害
 			if can_deal_damage and body.stats:
-				body.take_damage(damage_amount, belonger.character_type, belonger)
+				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 				
 		# 处理 CharacterBase
 		elif body is CharacterBase and body.has_method("take_damage"):
 			if can_deal_damage:
-				body.take_damage(damage_amount, belonger.character_type, belonger)
+				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 
 	# 检查逃逸物体
 	for old_body in captured_bodies:
+		if not is_instance_valid(old_body):
+			continue
+		
 		if old_body not in current_targets:
 			if old_body.has_method("recover_from_gravity"):
 				old_body.recover_from_gravity()

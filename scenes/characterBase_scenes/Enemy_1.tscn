@@ -92,8 +92,9 @@ animations = [{
 "speed": 12.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_v3h1r"]
-size = Vector2(64, 91)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_nr6f4"]
+radius = 34.0
+height = 68.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 203.002
@@ -107,7 +108,7 @@ bg_color = Color(1, 0, 0, 1)
 [node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "healthbar")]
 y_sort_enabled = true
 collision_layer = 2
-collision_mask = 7
+collision_mask = 3
 script = ExtResource("1_gj3g1")
 character_type = 2
 sprite = NodePath("AnimatedSprite2D")
@@ -121,8 +122,7 @@ autoplay = "Idle"
 frame_progress = 0.672337
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-5, -0.5)
-shape = SubResource("RectangleShape2D_v3h1r")
+shape = SubResource("CapsuleShape2D_nr6f4")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("4_wavxh")
@@ -159,5 +159,6 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
 show_percentage = false
 
 [node name="StatsComponent" type="Node2D" parent="."]
+position = Vector2(-3, 0)
 script = ExtResource("8_nr6f4")
 enable_stamina = false

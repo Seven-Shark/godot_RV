@@ -89,7 +89,6 @@ sprite = NodePath("AnimatedSprite2D")
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("1_ubghj")
-max_health = 1000.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_4ankd")
