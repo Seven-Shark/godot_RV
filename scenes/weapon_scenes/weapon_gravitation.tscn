@@ -368,10 +368,12 @@ _data = {
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jd7j4"]
 shader = ExtResource("3_f3uaw")
-shader_parameter/radius_progress = 0.0
-shader_parameter/thickness = 0.1
+shader_parameter/radius_progress = 0.50000002375
+shader_parameter/thickness = 0.10000000475
 shader_parameter/force = 0.05
 shader_parameter/softness = 0.1
+shader_parameter/sector_angle_degrees = 78.1210037107475
+shader_parameter/rotation_offset_radians = 0.0
 
 [node name="Weapon_Gravitation" type="Node2D"]
 script = ExtResource("1_8bf87")
@@ -399,12 +401,11 @@ collision_mask = 6
 monitoring = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Weapon_Hitbox"]
-position = Vector2(12.281252, 0)
+position = Vector2(0.99999905, 0)
 scale = Vector2(1.7443184, 1)
-polygon = PackedVector2Array(-7.040717, 0, 115.07, -205.99997, 146.60094, 103.999985)
+polygon = PackedVector2Array(0, 0, 100, -57.74, 100, 57.74)
 
-[node name="ShockwaveVFX" type="ColorRect" parent="."]
-visible = false
+[node name="ShockwaveVFX" type="ColorRect" parent="Weapon_Hitbox"]
 material = SubResource("ShaderMaterial_jd7j4")
 custom_minimum_size = Vector2(300, 300)
 anchors_preset = 8
@@ -412,8 +413,12 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_right = 300.0
-offset_bottom = 300.0
+offset_left = -149.99997
+offset_top = -149.99997
+offset_right = 150.00003
+offset_bottom = 150.00003
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(2.4749994, 1)
+pivot_offset = Vector2(150, 150)
 mouse_filter = 2

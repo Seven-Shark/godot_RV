@@ -2,7 +2,7 @@ extends Node2D
 
 @onready var anim = $AnimationPlayer
 @onready var hitbox: Area2D = $Weapon_Hitbox
-@onready var shockwave_vfx: ColorRect = $ShockwaveVFX #引用特效shader
+@onready var shockwave_vfx: ColorRect = $Weapon_Hitbox/ShockwaveVFX #引用特效shader
 @export var gravitation_damage_amount : int = 10
 @export var shock_damage_amount : int = 50 
 @export var gravity_force : float = 400.0 
@@ -11,9 +11,11 @@ extends Node2D
 #震荡波的基础击退力度
 @export var shock_knockback_force : float = 1200.0
 
+
 # --- 新增特效参数 ---
 @export_group("Visual Effects")
 @export var shockwave_duration: float = 0.3 # 特效扩散持续时间
+@export var shockwave_angle: float = 90.0 # 【新增】扇形角度，设为与你 Hitbox 覆盖角度一致
 
 var belonger: CharacterBase
 var damage_timer : float = 0.0
@@ -147,6 +149,10 @@ func trigger_shockwave_vfx():
 	
 	# 确保从中心开始
 	mat.set_shader_parameter("radius_progress", 0.0)
+	
+	# 2. 【新增】设置扇形角度
+	# 这样你就可以在编辑器里调整 shockwave_angle 来匹配不同的武器
+	mat.set_shader_parameter("sector_angle_degrees", shockwave_angle)
 	
 	# 2. 创建 Tween 动画
 	var tween = create_tween()
