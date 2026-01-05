@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var anim = $AnimationPlayer
 @onready var hitbox: Area2D = $Weapon_Hitbox
+@onready var shockwave_vfx: ColorRect = $ShockwaveVFX #引用特效shader
 @export var gravitation_damage_amount : int = 10
 @export var shock_damage_amount : int = 50 
 @export var gravity_force : float = 400.0 
@@ -9,6 +10,10 @@ extends Node2D
 
 #震荡波的基础击退力度
 @export var shock_knockback_force : float = 1200.0
+
+# --- 新增特效参数 ---
+@export_group("Visual Effects")
+@export var shockwave_duration: float = 0.3 # 特效扩散持续时间
 
 var belonger: CharacterBase
 var damage_timer : float = 0.0
@@ -19,6 +24,10 @@ func _ready():
 	# 确保 ready 时关闭 hitbox，避免误触
 	hitbox.monitoring = false
 	hitbox.visible = false
+	
+	# --- 新增：确保特效初始是隐藏的 ---
+	if shockwave_vfx:
+		shockwave_vfx.visible = false
 
 func play_idle():
 	anim.play("Gravitation_Idle") 
@@ -29,7 +38,8 @@ func play_holdattack():
 
 func play_attack():
 	anim.play("Gravitataion_Shock")
-
+# --- 新增：触发特效 ---
+	trigger_shockwave_vfx()
 #单次震荡波攻击
 func _on_hitbox_body_entered(body: Node2D):
 	
@@ -39,9 +49,6 @@ func _on_hitbox_body_entered(body: Node2D):
 	if anim.current_animation != "Gravitataion_Shock":
 		return
 	
-
-
-
 	# 2. 处理伤害与反馈
 	if body.has_method("take_damage"):
 		print(name + " 震荡波命中:", body.name)
@@ -126,3 +133,32 @@ func stop_gravity_firing():
 			if is_instance_valid(body) and body.has_method("recover_from_gravity"):
 				body.recover_from_gravity()
 		captured_bodies.clear()
+
+# ==============================================================================
+# 新增功能：触发空气扰动特效
+# ==============================================================================
+func trigger_shockwave_vfx():
+	if not shockwave_vfx or not shockwave_vfx.material:
+		return
+		
+	# 1. 准备工作：显示节点，获取材质
+	shockwave_vfx.visible = true
+	var mat = shockwave_vfx.material as ShaderMaterial
+	
+	# 确保从中心开始
+	mat.set_shader_parameter("radius_progress", 0.0)
+	
+	# 2. 创建 Tween 动画
+	var tween = create_tween()
+	
+	# 3. 动画过程：在 duration 时间内，将 radius_progress 从 0.0 变到 1.0
+	# 使用 EASE_OUT 让波纹扩散速度一开始快，后面慢，更有冲击感
+	tween.tween_method(
+		func(val): mat.set_shader_parameter("radius_progress", val), # 设置参数的匿名函数
+		0.0, # 起始值
+		1.0, # 终止值
+		shockwave_duration # 持续时间
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	
+	# 4. 动画结束：隐藏节点，节省性能
+	tween.chain().tween_callback(func(): shockwave_vfx.visible = false)

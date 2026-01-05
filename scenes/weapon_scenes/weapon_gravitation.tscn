@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://c3ud1u75u0vfw"]
+[gd_scene load_steps=10 format=3 uid="uid://c3ud1u75u0vfw"]
 
 [ext_resource type="Script" uid="uid://kwhmt3jfdawg" path="res://scenes/weapon_scenes/weapon_gravitation.gd" id="1_8bf87"]
 [ext_resource type="Texture2D" uid="uid://dq5tnm05bt3dl" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/staff.png" id="1_eaxpg"]
+[ext_resource type="Shader" uid="uid://bccbbyf7btds5" path="res://scenes/weapon_scenes/weapon_gravitation.gdshader" id="3_f3uaw"]
 
 [sub_resource type="Animation" id="Animation_gm4s7"]
 resource_name = "Gravitataion_Attract"
@@ -365,6 +366,13 @@ _data = {
 &"RESET": SubResource("Animation_2rtvx")
 }
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jd7j4"]
+shader = ExtResource("3_f3uaw")
+shader_parameter/radius_progress = 0.0
+shader_parameter/thickness = 0.1
+shader_parameter/force = 0.05
+shader_parameter/softness = 0.1
+
 [node name="Weapon_Gravitation" type="Node2D"]
 script = ExtResource("1_8bf87")
 shock_damage_amount = 10
@@ -394,3 +402,18 @@ monitoring = false
 position = Vector2(12.281252, 0)
 scale = Vector2(1.7443184, 1)
 polygon = PackedVector2Array(-7.040717, 0, 115.07, -205.99997, 146.60094, 103.999985)
+
+[node name="ShockwaveVFX" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_jd7j4")
+custom_minimum_size = Vector2(300, 300)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_right = 300.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

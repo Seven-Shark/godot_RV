@@ -174,26 +174,3 @@ func _update_facing_direction():
 func _updata_all_enter_Character():
 	pass
 	#for i in range(enter_Character.size())
-
-
-
-
-##寻找范围内最近的目标，并打印出来
-#func _update_target_locking(new_target: CharacterBase):
-	#var nearest_target = get_closest_target()
-	#var current_target = current_target.name if current_target else ""
-	#if nearest_target and nearest_target != current_target:
-		#print("找到最近的目标:",nearest_target.name)
-		#current_target = nearest_target
-	#elif not nearest_target and current_target:
-		#print("[目标丢失] 目标 ",current_target.name,"已离开或不再是最近目标。")
-		#current_target = null
-
-#朝向范围内最近的对象
-	#Target_Lock_On(nearest_target)
-
-#箭头朝向逻辑：
-	#if player_current_aim_mode == AimMode_Type.MOUSE_ASSIST and current_target == null:
-		#_look_at_mouse(mouse_pos)
-	#else:
-		#Target_Lock_On(current_target)
