@@ -150,13 +150,6 @@ func take_damage(amount: int, attacker_type: int, attacker_node: Node2D = null) 
 	else:
 		print(">>> ❌ 失败：目标坐标无效 (Vector2.ZERO)，动画被跳过。")
 
-# (旧版简单的闪烁效果)
-func _play_hit_effect():
-	if sprite:
-		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(1.1, 1.1), 0.05)
-		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.05)
-
 # ==============================================================================
 # 5. 引力枪交互逻辑 (新增)
 # ==============================================================================

@@ -13,6 +13,7 @@ signal died
 @export_group("Health Stats")
 @export var max_health: float = 100.0
 @export var health_regen: float = 0.0 # 每秒回血量
+@export var healthbar : ProgressBar #血条显示
 var current_health: float
 
 # --------------------------------------------------------

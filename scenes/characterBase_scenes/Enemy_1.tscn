@@ -111,9 +111,14 @@ collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_gj3g1")
 character_type = 2
+health = 20
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("ProgressBar")
-health = 20
+
+[node name="StatsComponent" type="Node2D" parent="."]
+position = Vector2(-3, 0)
+script = ExtResource("8_nr6f4")
+enable_stamina = false
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_hhs0w")
@@ -157,8 +162,3 @@ offset_bottom = -55.0
 theme_override_styles/background = SubResource("StyleBoxFlat_wavxh")
 theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
 show_percentage = false
-
-[node name="StatsComponent" type="Node2D" parent="."]
-position = Vector2(-3, 0)
-script = ExtResource("8_nr6f4")
-enable_stamina = false
