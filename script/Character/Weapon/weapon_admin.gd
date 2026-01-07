@@ -58,7 +58,6 @@ func switch_weapons():
 		equip_weapon(weapons[1])
 		print("当前武器：Sword")
 
-
 #切换武器逻辑
 func equip_weapon(weapon_node:Node2D) -> void:
 
@@ -103,8 +102,6 @@ func _sync_hitbox_rotation():
 		hitbox.global_rotation = direction_sign.global_rotation 
 	
 	var state_machine = player.get_node_or_null("WeaponStateMachine")
-	
-	
 
 #接收子武器的信号，并转发给 WeaponAdmin
 func _on_child_weapon_finished():

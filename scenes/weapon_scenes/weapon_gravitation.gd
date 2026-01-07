@@ -42,6 +42,7 @@ func play_attack():
 	anim.play("Gravitataion_Shock")
 # --- 新增：触发特效 ---
 	trigger_shockwave_vfx()
+
 #单次震荡波攻击
 func _on_hitbox_body_entered(body: Node2D):
 	
@@ -136,9 +137,8 @@ func stop_gravity_firing():
 				body.recover_from_gravity()
 		captured_bodies.clear()
 
-# ==============================================================================
+
 # 新增功能：触发空气扰动特效
-# ==============================================================================
 func trigger_shockwave_vfx():
 	if not shockwave_vfx or not shockwave_vfx.material:
 		return
