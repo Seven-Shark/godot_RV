@@ -22,7 +22,7 @@ func _on_next_transitions() -> void:
 	# 检查松手逻辑
 	# 如果是引力枪，且右键不再按住，则切回 Idle
 	if "Weapon_Gravitation" in weapon_admin.current_weapon.name:
-		if not GameInputEvents.special_attack_input(): # 假设这是 Input.is_mouse_button_pressed(RIGHT)
+		if not GameInputEvents.is_special_attack_held(): # 假设这是 Input.is_mouse_button_pressed(RIGHT)
 			transition.emit("weapon_idle")
 
 func _on_exit() -> void:

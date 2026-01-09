@@ -25,12 +25,19 @@ static func is_dash_input() -> bool:
 		isDashing = true
 	return isDashing
 
-static func attack_input() -> bool:
-	return Input.is_action_just_pressed("attack")
+# 1. 主攻击（震荡波）：需要支持连发，所以要检测 "Pressed" (按住)
+static func is_main_attack_held() -> bool:
+	# 请确保项目设置里添加了 "mouse_left"
+	return Input.is_action_pressed("mouse_left")
 
-static func special_attack_input() -> bool:
-	# 假设你的右键没有绑定 InputMap，直接检测鼠标右键
-	return Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+# 2. 特殊攻击（引力波）：需要持续施法，也要检测 "Pressed" (按住)
+static func is_special_attack_held() -> bool:
+	# 请确保项目设置里添加了 "mouse_right"
+	return Input.is_action_pressed("mouse_right")
+
+#static func special_attack_input() -> bool:
+	## 假设你的右键没有绑定 InputMap，直接检测鼠标右键
+	#return Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
 	
 	# 如果你在项目设置里绑定了 "attack_2" 或 "special_attack"，也可以改成：
 	# return Input.is_action_pressed("attack_2") # 注意是 pressed 不是 just_pressed

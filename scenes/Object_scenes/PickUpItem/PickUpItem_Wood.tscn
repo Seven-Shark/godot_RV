@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://dslvb6l86vgqu"]
+
+[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://scenes/Object_scenes/PickUpItem/PickupItem.gd.gd" id="1_666f2"]
+[ext_resource type="Texture2D" uid="uid://bm8ksw5yxt257" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png" id="2_6mmyu"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
+radius = 23.021729
+
+[node name="PickUpItem_Wood" type="RigidBody2D"]
+collision_layer = 8
+collision_mask = 8
+gravity_scale = -8.0
+lock_rotation = true
+linear_damp = 10.0
+script = ExtResource("1_666f2")
+jump_height = 70.0
+start_scale_ratio = Vector2(1.3, 1.3)
+stretch_ratio = Vector2(1, 1)
+squash_ratio = Vector2(1, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("2_6mmyu")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_matb1")

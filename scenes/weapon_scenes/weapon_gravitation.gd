@@ -1,81 +1,133 @@
 extends Node2D
 
+#region 节点引用
 @onready var anim = $AnimationPlayer
 @onready var hitbox: Area2D = $Weapon_Hitbox
-@onready var shockwave_vfx: ColorRect = $Weapon_Hitbox/ShockwaveVFX #引用特效shader
-@export var gravitation_damage_amount : int = 10
-@export var shock_damage_amount : int = 50 
-@export var gravity_force : float = 400.0 
-@export var damage_interval : float = 0.5 
+@onready var shockwave_vfx: ColorRect = $Weapon_Hitbox/ShockwaveVFX 
+#endregion
 
-#震荡波的基础击退力度
-@export var shock_knockback_force : float = 1200.0
+#region 战斗参数配置
+@export_group("Combat Stats")
+@export var gravitation_damage_amount : int = 10     ## 引力波每跳伤害
+@export var shock_damage_amount : int = 50           ## 震荡波单次伤害
+@export var gravity_force : float = 400.0            ## 引力波吸附力度
+@export var damage_interval : float = 0.5            ## 引力波伤害间隔时间
+@export var shock_knockback_force : float = 1200.0   ## 震荡波击退力度
+#endregion
 
-
-# --- 新增特效参数 ---
+#region 视觉特效配置
 @export_group("Visual Effects")
-@export var shockwave_duration: float = 0.3 # 特效扩散持续时间
-@export var shockwave_angle: float = 90.0 # 【新增】扇形角度，设为与你 Hitbox 覆盖角度一致
+@export var shockwave_duration: float = 0.3          ## 震荡波扩散动画持续时间
+@export var shockwave_angle: float = 90.0            ## 震荡波扇形角度(需匹配Hitbox)
+#endregion
 
-var belonger: CharacterBase
-var damage_timer : float = 0.0
-var captured_bodies: Array[Node2D] = []
+#region 连发与冷却配置
+@export_group("Shockwave Settings")
+@export var shock_fire_interval: float = 1.0         ## 震荡波自动连发间隔(秒)
+var shock_cooldown_timer: float = 0.0                ## [内部] 震荡波冷却计时器
+#endregion
 
+#region 内部状态变量
+var belonger: CharacterBase           ## 武器持有者引用
+var damage_timer : float = 0.0        ## [内部] 伤害触发计时器
+var captured_bodies: Array[Node2D] = [] ## [内部] 当前被引力捕获的物体列表
+#endregion
+
+#region 生命周期
 func _ready():
+	# 初始化 Hitbox 状态
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
-	# 确保 ready 时关闭 hitbox，避免误触
 	hitbox.monitoring = false
 	hitbox.visible = false
 	
-	# --- 新增：确保特效初始是隐藏的 ---
+	# 初始化特效状态
 	if shockwave_vfx:
 		shockwave_vfx.visible = false
 
-func play_idle():
-	anim.play("Gravitation_Idle") 
+func _physics_process(delta: float) -> void:
+	# 1. 更新冷却时间
+	_update_cooldowns(delta)
+	
+	# 2. 处理输入与状态决策
+	_handle_input(delta)
+#endregion
 
-# 这个函数只负责播放动画，具体的逻辑在 process_gravity_tick 里
+#region 核心循环逻辑
+# 更新所有冷却计时器
+func _update_cooldowns(delta: float) -> void:
+	if shock_cooldown_timer > 0:
+		shock_cooldown_timer -= delta
+
+# 处理玩家输入并分发行为
+func _handle_input(delta: float) -> void:
+	# 获取输入状态 (依赖 GameInputEvents)
+	var is_firing_shock = GameInputEvents.is_main_attack_held()    # 左键按住
+	var is_firing_gravity = GameInputEvents.is_special_attack_held() # 右键按住
+	
+	# 优先级决策：左键(震荡) > 右键(引力) > 待机
+	if is_firing_shock and not is_firing_gravity:
+		_try_fire_shockwave()
+		
+	elif is_firing_gravity:
+		_process_gravity_behavior(delta)
+		
+	else:
+		_reset_weapon_state()
+#endregion
+
+#region 震荡波行为 (Shockwave)
+# 尝试发射震荡波 (包含冷却和动画状态检查)
+func _try_fire_shockwave():
+	# 检查冷却 & 防止打断引力波起手
+	if shock_cooldown_timer > 0: return
+	if anim.current_animation == "Gravitataion_Attract": return 
+	
+	# 执行发射
+	play_attack()
+	shock_cooldown_timer = shock_fire_interval
+
+# 播放攻击动画并触发特效
+func play_attack():
+	# 强制重播动画以支持连发
+	anim.play("Gravitataion_Shock")
+	trigger_shockwave_vfx()
+
+# 震荡波命中判定回调
+func _on_hitbox_body_entered(body: Node2D):
+	if body == belonger: return
+	if anim.current_animation != "Gravitataion_Shock": return
+	
+	if body.has_method("take_damage"):
+		# print(name + " 震荡波命中:", body.name)
+		body.take_damage(shock_damage_amount, belonger.character_type, belonger)
+		
+		# 计算击退方向 (从中心向外)
+		var knockback_dir = (body.global_position - belonger.global_position).normalized()
+		
+		# 应用击退效果 (区分物体和角色)
+		if body is ObjectBase and body.has_method("trigger_shockwave_shake"):
+			body.trigger_shockwave_shake(knockback_dir)
+		elif body is CharacterBase and body.has_method("apply_knockback"):
+			body.apply_knockback(knockback_dir, shock_knockback_force)
+#endregion
+
+#region 引力波行为 (Gravity)
+# 执行引力波逻辑 (持续型，每帧调用)
+func _process_gravity_behavior(delta: float):
+	# 1. 播放动画
+	if anim.current_animation != "Gravitataion_Attract":
+		play_holdattack()
+	
+	# 2. 执行每帧的物理吸附逻辑
+	process_gravity_tick(delta)
+
+# 播放持续施法动画
 func play_holdattack():
 	anim.play("Gravitataion_Attract")
 
-func play_attack():
-	anim.play("Gravitataion_Shock")
-# --- 新增：触发特效 ---
-	trigger_shockwave_vfx()
-
-#单次震荡波攻击
-func _on_hitbox_body_entered(body: Node2D):
-	
-	if body == belonger:
-		return
-	
-	if anim.current_animation != "Gravitataion_Shock":
-		return
-	
-	# 2. 处理伤害与反馈
-	if body.has_method("take_damage"):
-		print(name + " 震荡波命中:", body.name)
-		body.take_damage(shock_damage_amount, belonger.character_type, belonger)
-		
-		# --- 反馈逻辑 ---
-		# 1. 计算击退方向 (从持有者指向受击者)
-		var knockback_dir = (body.global_position - belonger.global_position).normalized()
-		
-		# 情况 A：打到了物件 (ObjectBase)
-		if body is ObjectBase:
-			# 调用物件专属的震荡回弹函数
-			if body.has_method("trigger_shockwave_shake"):
-				body.trigger_shockwave_shake(knockback_dir)
-				
-		# 情况 B：打到了敌人 (CharacterBase)
-		# 调用角色的击退函数，传入方向和基础力度
-		elif body is CharacterBase and body.has_method("apply_knockback"):
-				body.apply_knockback(knockback_dir, shock_knockback_force)
-
-# --- 专门供状态机调用的“每帧执行”函数 ---
+# 引力波物理计算核心
 func process_gravity_tick(delta: float):
-	
-	if not hitbox.monitoring and not hitbox.visible:
+	if not hitbox.monitoring:
 		hitbox.visible = true
 		hitbox.monitoring = true
 	
@@ -91,80 +143,90 @@ func process_gravity_tick(delta: float):
 	for body in current_bodies:
 		if body == belonger: continue 
 		
-		# 处理 ObjectBase
+		# 分类处理吸引和伤害
 		if body is ObjectBase:
 			current_targets.append(body)
-			# A. 物理吸引
-			var direction = (belonger.global_position - body.global_position).normalized()
-			if body is RigidBody2D:
-				body.apply_central_force(direction * gravity_force * body.mass * 2.0)
-			# B. 视觉拉伸
-			body.apply_gravity_visual(belonger.global_position)
-			# C. 伤害
-			if can_deal_damage and body.stats:
-				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
+			_apply_gravity_to_object(body, can_deal_damage)
 				
-		# 处理 CharacterBase
 		elif body is CharacterBase and body.has_method("take_damage"):
 			if can_deal_damage:
 				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 
-	# 检查逃逸物体
-	for old_body in captured_bodies:
-		if not is_instance_valid(old_body):
-			continue
-		
-		if old_body not in current_targets:
-			if old_body.has_method("recover_from_gravity"):
-				old_body.recover_from_gravity()
+	# 检查逃逸物体 (恢复状态)
+	_handle_escaping_bodies(current_targets)
 	
 	captured_bodies = current_targets.duplicate()
 
-# --- 停止开火 (供状态机退出时调用) ---
-# 把原本的 _stop_gravity_firing 改名并公开，或者直接用这个
-func stop_gravity_firing():
+# [辅助] 对物体应用引力物理和视觉效果
+func _apply_gravity_to_object(body: ObjectBase, can_damage: bool):
+	var direction = (belonger.global_position - body.global_position).normalized()
 	
+	# 物理吸引
+	if body is RigidBody2D:
+		body.apply_central_force(direction * gravity_force * body.mass * 2.0)
+	
+	# 视觉拉伸
+	body.apply_gravity_visual(belonger.global_position)
+	
+	# 伤害
+	if can_damage and body.stats:
+		body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
+
+# [辅助] 处理逃逸物体 (恢复原状)
+func _handle_escaping_bodies(current_targets: Array[Node2D]):
+	for old_body in captured_bodies:
+		if not is_instance_valid(old_body): continue
+		if old_body not in current_targets:
+			if old_body.has_method("recover_from_gravity"):
+				old_body.recover_from_gravity()
+
+# 停止引力波 (重置状态)
+func stop_gravity_firing():
 	hitbox.visible = false
 	hitbox.monitoring = false
 	
-	if anim.current_animation == "Gravitataion_Attract":
-		play_idle()
-	
-	# 清理所有被抓取物体的状态
+	# 恢复所有被吸住物体的形状
 	if captured_bodies.size() > 0:
 		for body in captured_bodies:
 			if is_instance_valid(body) and body.has_method("recover_from_gravity"):
 				body.recover_from_gravity()
 		captured_bodies.clear()
+#endregion
 
+#region 通用状态管理
+# 播放待机动画
+func play_idle():
+	# 只有不在播放攻击动画时才切回 Idle
+	if anim.current_animation != "Gravitataion_Shock":
+		anim.play("Gravitation_Idle") 
 
-# 新增功能：触发空气扰动特效
+# 重置武器状态 (松开按键时调用)
+func _reset_weapon_state():
+	# 如果当前在播放引力波，才需要切回 Idle
+	if anim.current_animation == "Gravitataion_Attract":
+		stop_gravity_firing()
+		play_idle()
+	# 额外保险：如果完全没有任何动画在播放
+	elif anim.current_animation == "":
+		play_idle()
+		if hitbox.monitoring: stop_gravity_firing()
+#endregion
+
+#region 视觉特效逻辑
+# 触发震荡波空气扰动特效
 func trigger_shockwave_vfx():
-	if not shockwave_vfx or not shockwave_vfx.material:
-		return
+	if not shockwave_vfx or not shockwave_vfx.material: return
 		
-	# 1. 准备工作：显示节点，获取材质
 	shockwave_vfx.visible = true
 	var mat = shockwave_vfx.material as ShaderMaterial
 	
-	# 确保从中心开始
+	# 设置参数
 	mat.set_shader_parameter("radius_progress", 0.0)
-	
-	# 2. 【新增】设置扇形角度
-	# 这样你就可以在编辑器里调整 shockwave_angle 来匹配不同的武器
 	mat.set_shader_parameter("sector_angle_degrees", shockwave_angle)
 	
-	# 2. 创建 Tween 动画
+	# 创建 Tween 动画
 	var tween = create_tween()
-	
-	# 3. 动画过程：在 duration 时间内，将 radius_progress 从 0.0 变到 1.0
-	# 使用 EASE_OUT 让波纹扩散速度一开始快，后面慢，更有冲击感
 	tween.tween_method(
-		func(val): mat.set_shader_parameter("radius_progress", val), # 设置参数的匿名函数
-		0.0, # 起始值
-		1.0, # 终止值
-		shockwave_duration # 持续时间
+		func(val): mat.set_shader_parameter("radius_progress", val), 
+		0.0, 1.0, shockwave_duration
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	
-	# 4. 动画结束：隐藏节点，节省性能
-	tween.chain().tween_callback(func(): shockwave_vfx.visible = false)

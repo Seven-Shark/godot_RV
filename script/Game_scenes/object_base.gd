@@ -35,10 +35,14 @@ enum ObjectMaterial {
 @export var jelly_strength: Vector2 = Vector2(1.2, 0.8)
 @export var jelly_duration: float = 1.0
 
-# ==============================================================================
-# 2. 内部状态变量
-# ==============================================================================
+#region 掉落系统配置
+@export_group("Loot Settings")
+@export var loot_table: Array[LootData] = [] ## 掉落表配置
+@export var drop_radius: float = 60.0        ## 掉落散布半径
+#endregion
 
+
+# 2. 内部状态变量
 # 记录 Sprite 的初始状态
 var default_scale: Vector2
 var default_pos: Vector2
@@ -268,4 +272,47 @@ func trigger_shockwave_shake(hit_dir: Vector2):
 func _on_object_destroyed():
 	print(object_name + " 被摧毁")
 	# 生成碎片特效、播放音效等逻辑可在此处添加
+	_spawn_loot() # 生成掉落物
+	
 	queue_free() # 将物体从场景中移除
+	
+# 在物件销毁/死亡时调用此方法
+func _spawn_loot():
+	if loot_table.is_empty():
+		return
+	
+	# 遍历掉落表
+	for loot_data in loot_table:
+		var count = loot_data.get_drop_count()
+		
+		for i in range(count):
+			_instantiate_item(loot_data.item_scene)
+			
+# 实例化单个物品
+func _instantiate_item(item_scene: PackedScene):
+	if not item_scene: return
+	
+	var item = item_scene.instantiate()
+	get_parent().call_deferred("add_child", item)
+	
+	# --- 修改开始：计算左右散布落点 ---
+	
+	# 1. 随机决定是向左还是向右 (50% 概率)
+	# 0.0 是向右 (0度)，PI 是向左 (180度)
+	var base_angle = 0.0 if randf() > 0.5 else PI
+	
+	# 2. 增加一点随机扇形角度 (例如上下各 45 度，即 PI/4)
+	# 这样不会是一条死板的直线，而是一个向左或向右的锥形区域
+	var spread_angle = deg_to_rad(45.0) 
+	var random_angle = base_angle + randf_range(-spread_angle, spread_angle)
+	
+	# 3. 计算偏移向量
+	var distance = randf_range(20.0, drop_radius)
+	var random_offset = Vector2.RIGHT.rotated(random_angle) * distance
+	
+	var target_pos = global_position + random_offset
+	
+	# --- 修改结束 ---
+	
+	if item.has_method("launch"):
+		item.launch(global_position, target_pos)

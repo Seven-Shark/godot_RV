@@ -25,13 +25,13 @@ func _on_next_transitions() -> void:
 	# 1. 检查引力枪 (持续攻击)
 	if "Weapon_Gravitation" in weapon_admin.current_weapon.name:
 		# 【修改】：使用 GameInputEvents 检测右键按住
-		if GameInputEvents.special_attack_input():
+		if GameInputEvents.is_special_attack_held():
 			transition.emit("weapon_holdattack")
 			print("引力攻击")
 			return
 		# 2. 检查普通攻击 (单次)
 		# 【修改】：使用 GameInputEvents 检测左键点击
-		elif GameInputEvents.attack_input():
+		elif GameInputEvents.is_main_attack_held():
 			transition.emit("weapon_attack")
 			print("震荡波")
 			return
