@@ -143,6 +143,14 @@ func process_gravity_tick(delta: float):
 	for body in current_bodies:
 		if body == belonger: continue 
 		
+		# 1. 如果是掉落物资源，直接触发吸附
+		if body is PickupItem:
+			# 只要还没被吸附，就开始吸
+			if not body.is_being_absorbed:
+				body.start_absorbing(belonger)
+			# 资源不需要伤害计算，也不需要加入 captured_bodies (因为它是飞过来的，不需要武器持续施力)
+			continue
+		
 		# 分类处理吸引和伤害
 		if body is ObjectBase:
 			current_targets.append(body)

@@ -9,7 +9,7 @@ radius = 23.021729
 [node name="PickUpItem_Wood" type="RigidBody2D"]
 scale = Vector2(0.9866042, 0.8631938)
 collision_layer = 8
-collision_mask = 8
+collision_mask = 9
 gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
