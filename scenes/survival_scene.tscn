@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=13 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://scenes/level_manager.gd" id="1_dqgb5"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
+[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://scenes/debug_stats.gd" id="8_6x3ce"]
 
 [sub_resource type="Resource" id="Resource_6x3ce"]
 script = ExtResource("2_yfs36")
@@ -770,6 +771,11 @@ offset_bottom = 36.0
 scale = Vector2(0.46499324, 0.46499324)
 focus_behavior_recursive = 1
 text = "新的一天"
+
+[node name="DebugStats" type="Label" parent="HUD"]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("8_6x3ce")
 
 [node name="Object_Tree_1" parent="." instance=ExtResource("5_cxslg")]
 position = Vector2(-435, -67)
