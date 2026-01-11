@@ -10,7 +10,10 @@ extends Node2D
 @export var spawn_config_list: Array[SpawnData] # 拖入你创建的资源
 @export var safe_zone_radius: int = 5
 
-@onready var new_day_button: Button = $"../HUD/NewDayButton"
+@onready var new_day_button: Button = $"../GameHUD/NewDayButton"
+
+@onready var hud: CanvasLayer = $"../GameHUD"
+@onready var weapon = $WeaponCurrent/Weapon_Gravitation # 引用武器实例
 
 # 用于存储当前生成的物件引用
 var current_objects: Array[Node] = []
@@ -23,6 +26,11 @@ func _ready() -> void:
 	
 	# 游戏开始时也可以自动生成一次（可选）
 	start_new_day()
+	
+	if hud and weapon:
+		hud.angle_changed.connect(weapon.set_attack_angle)
+		hud.radius_changed.connect(weapon.set_attack_radius)
+	
 	
 func _on_new_day_pressed():
 	start_new_day()

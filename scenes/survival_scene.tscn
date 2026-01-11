@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=14 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://scenes/level_manager.gd" id="1_dqgb5"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
+[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://scenes/GameHUD.gd" id="7_ai1qu"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://scenes/debug_stats.gd" id="8_6x3ce"]
 
 [sub_resource type="Resource" id="Resource_6x3ce"]
@@ -744,9 +745,10 @@ position = Vector2(820, -196)
 [node name="Enemy2" parent="." instance=ExtResource("2_h8imf")]
 position = Vector2(504, 120)
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="GameHUD" type="CanvasLayer" parent="."]
+script = ExtResource("7_ai1qu")
 
-[node name="AimSwitchButton" type="CheckButton" parent="HUD"]
+[node name="AimSwitchButton" type="CheckButton" parent="GameHUD"]
 offset_left = 1108.0
 offset_right = 1152.0
 offset_bottom = 24.0
@@ -755,7 +757,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
 script = ExtResource("3_xj6wy")
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="HUD/AimSwitchButton"]
+[node name="Label" type="Label" parent="GameHUD/AimSwitchButton"]
 layout_mode = 0
 offset_left = -42.0
 offset_top = 4.0
@@ -764,7 +766,7 @@ offset_bottom = 20.0
 theme_override_font_sizes/font_size = 11
 text = "自动瞄准"
 
-[node name="NewDayButton" type="Button" parent="HUD"]
+[node name="NewDayButton" type="Button" parent="GameHUD"]
 offset_left = 1025.0
 offset_top = 5.0
 offset_right = 1097.0
@@ -773,13 +775,32 @@ scale = Vector2(0.46499324, 0.46499324)
 focus_behavior_recursive = 1
 text = "新的一天"
 
-[node name="DebugStats" type="Label" parent="HUD"]
+[node name="DebugStats" type="Label" parent="GameHUD"]
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("8_6x3ce")
 
+[node name="VBoxContainer" type="VBoxContainer" parent="GameHUD"]
+offset_top = 555.0
+offset_right = 76.0
+offset_bottom = 645.0
+
+[node name="HSlider_Angle" type="HSlider" parent="GameHUD/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label_Angle" type="Label" parent="GameHUD/VBoxContainer"]
+layout_mode = 2
+text = "角度：90"
+
+[node name="HSlider_Radius" type="HSlider" parent="GameHUD/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label_Radius" type="Label" parent="GameHUD/VBoxContainer"]
+layout_mode = 2
+text = "半径：300"
+
 [node name="Object_Tree_1" parent="." instance=ExtResource("5_cxslg")]
 position = Vector2(-435, -67)
 
-[connection signal="pressed" from="HUD/AimSwitchButton" to="HUD/AimSwitchButton" method="_on_pressed"]
-[connection signal="toggled" from="HUD/AimSwitchButton" to="HUD/AimSwitchButton" method="_on_toggled"]
+[connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
+[connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]
