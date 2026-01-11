@@ -799,8 +799,5 @@ layout_mode = 2
 layout_mode = 2
 text = "半径：300"
 
-[node name="Object_Tree_1" parent="." instance=ExtResource("5_cxslg")]
-position = Vector2(-435, -67)
-
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]

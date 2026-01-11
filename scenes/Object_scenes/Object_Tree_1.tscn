@@ -9,6 +9,7 @@
 [sub_resource type="Resource" id="Resource_6wcbu"]
 script = ExtResource("2_64p25")
 item_scene = ExtResource("3_fkm28")
+min_quantity = 100
 max_quantity = 3
 metadata/_custom_type_script = "uid://bqxi33g2h11le"
 
@@ -88,8 +89,8 @@ freeze = true
 linear_damp = 5.0
 angular_damp = 3.0
 script = ExtResource("1_b3atn")
-sprite = NodePath("AnimatedSprite2D")
 loot_table = Array[ExtResource("2_64p25")]([SubResource("Resource_6wcbu")])
+sprite = NodePath("AnimatedSprite2D")
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("1_ubghj")

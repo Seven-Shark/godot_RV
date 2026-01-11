@@ -35,6 +35,7 @@ var captured_bodies: Array[Node2D] = [] ## [内部] 当前被引力捕获的物�
 #endregion
 
 #region 生命周期
+# 初始化节点状态，连接信号，并设置可视化效果的默认状态
 func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.monitoring = false
@@ -45,20 +46,23 @@ func _ready():
 		
 	# 初始化可视化
 	if gravity_viz:
-		gravity_viz.visible = false # 默认隐藏，需要时再显示
+		gravity_viz.visible = false
 		gravity_viz.color = Color(0.0, 1.0, 1.0, 0.3)
 		_update_gravity_viz_shape()
 
+# 物理帧处理函数，负责驱动冷却更新和输入检测
 func _physics_process(delta: float) -> void:
 	_update_cooldowns(delta)
 	_handle_input(delta)
 #endregion
 
 #region 核心循环逻辑
+# 更新震荡波等技能的冷却计时器
 func _update_cooldowns(delta: float) -> void:
 	if shock_cooldown_timer > 0:
 		shock_cooldown_timer -= delta
 
+# 检测玩家输入并根据优先级分发攻击行为（震荡波优先于引力波）
 func _handle_input(delta: float) -> void:
 	var is_firing_shock = GameInputEvents.is_main_attack_held()    
 	var is_firing_gravity = GameInputEvents.is_special_attack_held() 
@@ -72,12 +76,14 @@ func _handle_input(delta: float) -> void:
 #endregion
 
 #region 调试与参数调整 (HUD 接口)
+# [HUD接口] 动态调整攻击扇形的角度，并同步更新特效和可视化形状
 func set_attack_angle(new_angle: float):
 	shockwave_angle = new_angle
 	if shockwave_vfx and shockwave_vfx.material:
 		(shockwave_vfx.material as ShaderMaterial).set_shader_parameter("sector_angle_degrees", new_angle)
 	_update_gravity_viz_shape()
 
+# [HUD接口] 动态调整攻击扇形的半径（碰撞体大小），并同步更新特效尺寸
 func set_attack_radius(new_radius: float):
 	var collision = hitbox.get_node_or_null("CollisionShape2D")
 	if collision and collision.shape is CircleShape2D:
@@ -90,7 +96,7 @@ func set_attack_radius(new_radius: float):
 		
 	_update_gravity_viz_shape()
 
-## 【核心辅助函数】判断物体是否在扇形角度内
+# [核心判断] 检查目标物体是否位于武器朝向的扇形角度范围内
 func _is_in_attack_angle(target_body: Node2D) -> bool:
 	var direction_to_target = (target_body.global_position - global_position).normalized()
 	# 使用 Hitbox 的朝向，因为它由 WeaponAdmin 控制旋转
@@ -100,6 +106,7 @@ func _is_in_attack_angle(target_body: Node2D) -> bool:
 #endregion
 
 #region 可视化辅助功能
+# [内部] 根据当前半径和角度，重新计算并绘制引力范围的可视化多边形
 func _update_gravity_viz_shape():
 	if not gravity_viz: return
 	
@@ -124,7 +131,7 @@ func _update_gravity_viz_shape():
 		
 	gravity_viz.polygon = points
 
-## 【新增】左键攻击时闪烁可视化区域
+# [视觉] 触发可视化区域的瞬间闪烁（用于左键攻击时的范围提示）
 func _flash_attack_viz():
 	if not gravity_viz: return
 	
@@ -132,7 +139,6 @@ func _flash_attack_viz():
 	gravity_viz.visible = true
 	gravity_viz.modulate.a = 1.0
 	
-	# 创建一个独立的 Tween 来让它淡出
 	var tween = create_tween()
 	tween.tween_property(gravity_viz, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.chain().tween_callback(func(): 
@@ -142,18 +148,20 @@ func _flash_attack_viz():
 #endregion
 
 #region 震荡波行为 (Shockwave)
+# 尝试触发震荡波攻击，包含冷却检查和动画状态锁定
 func _try_fire_shockwave():
 	if shock_cooldown_timer > 0: return
 	if anim.current_animation == "Gravitataion_Attract": return 
 	play_attack()
 	shock_cooldown_timer = shock_fire_interval
 
+# 执行震荡波攻击逻辑：播放动画、特效和可视化反馈
 func play_attack():
 	anim.play("Gravitataion_Shock")
 	trigger_shockwave_vfx()
-	# 【修复问题1】左键攻击时，闪烁显示扇形区域，方便玩家确认范围
 	_flash_attack_viz()
 
+# [信号回调] 震荡波（左键）的碰撞判定逻辑，处理单次伤害和击退
 func _on_hitbox_body_entered(body: Node2D):
 	if body == belonger: return
 	if anim.current_animation != "Gravitataion_Shock": return
@@ -170,22 +178,29 @@ func _on_hitbox_body_entered(body: Node2D):
 #endregion
 
 #region 引力波行为 (Gravity)
+# 处理引力波（右键）的持续行为，包括播放动画和执行物理逻辑
 func _process_gravity_behavior(delta: float):
 	if anim.current_animation != "Gravitataion_Attract":
 		play_holdattack()
 	process_gravity_tick(delta)
 
+# 播放引力波的持续施法动画并显示判定范围
 func play_holdattack():
 	anim.play("Gravitataion_Attract")
 	if gravity_viz: gravity_viz.visible = true
+	
+	# 重置伤害计时器 (可选：每次按下立刻可以造成伤害)
+	# if damage_timer > 0.1: damage_timer = 0.0
 
+# [核心逻辑] 执行引力波的每帧物理计算：强制唤醒物理、检测扇形、吸附物体和计算持续伤害
 func process_gravity_tick(delta: float):
 	if not hitbox.monitoring:
 		hitbox.visible = true
 		hitbox.monitoring = true
 	
-	# 【修复问题2】微小的抖动，强制唤醒物理引擎检测
-	# 即使鼠标不动，这行代码也会让 Godot 认为 Hitbox 动了，从而刷新重叠列表
+	# 【核心机制】微小的抖动位移
+	# 目的：强制让 Godot 物理引擎认为 Area2D 发生了移动，从而每帧刷新 get_overlapping_bodies 列表
+	# 解决物体静止时无法被检测到的问题
 	hitbox.position.x = 0.001 if Engine.get_physics_frames() % 2 == 0 else -0.001
 	
 	damage_timer -= delta
@@ -193,21 +208,24 @@ func process_gravity_tick(delta: float):
 	if can_deal_damage:
 		damage_timer = damage_interval 
 	
+	# 获取判定框内的所有物体（依赖于上面的抖动来刷新）
 	var current_bodies = hitbox.get_overlapping_bodies()
 	var current_targets: Array[Node2D] = []
 	
 	for body in current_bodies:
 		if body == belonger: continue 
 		
-		# 扇形检测
+		# 扇形角度过滤
 		if not _is_in_attack_angle(body):
 			continue
 		
+		# 处理掉落物吸附
 		if body is PickupItem:
 			if not body.is_being_absorbed:
 				body.start_absorbing(belonger)
 			continue
 		
+		# 处理可破坏物体和敌人的吸附与伤害
 		if body is ObjectBase:
 			current_targets.append(body)
 			_apply_gravity_to_object(body, can_deal_damage)
@@ -216,9 +234,11 @@ func process_gravity_tick(delta: float):
 			if can_deal_damage:
 				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 
+	# 处理那些已经逃离引力范围的物体
 	_handle_escaping_bodies(current_targets)
 	captured_bodies = current_targets.duplicate()
 
+# [辅助] 对单个物体施加物理引力、视觉形变以及计算伤害
 func _apply_gravity_to_object(body: ObjectBase, can_damage: bool):
 	var direction = (belonger.global_position - body.global_position).normalized()
 	
@@ -230,6 +250,7 @@ func _apply_gravity_to_object(body: ObjectBase, can_damage: bool):
 	if can_damage and body.stats:
 		body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 
+# [辅助] 检查并恢复那些不再处于当前目标列表中的物体的状态（如停止形变）
 func _handle_escaping_bodies(current_targets: Array[Node2D]):
 	for old_body in captured_bodies:
 		if not is_instance_valid(old_body): continue
@@ -237,6 +258,7 @@ func _handle_escaping_bodies(current_targets: Array[Node2D]):
 			if old_body.has_method("recover_from_gravity"):
 				old_body.recover_from_gravity()
 
+# 停止引力波攻击：隐藏判定框、关闭可视化、恢复被捕获物体的状态
 func stop_gravity_firing():
 	hitbox.visible = false
 	hitbox.monitoring = false
@@ -251,10 +273,12 @@ func stop_gravity_firing():
 #endregion
 
 #region 通用状态管理
+# 播放待机动画（非攻击状态）
 func play_idle():
 	if anim.current_animation != "Gravitataion_Shock":
 		anim.play("Gravitation_Idle") 
 
+# 重置武器状态，通常在玩家松开按键或停止攻击时调用
 func _reset_weapon_state():
 	if anim.current_animation == "Gravitataion_Attract":
 		stop_gravity_firing()
@@ -265,6 +289,7 @@ func _reset_weapon_state():
 #endregion
 
 #region 视觉特效逻辑
+# [视觉] 触发震荡波的 Shader 特效动画
 func trigger_shockwave_vfx():
 	if not shockwave_vfx or not shockwave_vfx.material: return
 	
