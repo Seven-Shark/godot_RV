@@ -121,8 +121,8 @@ func take_damage(amount: int, _attacker_type: int, attacker_node: Node2D = null)
 		stats.take_damage(float(amount))
 
 	# 3. 视觉反馈 (只有活着的时候才播放受伤动画)
-	if target_pos != Vector2.ZERO and not is_dying:
-		trigger_jelly_effect(target_pos)
+	#if target_pos != Vector2.ZERO and not is_dying:
+		#trigger_jelly_effect(target_pos)
 #endregion
 
 #region 6. 引力枪交互逻辑 (核心修改)
@@ -168,8 +168,6 @@ func apply_gravity_visual(attractor_pos: Vector2):
 	# [阶段 2] 进入抖动状态 (串行)
 	gravity_pull_tween.chain().tween_callback(func(): is_shaking = true)
 	
-	# 【核心修改】删除了原本在这里的 "1.2秒后直接死亡" 的计时器
-	# 现在它会一直保持悬停抖动状态，直到血量归零
 
 ## [内部] 处理引力状态下的中断/恢复
 func recover_from_gravity():
@@ -198,8 +196,8 @@ func recover_from_gravity():
 
 ## [内部] 处理每帧的抖动计算
 func _process_shake(_attractor_pos: Vector2):
-	shake_timer += get_process_delta_time() * 30.0 
-	var shake_offset = Vector2(sin(shake_timer) * 3.0, 0)
+	shake_timer += get_process_delta_time() * 80.0 
+	var shake_offset = Vector2(sin(shake_timer) * 1.0, 0)
 	var lift_height = 20.0
 	sprite.position = original_sprite_pos + Vector2.UP * lift_height + shake_offset
 
@@ -230,24 +228,6 @@ func _play_gravity_death_anim():
 #endregion
 
 #region 7. 视觉特效 (受击与震荡)
-# ... (保持原样，省略) ...
-func trigger_jelly_effect(attacker_pos: Vector2):
-	if not sprite: return
-	if current_tween: current_tween.kill()
-	sprite.rotation = 0 
-	current_tween = create_tween()
-	var dir_to_attacker = attacker_pos - sprite.global_position
-	var target_angle = clamp(Vector2.UP.angle_to(dir_to_attacker), deg_to_rad(-35), deg_to_rad(35))
-	var pull_scale = default_scale * Vector2(0.6, 1.4)
-	current_tween.set_parallel(true)
-	current_tween.tween_property(sprite, "rotation", target_angle, 0.15).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
-	current_tween.tween_property(sprite, "scale", pull_scale, 0.15).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
-	current_tween.tween_property(sprite, "modulate", Color(1.5, 0.7, 0.7), 0.15)
-	current_tween.chain().tween_interval(0.05)
-	current_tween.chain().set_parallel(true)
-	current_tween.tween_property(sprite, "rotation", 0.0, 0.4).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	current_tween.tween_property(sprite, "scale", default_scale, 0.4).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	current_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
 
 func trigger_shockwave_shake(hit_dir: Vector2):
 	if not sprite: return
