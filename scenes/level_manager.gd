@@ -2,14 +2,16 @@ extends Node2D
 
 #region 引用配置
 @export_group("References")
-@export var tile_map: TileMapLayer
-@export var player: CharacterBase
-@export var object_container: Node2D
-@export var spawnable_objects: Array[PackedScene]
+@export var tile_map: TileMapLayer ## 引用地图层
+@export var player: CharacterBase ## 引用玩家
+@export var object_container: Node2D ## 物件容器
+@export var spawnable_objects: Array[PackedScene] ## 基础生成物列表
+# 【新增】引用 ERS 管理器 (需要在场景里把 ERS_Manager 节点拖进来)
+@export var ers_manager: ERS_Manager
 
 @export_group("Generation Config")
-@export var spawn_config_list: Array[SpawnData]
-@export var safe_zone_radius: int = 5
+@export var spawn_config_list: Array[SpawnData] ## 基础资源生成配置
+@export var safe_zone_radius: int = 5 ## 安全区半径
 
 @export_group("Map Config")
 @export var tile_source_id: int = 0
@@ -34,20 +36,18 @@ extends Node2D
 @export var atlas_inner_right_list: Array[Vector2i] = []
 
 # --- 第三层：中间填充图案配置 (Center Pattern) ---
-# 修改点：不再只用一张图，而是定义一个矩形区域进行平铺
 @export_subgroup("Center Pattern Loop")
-@export var center_pattern_start: Vector2i = Vector2i(2, 2) ## 图案在Tileset的左上角坐标 (如 2,2)
-@export var center_pattern_size: Vector2i = Vector2i(8, 8) ## 图案的长宽 (2到9一共是8格)
-# 备用：如果计算出错时的默认单张图
+@export var center_pattern_start: Vector2i = Vector2i(2, 2)
+@export var center_pattern_size: Vector2i = Vector2i(8, 8)
 @export var atlas_center_fallback: Vector2i = Vector2i(1, 1) 
 #endregion
 
 #region 节点引用
 @onready var new_day_button: Button = $"../GameHUD/NewDayButton"
 @onready var hud: CanvasLayer = $"../GameHUD"
-# 注意：请确保这些路径在你的场景中是正确的，有时候层级变了路径会变
 @onready var height_input: SpinBox = $"../GameHUD/NewDayButton/HeightInput"
 @onready var width_input: SpinBox = $"../GameHUD/NewDayButton/WidthInput"
+
 
 #endregion
 
@@ -58,11 +58,25 @@ var current_objects: Array[Node] = []
 #region 生命周期
 func _ready() -> void:
 	randomize()
+	
+	# 连接按钮信号：点击按钮不再直接开始新一天，而是打开 ERS 商店
 	if new_day_button:
-		new_day_button.pressed.connect(_on_new_day_pressed)
+		# 先断开可能的旧连接(保险起见)，然后连接到 ERS
+		if new_day_button.pressed.is_connected(start_new_day):
+			new_day_button.pressed.disconnect(start_new_day)
+		
+		# 点击按钮 -> 打开 ERS 界面
+		if ers_manager:
+			new_day_button.pressed.connect(ers_manager.open_ers_shop)
 	
-	start_new_day()
+	# 连接 ERS 回调：当 ERS 点击“进入下一天”时触发
+	if ers_manager:
+		ers_manager.start_next_day_requested.connect(_on_ers_finished_start_day)
 	
+	# 游戏启动时的第一次生成 (不带额外 ERS 物品)
+	start_new_day([])
+	
+	# 连接 HUD 和 武器
 	await get_tree().process_frame
 	if player and hud:
 		var weapon_node = player.get_node_or_null("WeaponAdmin/WeaponCurrent/Weapon_Gravitation")
@@ -72,132 +86,82 @@ func _ready() -> void:
 #endregion
 
 #region 信号回调
-func _on_new_day_pressed():
-	start_new_day()
+# [新增] ERS 流程结束后的回调
+# purchased_objects: 玩家在 ERS 界面购买的物件预制体列表
+func _on_ers_finished_start_day(purchased_objects: Array[PackedScene]):
+	print(">>> ERS 结束，接收到 %d 个额外物件，开始生成..." % purchased_objects.size())
+	start_new_day(purchased_objects)
 #endregion
 
 #region 核心功能
-func start_new_day():
+# [修改] 支持接收额外物件列表 (默认为空数组)
+func start_new_day(extra_objects: Array[PackedScene] = []):
 	print(">>> 开启新的一天...")
 	
 	var map_w = 20
 	var map_h = 20
 	
-	# 添加安全检查，防止节点未连接导致报错
 	if width_input: map_w = int(width_input.value)
 	if height_input: map_h = int(height_input.value)
 	
+	# 1. 清理旧物件
 	_clear_objects()
+	
+	# 2. 生成地图
 	_generate_map_tiles(map_w, map_h)
 	
 	var map_rect = tile_map.get_used_rect()
 	var center_cell = map_rect.get_center()
 	
+	# 3. 重置玩家
 	_reset_player(center_cell)
-	_spawn_new_objects(center_cell)
+	
+	# 4. 生成物件 (传入 ERS 购买的额外物件)
+	_spawn_new_objects(center_cell, extra_objects)
 
-# 【核心修改】包含 双层边缘 + 中间8x8图案平铺 逻辑
+# 地图生成逻辑 (保持不变)
 func _generate_map_tiles(width: int, height: int):
+	# ... (省略具体实现，保持你原有的逻辑不变即可) ...
+	# 为了不让代码太长，这里我简略了，请保留你原来的 _generate_map_tiles 完整代码
 	print("正在生成地图，尺寸: ", width, " x ", height)
 	tile_map.clear()
-	
 	for x in range(width):
 		for y in range(height):
 			var grid_pos = Vector2i(x, y)
-			var atlas_coord = atlas_center_fallback # 默认值
-			
-			# ==============================
-			# 1. 第一层：最外圈 (Outer Layer)
-			# ==============================
+			var atlas_coord = atlas_center_fallback
 			if x == 0 or x == width - 1 or y == 0 or y == height - 1:
 				if x == 0: 
 					if y == 0: atlas_coord = atlas_top_left
 					elif y == height - 1: atlas_coord = atlas_bottom_left
-					else:
-						var index = (y - 1) % atlas_left_list.size()
-						atlas_coord = atlas_left_list[index]
-				
+					else: atlas_coord = atlas_left_list[(y - 1) % atlas_left_list.size()]
 				elif x == width - 1: 
 					if y == 0: atlas_coord = atlas_top_right
 					elif y == height - 1: atlas_coord = atlas_bottom_right
-					else:
-						var index = (y - 1) % atlas_right_list.size()
-						atlas_coord = atlas_right_list[index]
-				
+					else: atlas_coord = atlas_right_list[(y - 1) % atlas_right_list.size()]
 				else: 
-					if y == 0: 
-						var index = (x - 1) % atlas_top_list.size()
-						atlas_coord = atlas_top_list[index]
-					elif y == height - 1:
-						var index = (x - 1) % atlas_bottom_list.size()
-						atlas_coord = atlas_bottom_list[index]
-
-			# ==============================
-			# 2. 第二层：内圈 (Inner Layer)
-			# 排除四个内圈角落，角落留给中间逻辑填充，或者你可以专门定义内圈角
-			# ==============================
+					if y == 0: atlas_coord = atlas_top_list[(x - 1) % atlas_top_list.size()]
+					elif y == height - 1: atlas_coord = atlas_bottom_list[(x - 1) % atlas_bottom_list.size()]
 			elif (x == 1 or x == width - 2 or y == 1 or y == height - 2) and width > 4 and height > 4:
-				
-				var is_inner_corner = (x == 1 and y == 1) or \
-									  (x == width - 2 and y == 1) or \
-									  (x == 1 and y == height - 2) or \
-									  (x == width - 2 and y == height - 2)
-				
-				# 如果是内圈直线部分，且列表不为空，则使用内圈逻辑
-				# 如果列表为空，则跳过这里，直接进入下方的 else (中间填充逻辑)
+				var is_inner_corner = (x==1 and y==1) or (x==width-2 and y==1) or (x==1 and y==height-2) or (x==width-2 and y==height-2)
 				var handled = false
-				
 				if not is_inner_corner:
 					if x == 1 and not atlas_inner_left_list.is_empty():
-						var index = (y - 2) % atlas_inner_left_list.size()
-						atlas_coord = atlas_inner_left_list[index]
-						handled = true
+						atlas_coord = atlas_inner_left_list[(y - 2) % atlas_inner_left_list.size()]; handled = true
 					elif x == width - 2 and not atlas_inner_right_list.is_empty():
-						var index = (y - 2) % atlas_inner_right_list.size()
-						atlas_coord = atlas_inner_right_list[index]
-						handled = true
+						atlas_coord = atlas_inner_right_list[(y - 2) % atlas_inner_right_list.size()]; handled = true
 					elif y == 1 and not atlas_inner_top_list.is_empty():
-						var index = (x - 2) % atlas_inner_top_list.size()
-						atlas_coord = atlas_inner_top_list[index]
-						handled = true
+						atlas_coord = atlas_inner_top_list[(x - 2) % atlas_inner_top_list.size()]; handled = true
 					elif y == height - 2 and not atlas_inner_bottom_list.is_empty():
-						var index = (x - 2) % atlas_inner_bottom_list.size()
-						atlas_coord = atlas_inner_bottom_list[index]
-						handled = true
-				
-				# 如果没被内圈逻辑处理（比如是角落，或者列表为空），则当作中间块处理
-				if not handled:
-					atlas_coord = _get_center_pattern_coord(x, y)
-
-			# ==============================
-			# 3. 中间区域 (Center Pattern Fill)
-			# ==============================
+						atlas_coord = atlas_inner_bottom_list[(x - 2) % atlas_inner_bottom_list.size()]; handled = true
+				if not handled: atlas_coord = _get_center_pattern_coord(x, y)
 			else:
-				# 调用新写的辅助函数来获取平铺坐标
 				atlas_coord = _get_center_pattern_coord(x, y)
-
-			# 最终设置
 			tile_map.set_cell(grid_pos, tile_source_id, atlas_coord)
 
-# 【新增辅助函数】计算中间图案的平铺坐标
 func _get_center_pattern_coord(grid_x: int, grid_y: int) -> Vector2i:
-	# 我们的中心区域实际上是从 grid (2, 2) 开始的
-	# 因为 0 是外圈，1 是内圈（或者内圈角落）
-	
-	# 1. 计算相对偏移量 (Relative Offset)
-	var offset_x = grid_x - 2
-	var offset_y = grid_y - 2
-	
-	# 2. 确保偏移量为正数 (虽然在这个循环里肯定是正数，但为了健壮性)
-	if offset_x < 0: offset_x = 0
-	if offset_y < 0: offset_y = 0
-	
-	# 3. 对图案尺寸取余，实现循环
-	var pattern_x = offset_x % center_pattern_size.x
-	var pattern_y = offset_y % center_pattern_size.y
-	
-	# 4. 加上图案在 TileSet 里的起始坐标
-	return center_pattern_start + Vector2i(pattern_x, pattern_y)
+	var offset_x = max(0, grid_x - 2)
+	var offset_y = max(0, grid_y - 2)
+	return center_pattern_start + Vector2i(offset_x % center_pattern_size.x, offset_y % center_pattern_size.y)
 
 # [内部] 清理物件
 func _clear_objects():
@@ -212,10 +176,9 @@ func _reset_player(center_cell: Vector2i):
 		player.global_position = reset_pos
 		player.velocity = Vector2.ZERO
 
-# [内部] 生成物件
-func _spawn_new_objects(center_cell: Vector2i):
-	if spawn_config_list.is_empty(): return
-
+# [内部] 生成物件 (整合了基础配置和 ERS 购买物品)
+func _spawn_new_objects(center_cell: Vector2i, extra_objects: Array[PackedScene]):
+	# 1. 收集所有有效的生成格子
 	var valid_cells: Array[Vector2i] = []
 	var used_cells = tile_map.get_used_cells()
 	var safe_zone = Rect2i(
@@ -229,21 +192,44 @@ func _spawn_new_objects(center_cell: Vector2i):
 		if not safe_zone.has_point(cell):
 			valid_cells.append(cell)
 	
+	# 打乱格子顺序，确保随机性
 	valid_cells.shuffle()
 	
-	var current_cell_index = 0
+	var current_cell_index = 0 # 全局格子索引，确保不重叠
 	
-	for config in spawn_config_list:
-		if not config.object_prefab or config.spawn_count <= 0: continue
+	# -------------------------------------------------
+	# 阶段 A: 生成基础配置列表 (spawn_config_list)
+	# -------------------------------------------------
+	if not spawn_config_list.is_empty():
+		for config in spawn_config_list:
+			if not config.object_prefab or config.spawn_count <= 0: continue
+				
+			for i in range(config.spawn_count):
+				if current_cell_index >= valid_cells.size(): 
+					push_warning("格子已满，停止生成基础物件")
+					return 
+				
+				_instantiate_object_at(valid_cells[current_cell_index], config.object_prefab)
+				current_cell_index += 1
+
+	# -------------------------------------------------
+	# 阶段 B: 生成 ERS 购买的额外物件 (extra_objects)
+	# -------------------------------------------------
+	if not extra_objects.is_empty():
+		for prefab in extra_objects:
+			if current_cell_index >= valid_cells.size():
+				push_warning("格子已满，停止生成 ERS 购买物件")
+				return
 			
-		for i in range(config.spawn_count):
-			if current_cell_index >= valid_cells.size(): return 
-			
-			var cell = valid_cells[current_cell_index]
+			_instantiate_object_at(valid_cells[current_cell_index], prefab)
 			current_cell_index += 1
 			
-			var world_pos = tile_map.map_to_local(cell)
-			var obj_instance = config.object_prefab.instantiate()
-			object_container.add_child(obj_instance)
-			obj_instance.global_position = world_pos
+	print("生成完毕，共使用了 ", current_cell_index, " 个格子")
+
+# [辅助] 在指定格子实例化物件
+func _instantiate_object_at(cell: Vector2i, prefab: PackedScene):
+	var world_pos = tile_map.map_to_local(cell)
+	var obj_instance = prefab.instantiate()
+	object_container.add_child(obj_instance)
+	obj_instance.global_position = world_pos
 #endregion
