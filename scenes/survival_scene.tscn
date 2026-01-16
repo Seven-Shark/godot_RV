@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=22 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://scenes/level_manager.gd" id="1_dqgb5"]
@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://scenes/GameHUD.gd" id="7_ai1qu"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://scenes/debug_stats.gd" id="8_6x3ce"]
-[ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://scenes/ERS_Manager.gd" id="10_1uchc"]
+[ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://script/HUD/ERS_Manager.gd" id="10_1uchc"]
 [ext_resource type="Script" uid="uid://dam5k0hma5pma" path="res://script/HUD/ERS_carddata.gd" id="11_ghij0"]
 [ext_resource type="Texture2D" uid="uid://cwpd4613todvc" path="res://Resource/Tiny Swords (Update 010)/UI/Banners/Carved_9Slides.png" id="12_vietx"]
 [ext_resource type="Texture2D" uid="uid://b27uk3vqjwbbm" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock1.png" id="13_fcq0b"]
@@ -721,8 +721,11 @@ sources/0 = SubResource("TileSetAtlasSource_cxslg")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 
+[sub_resource type="ImageTexture" id="ImageTexture_vietx"]
+
 [sub_resource type="Resource" id="Resource_vpe3t"]
 script = ExtResource("11_ghij0")
+icon = SubResource("ImageTexture_vietx")
 object_prefab = ExtResource("5_cxslg")
 price = 50
 spawn_weight = 2
@@ -817,9 +820,9 @@ value = 40.0
 
 [node name="AimSwitchButton" type="CheckButton" parent="GameHUD"]
 offset_left = 1079.0
-offset_top = -1.0
+offset_top = 610.0
 offset_right = 1123.0
-offset_bottom = 23.0
+offset_bottom = 634.0
 scale = Vector2(1.6399902, 1.6399902)
 focus_mode = 0
 theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
@@ -864,11 +867,19 @@ layout_mode = 2
 layout_mode = 2
 text = "半径：300"
 
-[node name="CanvasLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "next_day_button")]
+[node name="GoldLabel" type="Label" parent="GameHUD"]
+offset_left = 1028.0
+offset_top = 7.0
+offset_right = 1092.0
+offset_bottom = 30.0
+text = "金币数："
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "next_day_button", "wallet_label")]
 script = ExtResource("10_1uchc")
 available_cards = Array[ExtResource("11_ghij0")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
 card_container = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer")
 next_day_button = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/NextDayButton")
+wallet_label = NodePath("../GameHUD/GoldLabel")
 
 [node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3
@@ -939,6 +950,7 @@ theme_override_constants/separation = 30
 alignment = 1
 
 [node name="Card_1" type="Button" parent="CanvasLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
+process_mode = 3
 custom_minimum_size = Vector2(100, 200)
 layout_mode = 2
 
@@ -1044,6 +1056,7 @@ text = "价格：60"
 horizontal_alignment = 1
 
 [node name="NextDayButton" type="Button" parent="CanvasLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
+process_mode = 3
 custom_minimum_size = Vector2(120, 30)
 layout_mode = 2
 size_flags_horizontal = 4

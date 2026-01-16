@@ -15,6 +15,10 @@ run/main_scene="uid://xk5htmcg3umc"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://Resource/Icon/icon.svg"
 
+[autoload]
+
+GameDataManager="*res://script/GameDataManager.gd"
+
 [display]
 
 window/stretch/mode="canvas_items"

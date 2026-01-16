@@ -9,7 +9,8 @@ signal start_next_day_requested(purchased_objects: Array[PackedScene]) ## 请求
 @export var available_cards: Array[ERS_CardData] = [] ## 卡池：所有可能出现的卡牌
 @export var card_container: HBoxContainer ## UI容器：用来放三张卡牌的父节点
 @export var next_day_button: Button ## UI按钮：进入下一天
-@export var player_wallet: StatsComponent ## 引用玩家的数据组件(扣钱用)，或者你可以写个单例 Global.gold
+@export var wallet_label: Label ## [新增] 显示持有金币的 Label，请在编辑器里拖进来
+# @export var player_wallet: StatsComponent <--- 已删除，改用全局 GameDataManager
 #endregion
 
 #region 内部状态
@@ -20,15 +21,33 @@ var selected_cards_data: Array[ERS_CardData] = [] ## 当前展示的三张卡数
 func _ready() -> void:
 	visible = false # 默认隐藏
 	next_day_button.pressed.connect(_on_next_day_button_pressed)
+	
+	# [新增] 连接全局金币变化信号，实时刷新界面
+	# 确保你已经创建了 GameDataManager 这个 Autoload 脚本
+	if GameDataManager:
+		GameDataManager.gold_changed.connect(_update_wallet_ui)
+		# 初始化显示一次当前金币
+		_update_wallet_ui(GameDataManager.current_gold)
 
 # --- 核心功能 1：打开 ERS 界面 ---
 func open_ers_shop():
 	print(">>> 打开 ERS 商店")
+	
+	# [新增] 1. 触发资源转金币结算逻辑 (1:1 转换)
+	# 玩家捡到的资源会在这里清零并变成钱
+	if GameDataManager:
+		GameDataManager.convert_resources_to_gold()
+	
 	visible = true
 	get_tree().paused = true # 暂停游戏
 	
 	current_purchased_objects.clear() # 清空上一轮的购买记录
 	_generate_random_cards()
+
+# [新增] 更新金币 UI 显示
+func _update_wallet_ui(amount: int):
+	if wallet_label:
+		wallet_label.text = "持有金币: $%d" % amount
 
 # --- 核心功能 2：随机抽取卡牌 ---
 func _generate_random_cards():
@@ -38,40 +57,58 @@ func _generate_random_cards():
 	
 	selected_cards_data.clear()
 	
-	# 简单的随机抽取 3 张 (允许重复，或者你可以写逻辑去重)
+	# 简单的随机抽取 3 张
 	for i in range(3):
 		if available_cards.is_empty(): break
 		var random_card = available_cards.pick_random()
 		selected_cards_data.append(random_card)
 		
-		# 创建卡牌 UI (假设你有一个 CardUI 的预制体，或者直接用代码生成按钮)
 		_create_card_ui(random_card, i)
 
 # --- 核心功能 3：创建卡牌 UI ---
-# 这里为了演示简单，直接用 Button，建议你做一个专门的 ERS_CardUI.tscn
 func _create_card_ui(data: ERS_CardData, index: int):
 	var btn = Button.new()
+	btn.process_mode = Node.PROCESS_MODE_ALWAYS
+	# 设置按钮文本和图标
 	btn.text = "%s\n$%d" % [data.card_name, data.price]
 	btn.icon = data.icon
+	# 设置固定大小，确保布局整齐
 	btn.custom_minimum_size = Vector2(150, 200)
+	btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	
 	# 连接购买信号
 	btn.pressed.connect(func(): _on_card_purchased(data, btn))
 	
 	card_container.add_child(btn)
 
-# --- 核心功能 4：购买逻辑 ---
+# --- 核心功能 4：购买逻辑 (修改版) ---
 func _on_card_purchased(data: ERS_CardData, btn_node: Button):
-	# 检查钱够不够 (假设 StatsComponent 有 current_gold 属性)
-	# if player_wallet.current_gold >= data.price:
-	# 	player_wallet.consume_gold(data.price)
+	# 1. 调用全局管理器尝试扣款
+	var is_success = false
+	if GameDataManager:
+		is_success = GameDataManager.try_spend_gold(data.price)
 	
-	print("购买了: ", data.card_name)
-	current_purchased_objects.append(data.object_prefab)
-	
-	# 视觉反馈：变灰或消失，防止重复购买
-	btn_node.disabled = true
-	btn_node.text = "已购买"
+	if is_success:
+		print("购买成功: ", data.card_name)
+		
+		# 2. 记录购买物品
+		current_purchased_objects.append(data.object_prefab)
+		
+		# 3. [关键修改] 让卡牌“消失”但保留占位
+		# 禁用按钮，防止再次点击
+		btn_node.disabled = true
+		# 将透明度设为 0 (完全隐形)
+		# 我们不使用 visible = false，因为那会导致右边的卡牌挤过来，破坏布局
+		btn_node.modulate.a = 0.0 
+		
+	else:
+		# 4. 购买失败反馈 (闪烁红色)
+		print("金币不足！")
+		var original_modulate = btn_node.modulate
+		var tween = create_tween()
+		tween.tween_property(btn_node, "modulate", Color.RED, 0.1)
+		tween.tween_property(btn_node, "modulate", original_modulate, 0.1)
 
 # --- 核心功能 5：进入下一天 ---
 func _on_next_day_button_pressed():

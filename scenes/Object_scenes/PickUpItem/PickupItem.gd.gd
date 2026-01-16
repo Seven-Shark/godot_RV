@@ -127,7 +127,7 @@ func _collect_resource():
 	# InventoryManager.add_item(item_id, quantity)
 	# 暂时先打印日志并销毁
 	# print("获得资源: ", name)
-	
+	GameDataManager.add_temp_resource(1)
 	queue_free()
 
 ## [内部] 动画结束后，仅开启检测
