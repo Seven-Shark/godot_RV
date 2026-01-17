@@ -33,13 +33,7 @@ func _ready() -> void:
 func open_ers_shop():
 	print(">>> 打开 ERS 商店")
 	
-	# [新增] 1. 触发资源转金币结算逻辑 (1:1 转换)
-	# 玩家捡到的资源会在这里清零并变成钱
-	if GameDataManager:
-		GameDataManager.convert_resources_to_gold()
-	
 	visible = true
-	get_tree().paused = true # 暂停游戏
 	
 	current_purchased_objects.clear() # 清空上一轮的购买记录
 	_generate_random_cards()
@@ -112,9 +106,6 @@ func _on_card_purchased(data: ERS_CardData, btn_node: Button):
 
 # --- 核心功能 5：进入下一天 ---
 func _on_next_day_button_pressed():
-	print(">>> ERS 结束，进入下一天")
-	visible = false
-	get_tree().paused = false # 恢复游戏
-	
+	print(">>> ERS 结束，进入下一天")	
 	# 发送信号给 LevelManager，把买到的东西传过去
 	start_next_day_requested.emit(current_purchased_objects)

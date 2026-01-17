@@ -1,7 +1,8 @@
-[gd_scene load_steps=22 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=23 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://scenes/level_manager.gd" id="1_dqgb5"]
+[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://scenes/game_director.gd" id="1_fcq0b"]
 [ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="1_uu3f8"]
 [ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="2_h8imf"]
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
@@ -746,6 +747,13 @@ spawn_weight = 4
 metadata/_custom_type_script = "uid://dam5k0hma5pma"
 
 [node name="SurvivalScene" type="Node2D"]
+
+[node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "ers_manager", "game_hud", "new_day_button")]
+script = ExtResource("1_fcq0b")
+level_manager = NodePath("../LevelManager")
+ers_manager = NodePath("../CanvasLayer")
+game_hud = NodePath("../GameHUD")
+new_day_button = NodePath("../GameHUD/NewDayButton")
 
 [node name="LevelManager" type="Node2D" parent="." node_paths=PackedStringArray("tile_map", "player", "object_container", "ers_manager")]
 script = ExtResource("1_dqgb5")

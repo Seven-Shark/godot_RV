@@ -58,24 +58,7 @@ var current_objects: Array[Node] = []
 #region 生命周期
 func _ready() -> void:
 	randomize()
-	
-	# 连接按钮信号：点击按钮不再直接开始新一天，而是打开 ERS 商店
-	if new_day_button:
-		# 先断开可能的旧连接(保险起见)，然后连接到 ERS
-		if new_day_button.pressed.is_connected(start_new_day):
-			new_day_button.pressed.disconnect(start_new_day)
-		
-		# 点击按钮 -> 打开 ERS 界面
-		if ers_manager:
-			new_day_button.pressed.connect(ers_manager.open_ers_shop)
-	
-	# 连接 ERS 回调：当 ERS 点击“进入下一天”时触发
-	if ers_manager:
-		ers_manager.start_next_day_requested.connect(_on_ers_finished_start_day)
-	
-	# 游戏启动时的第一次生成 (不带额外 ERS 物品)
-	start_new_day([])
-	
+
 	# 连接 HUD 和 武器
 	await get_tree().process_frame
 	if player and hud:
