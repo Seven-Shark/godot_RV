@@ -1,0 +1,112 @@
+[gd_scene load_steps=17 format=3 uid="uid://o6h10rcgo27b"]
+
+[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Game_scenes/object_base.gd" id="1_v807p"]
+[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_ivrgq"]
+[ext_resource type="PackedScene" uid="uid://bi16fa1vf32in" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Sticks.tscn" id="3_v807p"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_8uxvd"]
+[ext_resource type="Texture2D" uid="uid://vb5ed8sxel2" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Bushes/Bushe3.png" id="5_v807p"]
+
+[sub_resource type="Resource" id="Resource_6wcbu"]
+script = ExtResource("2_ivrgq")
+item_scene = ExtResource("3_v807p")
+max_quantity = 5
+metadata/_custom_type_script = "uid://bqxi33g2h11le"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ivrgq"]
+atlas = ExtResource("5_v807p")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_adx6m"]
+atlas = ExtResource("5_v807p")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8uxvd"]
+atlas = ExtResource("5_v807p")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_41jif"]
+atlas = ExtResource("5_v807p")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pjnk7"]
+atlas = ExtResource("5_v807p")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vsu7x"]
+atlas = ExtResource("5_v807p")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_abw2h"]
+atlas = ExtResource("5_v807p")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cnnmg"]
+atlas = ExtResource("5_v807p")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_l1gbb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivrgq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_adx6m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8uxvd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_41jif")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pjnk7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vsu7x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_abw2h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cnnmg")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 12.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
+size = Vector2(78, 29)
+
+[node name="Object_Bush_1" type="RigidBody2D" node_paths=PackedStringArray("sprite")]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 7
+gravity_scale = 0.0
+freeze = true
+linear_damp = 5.0
+angular_damp = 3.0
+script = ExtResource("1_v807p")
+object_name = "Bush"
+loot_table = Array[ExtResource("2_ivrgq")]([SubResource("Resource_6wcbu")])
+sprite = NodePath("AnimatedSprite2D")
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("4_8uxvd")
+max_health = 20.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 1
+y_sort_enabled = true
+sprite_frames = SubResource("SpriteFrames_l1gbb")
+animation = &"Idle"
+autoplay = "Idle"
+frame_progress = 0.41787344
+offset = Vector2(0, -19)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-2, -14.5)
+shape = SubResource("RectangleShape2D_b3atn")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]

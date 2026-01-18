@@ -1,19 +1,24 @@
-[gd_scene load_steps=23 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=27 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
-[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://scenes/level_manager.gd" id="1_dqgb5"]
-[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://scenes/game_director.gd" id="1_fcq0b"]
+[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_dqgb5"]
+[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="1_fcq0b"]
 [ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="1_uu3f8"]
 [ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="2_h8imf"]
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
-[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://scenes/GameHUD.gd" id="7_ai1qu"]
-[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://scenes/debug_stats.gd" id="8_6x3ce"]
+[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="7_ai1qu"]
+[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="8_6x3ce"]
 [ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://script/HUD/ERS_Manager.gd" id="10_1uchc"]
 [ext_resource type="Script" uid="uid://dam5k0hma5pma" path="res://script/HUD/ERS_carddata.gd" id="11_ghij0"]
 [ext_resource type="Texture2D" uid="uid://cwpd4613todvc" path="res://Resource/Tiny Swords (Update 010)/UI/Banners/Carved_9Slides.png" id="12_vietx"]
 [ext_resource type="Texture2D" uid="uid://b27uk3vqjwbbm" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock1.png" id="13_fcq0b"]
+[ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="13_j17jc"]
+[ext_resource type="PackedScene" uid="uid://cn0w8aotdshpt" path="res://scenes/Object_scenes/Object_Rock_1.tscn" id="14_d7qbs"]
+[ext_resource type="Texture2D" uid="uid://ft16e0isym75" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/seeds.png" id="15_4byrr"]
+[ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="16_o8ac1"]
+[ext_resource type="Texture2D" uid="uid://bjr34thy8ryfk" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png" id="17_ddb2m"]
 
 [sub_resource type="Resource" id="Resource_6x3ce"]
 script = ExtResource("2_yfs36")
@@ -722,25 +727,28 @@ sources/0 = SubResource("TileSetAtlasSource_cxslg")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 
-[sub_resource type="ImageTexture" id="ImageTexture_vietx"]
-
 [sub_resource type="Resource" id="Resource_vpe3t"]
 script = ExtResource("11_ghij0")
-icon = SubResource("ImageTexture_vietx")
-object_prefab = ExtResource("5_cxslg")
+card_name = "石头"
+icon = ExtResource("13_j17jc")
+object_prefab = ExtResource("14_d7qbs")
 price = 50
 spawn_weight = 2
 metadata/_custom_type_script = "uid://dam5k0hma5pma"
 
 [sub_resource type="Resource" id="Resource_tssj2"]
 script = ExtResource("11_ghij0")
-object_prefab = ExtResource("5_cxslg")
+card_name = "灌木丛"
+icon = ExtResource("15_4byrr")
+object_prefab = ExtResource("16_o8ac1")
 price = 60
 spawn_weight = 3
 metadata/_custom_type_script = "uid://dam5k0hma5pma"
 
 [sub_resource type="Resource" id="Resource_temub"]
 script = ExtResource("11_ghij0")
+card_name = "树木"
+icon = ExtResource("17_ddb2m")
 object_prefab = ExtResource("5_cxslg")
 price = 70
 spawn_weight = 4

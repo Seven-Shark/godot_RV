@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://c3ud1u75u0vfw"]
 
-[ext_resource type="Script" uid="uid://kwhmt3jfdawg" path="res://scenes/weapon_scenes/weapon_gravitation.gd" id="1_8bf87"]
+[ext_resource type="Script" uid="uid://kwhmt3jfdawg" path="res://script/Character/Weapon/weapon_gravitation.gd" id="1_8bf87"]
 [ext_resource type="Texture2D" uid="uid://dq5tnm05bt3dl" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/staff.png" id="1_eaxpg"]
 [ext_resource type="Shader" uid="uid://bccbbyf7btds5" path="res://scenes/weapon_scenes/weapon_gravitation.gdshader" id="3_f3uaw"]
 

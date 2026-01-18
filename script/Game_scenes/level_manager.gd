@@ -11,7 +11,7 @@ extends Node2D
 
 @export_group("Generation Config")
 @export var spawn_config_list: Array[SpawnData] ## 基础资源生成配置
-@export var safe_zone_radius: int = 5 ## 安全区半径
+@export var safe_zone_radius: int = 1 ## 安全区半径
 
 @export_group("Map Config")
 @export var tile_source_id: int = 0

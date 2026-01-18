@@ -1,0 +1,44 @@
+[gd_scene load_steps=8 format=3 uid="uid://cn0w8aotdshpt"]
+
+[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Game_scenes/object_base.gd" id="1_w3ld1"]
+[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_cou0u"]
+[ext_resource type="PackedScene" uid="uid://dgya2qpjhrsyy" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Stone.tscn" id="3_w3ld1"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_hqu3u"]
+[ext_resource type="Texture2D" uid="uid://0eyu6rkgrqkl" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock3.png" id="5_w3ld1"]
+
+[sub_resource type="Resource" id="Resource_6wcbu"]
+script = ExtResource("2_cou0u")
+item_scene = ExtResource("3_w3ld1")
+max_quantity = 5
+metadata/_custom_type_script = "uid://bqxi33g2h11le"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
+size = Vector2(39, 29)
+
+[node name="Object_Bushj_1" type="RigidBody2D" node_paths=PackedStringArray("sprite")]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 7
+gravity_scale = 0.0
+freeze = true
+linear_damp = 5.0
+angular_damp = 3.0
+script = ExtResource("1_w3ld1")
+object_name = "Rock"
+material_type = 1
+loot_table = Array[ExtResource("2_cou0u")]([SubResource("Resource_6wcbu")])
+sprite = NodePath("Sprite2D")
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("4_hqu3u")
+max_health = 80.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("5_w3ld1")
+offset = Vector2(0, -19)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1.5, -14.5)
+shape = SubResource("RectangleShape2D_b3atn")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
