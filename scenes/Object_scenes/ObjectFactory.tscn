@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://bi6nsu44k2k"]
+
+[ext_resource type="Script" uid="uid://rwbe4g74vv0p" path="res://script/Game_scenes/ObjectFactory.gd" id="1_xckw8"]
+[ext_resource type="Texture2D" uid="uid://duoq0ic2h10y8" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/artifacts_and_items/sack.png" id="2_vm6go"]
+[ext_resource type="PackedScene" uid="uid://dgya2qpjhrsyy" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Stone.tscn" id="3_4wuvx"]
+
+[node name="ObjectFactoryTools" type="Node2D"]
+script = ExtResource("1_xckw8")
+object_name = "Bag"
+sprite_texture = ExtResource("2_vm6go")
+max_health = 10.0
+main_drop_item = ExtResource("3_4wuvx")
+base_scene_path = "res://scenes/object_scenes/Object_Template.tscn"

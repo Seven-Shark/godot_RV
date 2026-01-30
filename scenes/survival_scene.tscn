@@ -768,7 +768,6 @@ script = ExtResource("1_dqgb5")
 tile_map = NodePath("../TileMapLayer")
 player = NodePath("../Player")
 object_container = NodePath("../ObjectContainer")
-spawnable_objects = Array[PackedScene]([null])
 ers_manager = NodePath("../CanvasLayer")
 spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce")])
 safe_zone_radius = 10

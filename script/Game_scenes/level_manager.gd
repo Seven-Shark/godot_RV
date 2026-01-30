@@ -5,7 +5,6 @@ extends Node2D
 @export var tile_map: TileMapLayer ## 引用地图层
 @export var player: CharacterBase ## 引用玩家
 @export var object_container: Node2D ## 物件容器
-@export var spawnable_objects: Array[PackedScene] ## 基础生成物列表
 # 【新增】引用 ERS 管理器 (需要在场景里把 ERS_Manager 节点拖进来)
 @export var ers_manager: ERS_Manager
 

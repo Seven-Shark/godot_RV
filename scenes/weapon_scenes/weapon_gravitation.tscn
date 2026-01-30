@@ -428,3 +428,5 @@ mouse_filter = 2
 visible = false
 scale = Vector2(0.9167688, 0.9864502)
 color = Color(0.9999998, 0.13621849, 0.94859165, 1)
+
+[node name="Muzzle" type="Marker2D" parent="Weapon_Hitbox"]

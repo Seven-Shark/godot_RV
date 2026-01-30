@@ -1,17 +1,17 @@
 [gd_scene load_steps=42 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
+[ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
 [ext_resource type="Texture2D" uid="uid://dl6naoq1pa8ty" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Attack1.png" id="2_wdqqy"]
 [ext_resource type="Texture2D" uid="uid://cl2lsjnoar4c6" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Guard.png" id="3_qlt84"]
 [ext_resource type="Texture2D" uid="uid://djwqdxjrgo54f" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Idle.png" id="4_kmu0q"]
 [ext_resource type="Texture2D" uid="uid://c0u7wyktfc3mq" path="res://Resource/Tiny Swords (Free Pack)/Units/Black Units/Warrior/Warrior_Run.png" id="5_8hwlb"]
-[ext_resource type="Script" path="res://script/Character/CharacterBase/node_state_machine.gd" id="6_w5jik"]
+[ext_resource type="Script" uid="uid://vrup8lqv07a4" path="res://script/Character/CharacterBase/node_state_machine.gd" id="6_w5jik"]
 [ext_resource type="Script" uid="uid://c6t22f40o226g" path="res://script/Character/Player_state/idle_state.gd" id="7_asxtk"]
 [ext_resource type="Script" uid="uid://bmsubqutohj6q" path="res://script/Character/Player_state/walk_state.gd" id="8_p2gdj"]
 [ext_resource type="Script" uid="uid://dia2qt3dxsgbl" path="res://script/Character/Player_state/dash_state.gd" id="9_2holh"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
 [ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
-[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="12_kxg0l"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
 atlas = ExtResource("2_wdqqy")
@@ -227,9 +227,10 @@ sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("ProgressBar")
 
 [node name="StatsComponent" type="Node2D" parent="." node_paths=PackedStringArray("healthbar")]
-script = ExtResource("12_kxg0l")
+script = ExtResource("2_kxg0l")
+base_walk_speed = 300.0
+weight_slowdown_factor = 0.1
 healthbar = NodePath("../ProgressBar")
-base_walk_speed = 500.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 

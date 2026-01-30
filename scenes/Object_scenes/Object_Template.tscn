@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3 uid="uid://c3e6npyym82hw"]
+
+[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Game_scenes/object_base.gd" id="1_alq8w"]
+[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_jr3eh"]
+[ext_resource type="PackedScene" uid="uid://dslvb6l86vgqu" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Wood.tscn" id="3_rxdmr"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_y0sm5"]
+
+[sub_resource type="Resource" id="Resource_6wcbu"]
+script = ExtResource("2_jr3eh")
+item_scene = ExtResource("3_rxdmr")
+max_quantity = 5
+metadata/_custom_type_script = "uid://bqxi33g2h11le"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
+size = Vector2(42, 72)
+
+[node name="Object_Tree_1" type="RigidBody2D" node_paths=PackedStringArray("sprite")]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 7
+gravity_scale = 0.0
+freeze = true
+linear_damp = 5.0
+angular_damp = 3.0
+script = ExtResource("1_alq8w")
+loot_table = Array[ExtResource("2_jr3eh")]([SubResource("Resource_6wcbu")])
+sprite = NodePath("")
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("4_y0sm5")
+max_health = 60.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -36)
+shape = SubResource("RectangleShape2D_b3atn")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bi16fa1vf32in"]
 
-[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/PickupItem.gd.gd" id="1_sngd2"]
+[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/PickupItem.gd" id="1_sngd2"]
 [ext_resource type="Texture2D" uid="uid://wywkyfs0twft" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stick.png" id="2_hqhs6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
