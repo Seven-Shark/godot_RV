@@ -1,11 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://dgya2qpjhrsyy"]
+[gd_scene load_steps=6 format=3 uid="uid://dgya2qpjhrsyy"]
 
-[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/PickupItem.gd" id="1_o1yen"]
-[ext_resource type="Script" uid="uid://kygrlctmcee2" path="res://script/Object/visual_controller.gd" id="2_cl88n"]
+[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/WorldEntity.gd" id="1_o1yen"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="2_7885p"]
+[ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="2_cl88n"]
 [ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="2_o1yen"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
-radius = 23.021729
+radius = 19.266685
 
 [node name="PickUpItem_Stone" type="RigidBody2D"]
 scale = Vector2(0.9866042, 0.8631938)
@@ -15,6 +16,11 @@ gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
 script = ExtResource("1_o1yen")
+material_type = 1
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("2_7885p")
+max_health = 20.0
 
 [node name="VisualController" type="Node2D" parent="."]
 script = ExtResource("2_cl88n")

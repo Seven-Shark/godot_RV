@@ -1,6 +1,6 @@
 [gd_scene load_steps=17 format=3 uid="uid://o6h10rcgo27b"]
 
-[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Game_scenes/object_base.gd" id="1_v807p"]
+[ext_resource type="Script" uid="uid://xqkxbok4xsn0" path="res://script/Object/object_base.gd" id="1_v807p"]
 [ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_ivrgq"]
 [ext_resource type="PackedScene" uid="uid://bi16fa1vf32in" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Sticks.tscn" id="3_v807p"]
 [ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_8uxvd"]
