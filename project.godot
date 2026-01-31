@@ -23,6 +23,14 @@ GameDataManager="*res://script/Game_scenes/GameDataManager.gd"
 
 window/stretch/mode="canvas_items"
 
+[file_customization]
+
+folder_colors={
+"res://Resource/": "yellow",
+"res://scenes/": "green",
+"res://script/": "blue"
+}
+
 [input]
 
 left={

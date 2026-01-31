@@ -8,6 +8,7 @@ class_name Player
 ## 2. 目标锁定与索敌计算 (扇形检测)
 ## 3. 视觉朝向与辅助线绘制 (Debug)
 
+
 #region 瞄准配置
 const ASSIST_ANGLE = 90.0 ## 辅助瞄准角度 (扇形开口度数)
 const ASSIST_RANGE = 250.0 ## 辅助瞄准最大距离 (像素)

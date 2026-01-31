@@ -254,15 +254,12 @@ func _on_object_destroyed():
 	if is_under_gravity:
 		await _play_gravity_death_anim()
 	call_deferred("_execute_death_logic")
-	# 生成掉落物
-	_spawn_loot()
 	
-	# 销毁自身
-	queue_free()
 ## 【新增】延迟执行的死亡逻辑
 func _execute_death_logic():
 	_spawn_loot() # 现在在这里 add_child 是安全的，而且立马生效
 	queue_free()  # 生成完掉落物后，销毁自己
+
 ## 遍历掉落表生成物品
 func _spawn_loot():
 	if loot_table.is_empty(): return

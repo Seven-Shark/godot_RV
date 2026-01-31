@@ -310,8 +310,7 @@ func process_gravity_tick(delta: float) -> void:
 
 		# 2. 掉落物处理
 		if body is PickupItem:
-			if not body.is_being_absorbed:
-				body.start_absorbing(belonger)
+			body.start_absorbing(belonger)
 			continue
 		
 		# 3. ObjectBase 和 CharacterBase 的引力与伤害处理
