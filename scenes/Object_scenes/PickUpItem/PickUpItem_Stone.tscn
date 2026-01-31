@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dgya2qpjhrsyy"]
+[gd_scene load_steps=5 format=3 uid="uid://dgya2qpjhrsyy"]
 
 [ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/PickupItem.gd" id="1_o1yen"]
+[ext_resource type="Script" uid="uid://kygrlctmcee2" path="res://script/Object/visual_controller.gd" id="2_cl88n"]
 [ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="2_o1yen"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
@@ -14,10 +15,9 @@ gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
 script = ExtResource("1_o1yen")
-jump_height = 70.0
-start_scale_ratio = Vector2(1.3, 1.3)
-stretch_ratio = Vector2(1, 1)
-squash_ratio = Vector2(1, 1)
+
+[node name="VisualController" type="Node2D" parent="."]
+script = ExtResource("2_cl88n")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(3, 3)

@@ -4,6 +4,18 @@
 [ext_resource type="Texture2D" uid="uid://dq5tnm05bt3dl" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/staff.png" id="1_eaxpg"]
 [ext_resource type="Shader" uid="uid://bccbbyf7btds5" path="res://scenes/weapon_scenes/weapon_gravitation.gdshader" id="3_f3uaw"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_f3uaw"]
+radius = 300.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jd7j4"]
+shader = ExtResource("3_f3uaw")
+shader_parameter/radius_progress = 0.50000002375
+shader_parameter/thickness = 0.10000000475
+shader_parameter/force = 0.05
+shader_parameter/softness = 0.1
+shader_parameter/sector_angle_degrees = 78.1210037107475
+shader_parameter/rotation_offset_radians = 0.0
+
 [sub_resource type="Animation" id="Animation_gm4s7"]
 resource_name = "Gravitataion_Attract"
 length = 0.3
@@ -366,26 +378,9 @@ _data = {
 &"RESET": SubResource("Animation_2rtvx")
 }
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_f3uaw"]
-radius = 300.0
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_jd7j4"]
-shader = ExtResource("3_f3uaw")
-shader_parameter/radius_progress = 0.50000002375
-shader_parameter/thickness = 0.10000000475
-shader_parameter/force = 0.05
-shader_parameter/softness = 0.1
-shader_parameter/sector_angle_degrees = 78.1210037107475
-shader_parameter/rotation_offset_radians = 0.0
-
 [node name="Weapon_Gravitation" type="Node2D"]
 script = ExtResource("1_8bf87")
 shock_damage_amount = 10
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_noa2k")
-}
 
 [node name="RotationPos" type="Node2D" parent="."]
 rotation = -1.1454811
@@ -430,3 +425,8 @@ scale = Vector2(0.9167688, 0.9864502)
 color = Color(0.9999998, 0.13621849, 0.94859165, 1)
 
 [node name="Muzzle" type="Marker2D" parent="Weapon_Hitbox"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_noa2k")
+}

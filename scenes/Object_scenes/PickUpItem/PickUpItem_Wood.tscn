@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/PickupItem.gd" id="1_666f2"]
 [ext_resource type="Texture2D" uid="uid://bm8ksw5yxt257" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png" id="2_6mmyu"]
-[ext_resource type="Script" uid="uid://kygrlctmcee2" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="4_s7gyk"]
+[ext_resource type="Script" uid="uid://kygrlctmcee2" path="res://script/Object/visual_controller.gd" id="2_s7gyk"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
 radius = 23.021729
@@ -17,7 +17,7 @@ linear_damp = 10.0
 script = ExtResource("1_666f2")
 
 [node name="VisualController" type="Node2D" parent="."]
-script = ExtResource("4_s7gyk")
+script = ExtResource("2_s7gyk")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(3, 3)
