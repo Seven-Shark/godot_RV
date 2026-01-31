@@ -26,6 +26,7 @@ angular_damp = 3.0
 script = ExtResource("1_a166e")
 entity_type = 2
 material_type = 1
+mass_override = 70.0
 loot_table = Array[ExtResource("2_cou0u")]([SubResource("Resource_cou0u")])
 
 [node name="StatsComponent" type="Node2D" parent="."]

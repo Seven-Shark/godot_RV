@@ -16,6 +16,7 @@ gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
 script = ExtResource("1_o1yen")
+entity_type = 1
 material_type = 1
 
 [node name="StatsComponent" type="Node2D" parent="."]

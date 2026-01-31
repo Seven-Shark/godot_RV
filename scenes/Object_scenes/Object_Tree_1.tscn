@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dslvb6l86vgqu" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Wood.tscn" id="3_fkm28"]
 [ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="4_fkm28"]
 
-[sub_resource type="Resource" id="Resource_6wcbu"]
+[sub_resource type="Resource" id="Resource_fkm28"]
 script = ExtResource("2_64p25")
 item_scene = ExtResource("3_fkm28")
 min_quantity = 3
@@ -90,14 +90,14 @@ freeze = true
 linear_damp = 5.0
 angular_damp = 3.0
 script = ExtResource("1_64p25")
-loot_table = Array[ExtResource("2_64p25")]([SubResource("Resource_6wcbu")])
-
-[node name="VisualController" type="Node2D" parent="."]
-script = ExtResource("4_fkm28")
+loot_table = Array[ExtResource("2_64p25")]([SubResource("Resource_fkm28")])
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("1_ubghj")
 max_health = 60.0
+
+[node name="VisualController" type="Node2D" parent="."]
+script = ExtResource("4_fkm28")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 z_index = 1

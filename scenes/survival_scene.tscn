@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=28 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_dqgb5"]
@@ -24,6 +24,11 @@
 script = ExtResource("2_yfs36")
 object_prefab = ExtResource("5_cxslg")
 spawn_count = 10
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[sub_resource type="Resource" id="Resource_j17jc"]
+script = ExtResource("2_yfs36")
+object_prefab = ExtResource("14_d7qbs")
 metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cxslg"]
@@ -769,7 +774,7 @@ tile_map = NodePath("../TileMapLayer")
 player = NodePath("../Player")
 object_container = NodePath("../ObjectContainer")
 ers_manager = NodePath("../CanvasLayer")
-spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce")])
+spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce"), SubResource("Resource_j17jc")])
 safe_zone_radius = 10
 atlas_top_right = Vector2i(11, 0)
 atlas_bottom_left = Vector2i(0, 11)

@@ -258,10 +258,18 @@ func process_gravity_tick(delta: float) -> void:
 		
 		# --- [新架构适配] 统一处理 WorldEntity ---
 		if body is WorldEntity:
-			# 1. 优先尝试捕获重物 (HEAVY)
-			# 如果是 HEAVY 类型，_try_capture 会返回 true 并中断后续逻辑
+			
+			# 1. 处理重物 (HEAVY)
 			if body.entity_type == WorldEntity.EntityType.HEAVY:
-				if _try_capture_heavy_object(body): return 
+				# [修复逻辑]
+				# 第一步：尝试捕获（如果够近，直接吸到枪口并结束）
+				if _try_capture_heavy_object(body): 
+					return 
+				
+				# 第二步：如果没捕获（太远），则施加引力把它拉过来！
+				# 第二个参数 false 表示“只拉过来，不造成伤害”
+				_apply_gravity_to_entity(body, false)
+				continue
 
 			# 2. 处理资源吸附 (RESOURCE)
 			if body.entity_type == WorldEntity.EntityType.RESOURCE:
@@ -271,6 +279,7 @@ func process_gravity_tick(delta: float) -> void:
 			# 3. 处理物件 (PROP)
 			if body.entity_type == WorldEntity.EntityType.PROP:
 				current_targets.append(body)
+				# Prop 需要引力也需要伤害
 				_apply_gravity_to_entity(body, can_deal_damage)
 			continue
 			

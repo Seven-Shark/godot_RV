@@ -45,8 +45,8 @@ enum ObjectMaterial {
 @export var drop_radius: float = 60.0                   ## 掉落散布半径
 
 # 物理层级常量 (根据项目设置调整)
-const LAYER_PROP = 4      ## 环境层
-const LAYER_RESOURCE = 8  ## 掉落物层
+const LAYER_PROP = 3      ## 环境层
+const LAYER_RESOURCE = 4  ## 掉落物层
 #endregion
 
 #region 2. 内部状态
@@ -74,7 +74,7 @@ func _init_physics_state():
 		EntityType.PROP:
 			freeze = true # 默认静止
 			collision_layer = LAYER_PROP
-			collision_mask = 1 | 2
+			collision_mask = 2
 			_apply_material()
 		EntityType.RESOURCE:
 			freeze = true # 资源初始冻结，等待 Launch 动画
@@ -184,6 +184,16 @@ func _spawn_loot():
 		return
 
 	for loot in loot_table:
+		
+		# [修复 1] 检查 loot 数据本身是否存在
+		if not loot: continue
+		
+		# [修复 2] 关键检查：检查 Item Scene 是否为空！
+		# 如果你在检查器里忘了把木头/石头的场景拖进去，这里就会拦截并警告，而不是报错崩溃
+		if not loot.item_scene:
+			push_warning("[%s] 的掉落表中有一项缺少 Item Scene！已跳过。" % name)
+			continue
+		
 		var count = loot.get_drop_count()
 		for i in range(count):
 			var item = loot.item_scene.instantiate()

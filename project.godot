@@ -83,8 +83,8 @@ mouse_right={
 
 2d_physics/layer_1="player"
 2d_physics/layer_2="Enemy"
-2d_physics/layer_3="Object"
-2d_physics/layer_4="items"
+2d_physics/layer_3="PROP"
+2d_physics/layer_4="RESOURCE"
 
 [rendering]
 
