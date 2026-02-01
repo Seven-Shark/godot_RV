@@ -73,12 +73,20 @@ func _handle_input(delta: float) -> void:
 	var is_firing_shock = GameInputEvents.is_main_attack_held()    
 	var is_firing_gravity = GameInputEvents.is_special_attack_held() 
 	
-	# --- 1. 持有重物模式 ---
+	# --- 1. 持有重物模式 (高优先级) ---
 	if held_object != null:
+		# 此时必须强制停止引力波，防止同时吸附其他东西
+		if hitbox.monitoring: 
+			stop_gravity_firing()
+			
 		if GameInputEvents.is_main_attack_just_pressed(): 
 			_shoot_held_object()
 			return 
 		if GameInputEvents.is_special_attack_just_pressed() or is_firing_gravity:
+			# 如果还在按右键，且不是刚按下，可能需要保持吸附（或者你想按右键放下？）
+			# 根据你的描述，右键是吸附，松开是放下，或者再次点击放下
+			# 这里假设：按住右键时保持吸附，如果松开或再次点击特定键则放下
+			# 你的逻辑写的是 just_pressed，意味着点击右键放下。
 			_drop_held_object()
 			return
 		return # 维持吸附，不执行其他操作
@@ -94,16 +102,18 @@ func _handle_input(delta: float) -> void:
 
 #region 重物交互逻辑
 func _process_holding_object(_delta: float) -> void:
-	# [修复] 增加 is_inside_tree 检查，防止报错
+	# 安全检查
 	if not is_instance_valid(held_object) or not held_object.is_inside_tree():
 		held_object = null
 		return
-		
+	
+	# [核心修复] 强制覆盖物理状态
 	held_object.global_position = muzzle.global_position
-	held_object.global_rotation = global_rotation
+	held_object.global_rotation = global_rotation 
+	held_object.linear_velocity = Vector2.ZERO # 清除动量
+	held_object.angular_velocity = 0.0
 
 func _try_capture_heavy_object(body: Node2D) -> bool:
-	# [适配] 检查是否为 WorldEntity 且类型为 HEAVY
 	if body is WorldEntity and body.entity_type == WorldEntity.EntityType.HEAVY:
 		var dist = global_position.distance_to(body.global_position)
 		if dist <= capture_distance:
@@ -112,32 +122,56 @@ func _try_capture_heavy_object(body: Node2D) -> bool:
 	return false
 
 func _capture_object(body: RigidBody2D) -> void:
-	held_object = body
-	held_object.freeze = true 
+	# 1. 停止之前的引力逻辑
 	stop_gravity_firing()
+	
+	# 2. 绑定重物
+	held_object = body
+	
+	# 3. 冻结物理 (Mode Static 或 Freeze)
+	# 建议设置为 Freeze 模式，这样它就不会与玩家发生物理碰撞挤压
+	held_object.freeze = true 
+	held_object.collision_layer = 0 # 暂时关闭碰撞，避免挡子弹或把玩家挤飞
+	held_object.collision_mask = 0 
+	
+	# 4. 强制瞬移到枪口一次
+	held_object.global_position = muzzle.global_position
+	held_object.linear_velocity = Vector2.ZERO
+	
 	# print("捕获重物: ", body.name)
 
 func _shoot_held_object() -> void:
 	if not held_object: return
+	
 	var obj = held_object
-	_release_object() 
+	_release_object(true) # true 表示发射
+	
 	var shoot_dir = Vector2.RIGHT.rotated(global_rotation) 
 	obj.apply_central_impulse(shoot_dir * throw_force)
+	
 	play_attack() 
 	trigger_shockwave_vfx() 
 
 func _drop_held_object() -> void:
 	if not held_object: return
-	_release_object()
+	_release_object(false) # false 表示轻轻放下
 
-func _release_object() -> void:
+func _release_object(is_shooting: bool) -> void:
 	if not held_object: return
 	
-	# 调用 WorldEntity 的恢复接口
+	# 1. 恢复物理
+	held_object.freeze = false
+	# 恢复碰撞层级 (假设重物是 Layer 4: PROP)
+	held_object.collision_layer = 4 # WorldEntity.LAYER_PROP
+	held_object.collision_mask = 1 | 2 # 恢复与环境/玩家碰撞
+	
+	# 如果是放下，给他一点点初速度防止穿模卡住
+	if not is_shooting:
+		held_object.linear_velocity = Vector2.RIGHT.rotated(global_rotation) * 100.0
+	
+	# 2. 调用恢复接口
 	if held_object.has_method("recover_from_gravity"):
 		held_object.recover_from_gravity()
-	else:
-		held_object.freeze = false # 保底逻辑
 		
 	held_object = null
 	shock_cooldown_timer = 0.2
@@ -214,13 +248,9 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if not _is_in_attack_angle(body): return
 	
 	if body.has_method("take_damage"):
-		# [修复] 确保调用的是 3 参数接口
 		body.take_damage(shock_damage_amount, belonger.character_type, belonger)
-		
 		var knockback_dir = (body.global_position - belonger.global_position).normalized()
-		# 兼容 WorldEntity
 		if body is WorldEntity:
-			# WorldEntity 的震动反馈在 take_damage 内部触发
 			pass 
 		elif body.has_method("apply_knockback"):
 			body.apply_knockback(knockback_dir, shock_knockback_force)
@@ -241,9 +271,7 @@ func process_gravity_tick(delta: float) -> void:
 		hitbox.visible = true
 		hitbox.monitoring = true
 	
-	# 强制抖动 Hitbox 刷新检测
 	hitbox.position.x = 0.001 if Engine.get_physics_frames() % 2 == 0 else -0.001
-	
 	damage_timer -= delta
 	var can_deal_damage = damage_timer <= 0
 	if can_deal_damage:
@@ -256,34 +284,25 @@ func process_gravity_tick(delta: float) -> void:
 		if body == belonger: continue 
 		if not _is_in_attack_angle(body): continue
 		
-		# --- [新架构适配] 统一处理 WorldEntity ---
 		if body is WorldEntity:
-			
-			# 1. 处理重物 (HEAVY)
+			# 1. 处理重物
 			if body.entity_type == WorldEntity.EntityType.HEAVY:
-				# [修复逻辑]
-				# 第一步：尝试捕获（如果够近，直接吸到枪口并结束）
 				if _try_capture_heavy_object(body): 
 					return 
-				
-				# 第二步：如果没捕获（太远），则施加引力把它拉过来！
-				# 第二个参数 false 表示“只拉过来，不造成伤害”
 				_apply_gravity_to_entity(body, false)
 				continue
 
-			# 2. 处理资源吸附 (RESOURCE)
+			# 2. 处理资源
 			if body.entity_type == WorldEntity.EntityType.RESOURCE:
 				body.start_absorbing(belonger)
 				continue
 			
-			# 3. 处理物件 (PROP)
+			# 3. 处理物件
 			if body.entity_type == WorldEntity.EntityType.PROP:
 				current_targets.append(body)
-				# Prop 需要引力也需要伤害
 				_apply_gravity_to_entity(body, can_deal_damage)
 			continue
 			
-		# --- [旧逻辑兼容] 处理敌人 (CharacterBase) ---
 		elif body is CharacterBase and body.has_method("take_damage"):
 			if can_deal_damage:
 				body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
@@ -292,16 +311,10 @@ func process_gravity_tick(delta: float) -> void:
 	captured_bodies = current_targets.duplicate()
 
 func _apply_gravity_to_entity(body: WorldEntity, can_damage: bool) -> void:
-	# 1. 物理引力
 	var direction = (belonger.global_position - body.global_position).normalized()
 	body.apply_central_force(direction * gravity_force * body.mass * 2.0)
-	
-	# 2. [关键修复] 调用视觉接口，触发 VisualController 的悬停拉伸动画
 	body.apply_gravity_visual(belonger.global_position)
-	
-	# 3. 造成伤害
 	if can_damage:
-		# [修复] 确保调用的是 3 参数接口
 		body.take_damage(gravitation_damage_amount, belonger.character_type, belonger)
 
 func _handle_escaping_bodies(current_targets: Array[Node2D]) -> void:
@@ -314,9 +327,7 @@ func _handle_escaping_bodies(current_targets: Array[Node2D]) -> void:
 func stop_gravity_firing() -> void:
 	hitbox.visible = false
 	hitbox.monitoring = false
-	
 	if gravity_viz: gravity_viz.visible = false
-	
 	if captured_bodies.size() > 0:
 		for body in captured_bodies:
 			if is_instance_valid(body) and body.has_method("recover_from_gravity"):
@@ -341,12 +352,10 @@ func _reset_weapon_state() -> void:
 #region 视觉特效逻辑
 func trigger_shockwave_vfx() -> void:
 	if not shockwave_vfx or not shockwave_vfx.material: return
-	
 	shockwave_vfx.visible = true
 	var mat = shockwave_vfx.material as ShaderMaterial
 	mat.set_shader_parameter("radius_progress", 0.0)
 	mat.set_shader_parameter("sector_angle_degrees", shockwave_angle)
-	
 	var tween = create_tween()
 	tween.tween_method(
 		func(val): mat.set_shader_parameter("radius_progress", val), 
