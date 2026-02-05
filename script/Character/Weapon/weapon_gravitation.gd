@@ -5,7 +5,7 @@ extends Node2D
 @onready var hitbox: Area2D = $Weapon_Hitbox
 @onready var shockwave_vfx: ColorRect = $Weapon_Hitbox/ShockwaveVFX
 @onready var gravity_viz: Polygon2D = $Weapon_Hitbox/GravityViz
-@onready var muzzle: Marker2D = $Weapon_Hitbox/Muzzle ## 枪口位置
+@onready var muzzle: Marker2D = $RotationPos/Sprite2D/Muzzle ## 枪口位置
 #endregion
 
 #region 战斗参数配置
@@ -19,8 +19,9 @@ extends Node2D
 
 #region 重物吸附配置
 @export_group("Heavy Object Handling")
-@export var throw_force: float = 1500.0              ## 重物发射力度
+@export var throw_force: float = 2000.0              ## [核心] 重物发射力度 (建议调大一点，比如2000-3000)
 @export var capture_distance: float = 30.0           ## 吸附判定距离
+@export var throw_damp: float = 2.0                  ## [新增] 发射后的空气阻力 (数值越大减速越快)
 #endregion
 
 #region 视觉特效配置
@@ -39,7 +40,7 @@ var shock_cooldown_timer: float = 0.0
 var belonger: CharacterBase                          
 var damage_timer: float = 0.0                        
 var captured_bodies: Array[Node2D] = []              
-var held_object: RigidBody2D = null                  ## 当前吸住的重物
+var held_object: RigidBody2D = null                  ## 当前吸住的重物 (是否处于发射状态)
 #endregion
 
 #region 生命周期
@@ -57,7 +58,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_update_cooldowns(delta)
 	
-	# 如果持有重物，每帧强制同步位置
+	# [需求2] 发射状态：位置同步
 	if held_object:
 		_process_holding_object(delta)
 		
@@ -73,25 +74,21 @@ func _handle_input(delta: float) -> void:
 	var is_firing_shock = GameInputEvents.is_main_attack_held()    
 	var is_firing_gravity = GameInputEvents.is_special_attack_held() 
 	
-	# --- 1. 持有重物模式 (高优先级) ---
+	# --- 1. 发射状态 (持有重物) ---
+	# [需求3] 处于发射状态时，右键引力无法使用
 	if held_object != null:
-		# 此时必须强制停止引力波，防止同时吸附其他东西
+		# 强制关闭引力波，防止 BUG
 		if hitbox.monitoring: 
 			stop_gravity_firing()
-			
+		
+		# [需求3] 按下左键 -> 发射 (震荡波)
 		if GameInputEvents.is_main_attack_just_pressed(): 
 			_shoot_held_object()
-			return 
-		if GameInputEvents.is_special_attack_just_pressed() or is_firing_gravity:
-			# 如果还在按右键，且不是刚按下，可能需要保持吸附（或者你想按右键放下？）
-			# 根据你的描述，右键是吸附，松开是放下，或者再次点击放下
-			# 这里假设：按住右键时保持吸附，如果松开或再次点击特定键则放下
-			# 你的逻辑写的是 just_pressed，意味着点击右键放下。
-			_drop_held_object()
-			return
-		return # 维持吸附，不执行其他操作
+		
+		# 这里直接 return，不响应任何其他武器操作 (包括右键)
+		return 
 	
-	# --- 2. 普通模式 ---
+	# --- 2. 普通模式 (未持有重物) ---
 	if is_firing_shock and not is_firing_gravity:
 		_try_fire_shockwave()
 	elif is_firing_gravity:
@@ -100,81 +97,86 @@ func _handle_input(delta: float) -> void:
 		_reset_weapon_state()
 #endregion
 
-#region 重物交互逻辑
+#region 重物交互逻辑 (核心修改区域)
+
+## 每帧将重物“粘”在枪口
 func _process_holding_object(_delta: float) -> void:
-	# 安全检查
+	# 安全检查：如果物体被删除了，重置状态
 	if not is_instance_valid(held_object) or not held_object.is_inside_tree():
 		held_object = null
 		return
 	
-	# [核心修复] 强制覆盖物理状态
+	# [需求2] 附着在前端，跟随瞄准方向旋转
 	held_object.global_position = muzzle.global_position
 	held_object.global_rotation = global_rotation 
-	held_object.linear_velocity = Vector2.ZERO # 清除动量
-	held_object.angular_velocity = 0.0
+	held_object.linear_velocity = Vector2.ZERO # 清除残余动量
 
+## 尝试捕获逻辑
 func _try_capture_heavy_object(body: Node2D) -> bool:
 	if body is WorldEntity and body.entity_type == WorldEntity.EntityType.HEAVY:
 		var dist = global_position.distance_to(body.global_position)
+		# [需求1] 触碰到前端(距离足够近) -> 进入发射状态
 		if dist <= capture_distance:
 			_capture_object(body)
 			return true 
 	return false
 
+## 执行捕获 (进入发射状态)
 func _capture_object(body: RigidBody2D) -> void:
-	# 1. 停止之前的引力逻辑
+	# 1. 立即停止引力波
 	stop_gravity_firing()
 	
-	# 2. 绑定重物
 	held_object = body
 	
-	# 3. 冻结物理 (Mode Static 或 Freeze)
-	# 建议设置为 Freeze 模式，这样它就不会与玩家发生物理碰撞挤压
+	# 2. [关键] 冻结物理，让它变成“子弹”挂件
+	# 必须关闭碰撞，否则它会把自己或者玩家挤飞
 	held_object.freeze = true 
-	held_object.collision_layer = 0 # 暂时关闭碰撞，避免挡子弹或把玩家挤飞
+	held_object.collision_layer = 0 
 	held_object.collision_mask = 0 
 	
-	# 4. 强制瞬移到枪口一次
+	# 3. 立即吸附到位
 	held_object.global_position = muzzle.global_position
 	held_object.linear_velocity = Vector2.ZERO
 	
-	# print("捕获重物: ", body.name)
+	# print("重物装填完毕: ", body.name)
 
+## 执行发射 (左键)
 func _shoot_held_object() -> void:
 	if not held_object: return
 	
 	var obj = held_object
-	_release_object(true) # true 表示发射
 	
-	var shoot_dir = Vector2.RIGHT.rotated(global_rotation) 
-	obj.apply_central_impulse(shoot_dir * throw_force)
-	
+	# 1. 播放表现
 	play_attack() 
 	trigger_shockwave_vfx() 
-
-func _drop_held_object() -> void:
-	if not held_object: return
-	_release_object(false) # false 表示轻轻放下
-
-func _release_object(is_shooting: bool) -> void:
-	if not held_object: return
 	
-	# 1. 恢复物理
-	held_object.freeze = false
-	# 恢复碰撞层级 (假设重物是 Layer 4: PROP)
-	held_object.collision_layer = 4 # WorldEntity.LAYER_PROP
-	held_object.collision_mask = 1 | 2 # 恢复与环境/玩家碰撞
+	# 2. 解除绑定
+	held_object = null 
 	
-	# 如果是放下，给他一点点初速度防止穿模卡住
-	if not is_shooting:
-		held_object.linear_velocity = Vector2.RIGHT.rotated(global_rotation) * 100.0
+	obj.freeze = false
 	
-	# 2. 调用恢复接口
-	if held_object.has_method("recover_from_gravity"):
-		held_object.recover_from_gravity()
-		
-	held_object = null
-	shock_cooldown_timer = 0.2
+	# =========================================================
+	# [核心修复] 使用 WorldEntity 定义的常量，而不是写死数字
+	# =========================================================
+	# 恢复到物件层 (Layer 3)
+	obj.collision_layer = WorldEntity.LAYER_PROP 
+	
+	# 恢复碰撞掩码 (与环境和玩家碰撞)
+	obj.collision_mask = 1 | 2 
+	
+	# 3. 计算发射物理
+	var mouse_pos = get_global_mouse_position()
+	var shoot_dir = (mouse_pos - muzzle.global_position).normalized()
+	
+	obj.apply_central_impulse(shoot_dir * throw_force)
+	
+	obj.global_rotation = shoot_dir.angle()
+	obj.linear_damp = throw_damp 
+	
+	if obj.has_method("recover_from_gravity"):
+		obj.recover_from_gravity()
+	
+	shock_cooldown_timer = 0.5
 #endregion
 
 #region 调试与参数调整 (HUD 接口)
@@ -248,8 +250,11 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if not _is_in_attack_angle(body): return
 	
 	if body.has_method("take_damage"):
+		# 确保调用的是 3 参数接口
 		body.take_damage(shock_damage_amount, belonger.character_type, belonger)
+		
 		var knockback_dir = (body.global_position - belonger.global_position).normalized()
+		# 兼容 WorldEntity
 		if body is WorldEntity:
 			pass 
 		elif body.has_method("apply_knockback"):
@@ -272,6 +277,7 @@ func process_gravity_tick(delta: float) -> void:
 		hitbox.monitoring = true
 	
 	hitbox.position.x = 0.001 if Engine.get_physics_frames() % 2 == 0 else -0.001
+	
 	damage_timer -= delta
 	var can_deal_damage = damage_timer <= 0
 	if can_deal_damage:
@@ -287,8 +293,10 @@ func process_gravity_tick(delta: float) -> void:
 		if body is WorldEntity:
 			# 1. 处理重物
 			if body.entity_type == WorldEntity.EntityType.HEAVY:
+				# 尝试捕获 (吸到脸上)
 				if _try_capture_heavy_object(body): 
 					return 
+				# 没吸到脸上，就用力拉过来
 				_apply_gravity_to_entity(body, false)
 				continue
 

@@ -13,7 +13,7 @@ item_scene = ExtResource("3_w3ld1")
 metadata/_custom_type_script = "uid://bqxi33g2h11le"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_w3ld1"]
-radius = 55.00909
+radius = 38.0
 
 [node name="Object_Rock_1" type="RigidBody2D"]
 y_sort_enabled = true
@@ -27,7 +27,6 @@ angular_damp = 3.0
 script = ExtResource("1_a166e")
 entity_type = 2
 material_type = 1
-mass_override = 70.0
 loot_table = Array[ExtResource("2_cou0u")]([SubResource("Resource_cou0u")])
 
 [node name="StatsComponent" type="Node2D" parent="."]
@@ -38,12 +37,12 @@ max_health = 80.0
 script = ExtResource("4_p63w7")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(3, 3)
+scale = Vector2(2, 2)
 texture = ExtResource("5_w3ld1")
 offset = Vector2(0, -19)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -43)
+position = Vector2(0, -30)
 shape = SubResource("CircleShape2D_w3ld1")
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="."]

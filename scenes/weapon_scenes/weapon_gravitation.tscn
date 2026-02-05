@@ -381,6 +381,9 @@ _data = {
 [node name="Weapon_Gravitation" type="Node2D"]
 script = ExtResource("1_8bf87")
 shock_damage_amount = 10
+throw_force = 10000.0
+capture_distance = 60.0
+throw_damp = 1.0
 
 [node name="RotationPos" type="Node2D" parent="."]
 rotation = -1.1454811
@@ -391,6 +394,11 @@ rotation = -1.9473577
 scale = Vector2(3.517, -3.517)
 texture = ExtResource("1_eaxpg")
 offset = Vector2(7.999999, -8)
+
+[node name="Muzzle" type="Marker2D" parent="RotationPos/Sprite2D"]
+position = Vector2(14.616375, -13.823133)
+rotation = -3.0928388
+scale = Vector2(0.28433326, -0.28433326)
 
 [node name="Weapon_Hitbox" type="Area2D" parent="."]
 visible = false
@@ -423,8 +431,6 @@ mouse_filter = 2
 visible = false
 scale = Vector2(0.9167688, 0.9864502)
 color = Color(0.9999998, 0.13621849, 0.94859165, 1)
-
-[node name="Muzzle" type="Marker2D" parent="Weapon_Hitbox"]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
