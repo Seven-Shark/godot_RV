@@ -17,4 +17,4 @@ func _on_physics_process(_delta: float) -> void:
 func _on_next_transitions() -> void:
 	# 状态切换逻辑：如果触发了仇恨 -> 切换到追逐
 	if enemy.is_aggro_active:
-		transition.emit("chase")
+		transition.emit("Chase")

@@ -111,23 +111,9 @@ y_sort_enabled = true
 collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_gj3g1")
-attack_stop_distance = null
-retreat_distance = null
-aggro_trigger_time = null
-aggro_lose_time = null
-separation_force = null
-push_force = null
-push_threshold = null
-attack_damage = null
-attack_range_length = null
-attack_width = null
-charge_duration = null
-attack_cooldown = null
 character_type = 2
-target_types = null
-flipped_horizontal = null
+target_types = Array[int]([1])
 health = 20
-knockback_friction = null
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("ProgressBar")
 
@@ -146,24 +132,24 @@ shape = SubResource("CapsuleShape2D_nr6f4")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("4_wavxh")
-initial_node_state = NodePath("EnemyIdleState")
+initial_node_state = NodePath("Idle")
 
-[node name="EnemyIdleState" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+[node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
 script = ExtResource("7_jerxs")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimatedSprite2D")
 
-[node name="EnemyChaseState" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+[node name="Chase" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
 script = ExtResource("8_6sfd3")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimatedSprite2D")
 
-[node name="EnemyAttackState" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
 script = ExtResource("8_j2r2h")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimatedSprite2D")
 
-[node name="EnemyCooldownState" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
+[node name="Cooldown" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy", "anim")]
 script = ExtResource("8_6sfd3")
 enemy = NodePath("../..")
 anim = NodePath("../../AnimatedSprite2D")
@@ -187,3 +173,5 @@ offset_bottom = -55.0
 theme_override_styles/background = SubResource("StyleBoxFlat_wavxh")
 theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
 show_percentage = false
+
+[connection signal="body_entered" from="DetectionArea" to="." method="_on_playerAttack_Area_body_exited"]

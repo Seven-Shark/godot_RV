@@ -39,11 +39,11 @@ func _on_physics_process(delta: float) -> void:
 func _on_next_transitions() -> void:
 	# 1. 没仇恨了 -> 待机
 	if not enemy.is_aggro_active:
-		transition.emit("idle")
+		transition.emit("Idle")
 		return
 	
 	# 2. 距离够近 -> 攻击
 	if is_instance_valid(enemy.current_target):
 		var dist = enemy.global_position.distance_to(enemy.current_target.global_position)
 		if dist <= enemy.attack_distance:
-			transition.emit("attack")
+			transition.emit("Attack")

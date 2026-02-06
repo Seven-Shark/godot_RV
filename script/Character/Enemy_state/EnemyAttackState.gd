@@ -52,4 +52,4 @@ func _on_damage_frame() -> void:
 func _on_next_transitions() -> void:
 	# 只有当攻击动作完全结束才切换
 	if not is_attacking:
-		transition.emit("cooldown")
+		transition.emit("Cooldown")

@@ -1,8 +1,8 @@
 extends CharacterBase
 class_name Enemy
 
-## Enemy.gd
-## 这是一个“黑板”类，只负责持有数据和通用物理，不负责状态切换逻辑。
+## Enemy.gd (最终修复版)
+## 职责：数据中心 + 物理计算 (环境力) + 攻击节点管理
 
 #region 1. AI 配置
 @export_group("AI Settings")
@@ -10,6 +10,11 @@ class_name Enemy
 @export var retreat_distance: float = 70.0      ## 后退距离 (防粘连)
 @export var aggro_trigger_time: float = 1.0     ## 仇恨触发时间
 @export var aggro_lose_time: float = 3.0        ## 仇恨丢失时间
+
+@export_group("Physics Forces")
+@export var separation_force: float = 500.0     ## 分离力度
+@export var push_force: float = 800.0           ## 推挤力度
+@export var push_threshold: float = 80.0        ## 推挤半径
 #endregion
 
 #region 2. 攻击配置
@@ -40,13 +45,16 @@ func _physics_process(delta: float) -> void:
 	# 1. 索敌 (父类逻辑)
 	_update_target_logic(delta)
 	
-	# 2. 计算仇恨 (这是通用规则，不属于某个特定状态)
+	# 2. 计算仇恨
 	_update_aggro_system(delta)
 	
 	# 3. 物理融合
 	# 状态机(State) 只负责修改 self.velocity 的“意图部分”
 	# Enemy 本体负责叠加环境力(分离/推挤) + 击退力
+	
+	# [修复] 这里直接调用下面定义的本地方法，不再调用 super
 	var env_force = _calculate_environment_forces()
+	
 	velocity += env_force + knockback_velocity
 	
 	# 击退保护
@@ -56,13 +64,50 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 #region 通用工具方法 (供 State 调用)
+
 ## 辅助方法：面向目标
 func face_current_target() -> void:
 	if not is_instance_valid(current_target) or not sprite: return
+	
 	var diff_x = current_target.global_position.x - global_position.x
 	if abs(diff_x) < 1.0: return 
+	
 	var default_facing = -1 if flipped_horizontal else 1
-	sprite.scale.x = -default_facing if diff_x < 0 else default_facing
+	if diff_x < 0:
+		sprite.scale.x = -default_facing 
+	else:
+		sprite.scale.x = default_facing 
+
+## 辅助方法：仇恨计算
+func _update_aggro_system(delta: float) -> void:
+	if is_dead: return
+	
+	var has_target = false
+	if is_instance_valid(current_target) and not current_target.is_dead:
+		if enter_Character.has(current_target):
+			has_target = true
+	
+	if has_target:
+		if not is_aggro_active:
+			aggro_timer += delta
+			if aggro_timer >= aggro_trigger_time:
+				is_aggro_active = true
+		else:
+			aggro_timer = aggro_lose_time
+	else:
+		if is_aggro_active:
+			aggro_timer -= delta
+			if aggro_timer <= 0:
+				is_aggro_active = false
+		else:
+			aggro_timer = 0.0
+
+func _update_target_logic(_delta: float) -> void:
+	Target_Lock_On(current_target)
+	if not is_instance_valid(current_target):
+		current_target = get_closest_target()
+
+
 
 ## 辅助方法：初始化攻击节点
 func _setup_attack_nodes() -> void:
@@ -89,35 +134,44 @@ func _setup_attack_nodes() -> void:
 	col.shape = rect
 	col.position = Vector2(attack_range_length / 2.0, 0)
 
-## 辅助方法：仇恨计算
-func _update_aggro_system(delta: float) -> void:
-	if is_dead: return
-	var has_target = false
-	if is_instance_valid(current_target) and not current_target.is_dead:
-		if enter_Character.has(current_target):
-			has_target = true
-	
-	if has_target:
-		if not is_aggro_active:
-			aggro_timer += delta
-			if aggro_timer >= aggro_trigger_time:
-				is_aggro_active = true
-		else:
-			aggro_timer = aggro_lose_time
-	else:
-		if is_aggro_active:
-			aggro_timer -= delta
-			if aggro_timer <= 0:
-				is_aggro_active = false
-		else:
-			aggro_timer = 0.0
-
-func _update_target_logic(_delta: float) -> void:
-	Target_Lock_On(current_target)
-	if not is_instance_valid(current_target):
-		current_target = get_closest_target()
-		
+## [核心修复] 补全环境力计算逻辑
 func _calculate_environment_forces() -> Vector2:
-	# (此处省略具体实现，请保留你原来的代码，因为它没有变)
-	return super._calculate_environment_forces()
+	if not detection_Area: return Vector2.ZERO
+	
+	var neighbors = detection_Area.get_overlapping_bodies()
+	if neighbors.is_empty(): return Vector2.ZERO
+	
+	var total_separation = Vector2.ZERO
+	var total_push = Vector2.ZERO
+	var sep_count = 0
+	
+	for body in neighbors:
+		if body == self: continue 
+		
+		var diff = global_position - body.global_position
+		var dist_sq = diff.length_squared()
+		
+		# 1. 队友分离力
+		if body is Enemy and dist_sq < 2500.0 and dist_sq > 0.1:
+			var dist = sqrt(dist_sq)
+			total_separation += (diff / dist)
+			sep_count += 1
+			
+		# 2. 玩家推挤力
+		elif body is CharacterBase and body.character_type == CharacterType.PLAYER:
+			var threshold_sq = push_threshold * push_threshold
+			if dist_sq < threshold_sq and dist_sq > 0.1:
+				var dist = sqrt(dist_sq)
+				var push_dir = diff / dist
+				var weight = 1.0 - (dist / push_threshold)
+				total_push += push_dir * push_force * weight
+
+	if sep_count > 0:
+		total_separation = (total_separation / sep_count) * separation_force
+		
+	return total_separation + total_push
 #endregion
+
+
+func _on_detection_area_body_entered(body: Node2D) -> void:
+	pass # Replace with function body.
