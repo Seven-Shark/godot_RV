@@ -153,7 +153,6 @@ script = ExtResource("9_siouf")
 script = ExtResource("9_v8frg")
 
 [node name="DetectionArea" type="Area2D" parent="."]
-collision_layer = 2
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")

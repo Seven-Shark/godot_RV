@@ -122,4 +122,13 @@ func get_final_speed(is_sprinting_input: bool, delta: float = 0.016) -> float:
 ## 更新当前负重数值
 func update_weight(amount: float):
 	current_weight = clamp(current_weight + amount, 0, 9999)
+	
+func reset_stats() -> void:
+	current_health = max_health
+	is_dead = false # 关键：解除死亡锁定
+	
+	# 通知外部 UI 更新
+	health_changed.emit(current_health, max_health)
+	
+	print(">>> [StatsComponent] 属性已重置，当前血量: ", current_health)
 #endregion
