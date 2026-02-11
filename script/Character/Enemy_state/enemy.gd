@@ -79,6 +79,7 @@ func force_stop_aggro() -> void:
 	is_aggro_active = false
 	aggro_timer = 0.0
 	current_target = null
+
 	
 	if attack_visual: attack_visual.visible = false
 	if attack_area: attack_area.monitoring = false
@@ -145,6 +146,7 @@ func _update_aggro_system(delta: float) -> void:
 			has_target = true
 	
 	if has_target:
+		# [场景 A] 目标在视野内
 		if not is_aggro_active:
 			aggro_timer += delta
 			if aggro_timer >= aggro_trigger_time:
@@ -152,12 +154,21 @@ func _update_aggro_system(delta: float) -> void:
 		else:
 			aggro_timer = aggro_lose_time
 	else:
+		# [场景 B] 目标不在视野内 (跑了)
 		if is_aggro_active:
+			# 情况 1: 已经在追了 -> 开始倒计时
 			aggro_timer -= delta
 			if aggro_timer <= 0:
 				is_aggro_active = false
+				current_target = null 
+				print(">>> [Enemy] 仇恨时间结束，放弃追逐")
 		else:
+			# 情况 2: 还没开始追就跑了 -> 直接遗忘！
+			# [核心修复] 如果还没建立仇恨，且目标已经不在视野里，立刻放弃锁定
 			aggro_timer = 0.0
+			if current_target != null:
+				current_target = null
+				# print(">>> [Enemy] 目标未触发仇恨即离开，解除锁定")
 
 ## 环境力计算
 func _calculate_environment_forces() -> Vector2:

@@ -4,13 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_nr6f4"]
 [ext_resource type="Texture2D" uid="uid://bpwqbhulp6ig0" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Run.png" id="3_3kun7"]
-[ext_resource type="Script" uid="uid://dgv04pqcpkc0r" path="res://script/Character/Enemy_state/EnemyStateMachine.gd" id="5_j2r2h"]
+[ext_resource type="Script" path="res://script/Character/Enemy_state/EnemyStateMachine.gd" id="5_j2r2h"]
 [ext_resource type="Script" uid="uid://con1jucromyi5" path="res://script/Character/Enemy_state/EnemyIdleState.gd" id="7_jerxs"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="7_wavxh"]
 [ext_resource type="Script" uid="uid://bsm7u84fsmw44" path="res://script/Character/Enemy_state/EnemyChaseState.gd" id="8_6sfd3"]
 [ext_resource type="Script" uid="uid://bnsffwpuo5wln" path="res://script/Character/Enemy_state/EnemyAttackState.gd" id="8_j2r2h"]
 [ext_resource type="Script" uid="uid://cba057rcblou1" path="res://script/Character/Enemy_state/EnemyCooldownState.gd" id="9_siouf"]
-[ext_resource type="Script" uid="uid://88d7i65cfsth" path="res://script/Character/Enemy_state/EnemyDeadState.gd" id="9_v8frg"]
+[ext_resource type="Script" path="res://script/Character/Enemy_state/EnemyDeadState.gd" id="9_v8frg"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqkjm"]
 atlas = ExtResource("2_b37dv")
@@ -114,6 +114,7 @@ collision_mask = 7
 script = ExtResource("1_gj3g1")
 separation_force = 50.0
 push_force = 50.0
+attack_damage = 230
 character_type = 2
 target_types = Array[int]([1])
 health = 20

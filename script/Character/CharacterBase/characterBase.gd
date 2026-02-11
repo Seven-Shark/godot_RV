@@ -223,6 +223,7 @@ func _on_playerAttack_Area_body_exited(body: Node2D) -> void:
 			_update_all_enter_Character()
 			target.clear_target_tag()
 
+
 func _update_all_enter_Character() -> void:
 	for i in range(enter_Character.size()):
 		enter_Character[i].set_target_tag(i + 1)
