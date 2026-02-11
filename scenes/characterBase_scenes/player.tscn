@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=43 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://c6t22f40o226g" path="res://script/Character/Player_state/idle_state.gd" id="7_asxtk"]
 [ext_resource type="Script" uid="uid://bmsubqutohj6q" path="res://script/Character/Player_state/walk_state.gd" id="8_p2gdj"]
 [ext_resource type="Script" uid="uid://dia2qt3dxsgbl" path="res://script/Character/Player_state/dash_state.gd" id="9_2holh"]
+[ext_resource type="Script" uid="uid://diplvx6bqhs6u" path="res://script/Character/Player_state/attack_state.gd" id="9_xl87i"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
 [ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
 
@@ -217,13 +218,14 @@ bg_color = Color(0, 0, 0, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxg0l"]
 bg_color = Color(2.0214916e-06, 0.7261122, 0.17636192, 1)
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("sprite", "healthbar")]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "sprite", "healthbar")]
 y_sort_enabled = true
 collision_mask = 7
 script = ExtResource("1_yv1sj")
 character_type = 1
+attack_bar = NodePath("AttackBar")
 sprite = NodePath("AnimatedSprite2D")
-healthbar = NodePath("ProgressBar")
+healthbar = NodePath("HpBar")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 
@@ -231,13 +233,13 @@ healthbar = NodePath("ProgressBar")
 script = ExtResource("2_kxg0l")
 base_walk_speed = 300.0
 weight_slowdown_factor = 0.1
-healthbar = NodePath("../ProgressBar")
+healthbar = NodePath("../HpBar")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_vuht5")
 animation = &"Idle"
 autoplay = "Idle"
-frame_progress = 0.23046832
+frame_progress = 0.17431688
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(0.8800007, 0.8800007)
@@ -255,10 +257,10 @@ script = ExtResource("7_asxtk")
 player = NodePath("../..")
 animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "animated_Sprite_2d")]
-script = ExtResource("7_asxtk")
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "animated_sprite_2d")]
+script = ExtResource("9_xl87i")
 player = NodePath("../..")
-animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
+animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
 [node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("8_p2gdj")
@@ -288,7 +290,16 @@ shape = SubResource("CircleShape2D_8lvt1")
 
 [node name="WeaponAdmin" parent="Right_Hand" instance=ExtResource("11_5je8t")]
 
-[node name="ProgressBar" type="ProgressBar" parent="."]
+[node name="HpBar" type="ProgressBar" parent="."]
+offset_left = -50.0
+offset_top = -77.0
+offset_right = 50.0
+offset_bottom = -67.0
+theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
+theme_override_styles/fill = SubResource("StyleBoxFlat_kxg0l")
+show_percentage = false
+
+[node name="AttackBar" type="ProgressBar" parent="."]
 offset_left = -50.0
 offset_top = -65.0
 offset_right = 50.0
