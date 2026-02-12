@@ -3,11 +3,11 @@ class_name CharacterBase
 
 ## 角色基础类 (CharacterBase)
 ## 职责：管理通用行为（战斗、侦查、物理、死亡）。
-## 新增特性：支持 Hit & Run (走A) 机制的底层实现。
+## 新增特性：集成 Hit & Run (走A) 机制 + 攻击范围延迟判定(Hitbox)。
 
 #region 1. 信号定义
 signal on_dead ## 当角色死亡时发出此信号
-signal on_perform_attack(target: CharacterBase) ## [新增] 当自动攻击蓄力完成时触发，子类需连接此信号执行具体攻击
+signal on_perform_attack(target: CharacterBase) ## 当自动攻击蓄力完成时触发
 #endregion
 
 #region 2. 枚举定义
@@ -28,9 +28,17 @@ enum CharacterType {
 
 #region 4. 自动攻击配置
 @export_group("Auto Attack System")
-# 注意：开关逻辑已移交子类控制，此处只保留参数
-@export var attack_interval: float = 1.0        ## 攻击间隔 (秒)
-@export var attack_bar: ProgressBar             ## 引用：头顶的圆形进度条
+# 基础参数
+@export var attack_interval: float = 1.0        ## 连续攻击间隔 (秒)
+@export var first_attack_interval: float = 0.2  ## 首次攻击间隔
+@export var attack_bar: ProgressBar             ## 头顶进度条
+
+# [新增] 伤害判定参数
+@export_subgroup("Hitbox Settings")
+@export var attack_damage: int = 10             ## 攻击伤害
+@export var attack_delay: float = 0.1           ## 伤害延迟 (前摇)
+@export var attack_duration: float = 0.1        ## 伤害判定持续时间
+@export var attack_hitbox: Area2D               ## [必须拖入] 攻击范围 Area2D 节点
 #endregion
 
 #region 5. 节点引用
@@ -59,7 +67,8 @@ var enter_Character: Array[CharacterBase] = []
 var knockback_velocity: Vector2 = Vector2.ZERO 
 
 # --- 自动攻击状态 ---
-var _attack_timer: float = 0.0 ## 内部攻击计时器
+var _attack_timer: float = 0.0 
+var _is_first_attack: bool = true 
 
 # --- 初始状态记忆 ---
 var _initial_layer: int = 1 
@@ -76,85 +85,141 @@ var _damage_tween: Tween
 
 #region 生命周期
 func _ready() -> void:
-	# 记录层级
 	_initial_layer = collision_layer
 	_initial_mask = collision_mask
 	
-	# 初始化侦查
 	if detection_Area:
 		detection_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
 		detection_Area.body_exited.connect(_on_playerAttack_Area_body_exited)
 	
-	# 初始化数值
 	if stats and healthbar:
 		healthbar.max_value = stats.max_health
 		healthbar.value = stats.current_health
 		stats.health_changed.connect(_on_health_changed)
 		stats.died.connect(_die)
 		
-	# 初始化攻击进度条
 	if attack_bar:
 		attack_bar.visible = false
 		attack_bar.value = 0
+	
+	# [新增] 初始化 Hitbox 为关闭状态
+	if attack_hitbox:
+		attack_hitbox.monitoring = false
+		attack_hitbox.monitorable = false
 
 func _physics_process(delta: float) -> void:
-	# 1. 处理击退
 	_handle_knockback(delta)
-	
-	# 注意：自动攻击逻辑不再此处调用，由子类 (Player) 视情况手动调用
-	
-	# 子类负责 move_and_slide
 #endregion
 
-#region [新增] 自动攻击核心逻辑 (被动调用)
-## [核心] 更新自动攻击进度 (由子类在合适时机调用，例如 Player 的 Auto 模式)
+#region 自动攻击核心逻辑
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
 
-	# 条件 1: 正在移动？ -> 立即重置进度
-	# 使用 length_squared > 10.0 比 > 0 更稳定，防止浮点数漂移
+	# 移动或无目标时重置
 	if velocity.length_squared() > 10.0:
-		reset_attack_progress()
+		reset_attack_progress(true) 
 		return
 
-	# 条件 2: 没有有效目标？ -> 重置进度
 	if not is_instance_valid(current_target) or current_target.is_dead:
-		reset_attack_progress()
+		reset_attack_progress(true)
 		return
 
-	# 条件 3: 静止且有目标 -> 开始蓄力
+	# 蓄力逻辑
+	var current_interval = first_attack_interval if _is_first_attack else attack_interval
 	_attack_timer += delta
 	
-	# 更新 UI
 	if attack_bar:
 		attack_bar.visible = true
-		var ratio = clamp(_attack_timer / attack_interval, 0.0, 1.0)
+		var ratio = clamp(_attack_timer / current_interval, 0.0, 1.0)
 		attack_bar.value = ratio * 100.0
 	
-	# 判定触发
-	if _attack_timer >= attack_interval:
+	if _attack_timer >= current_interval:
 		_trigger_attack()
 
-## [核心] 触发攻击 (内部调用)
 func _trigger_attack() -> void:
 	if current_target:
-		# 发出信号，子类连接此信号执行具体攻击
 		on_perform_attack.emit(current_target)
-		# print(">>> [CharacterBase] 蓄力完成，请求攻击: ", current_target.name)
 	
-	# 攻击后重置计时器，准备下一发
+	# 重置计时器
 	_attack_timer = 0.0
-	if attack_bar: attack_bar.value = 0.0
+	_is_first_attack = false 
+	
+	# [新增] 启动伤害判定流程 (无需等待，异步执行)
+	_perform_attack_sequence()
 
-## [核心] 重置进度 (由子类在不满足攻击条件时调用)
-func reset_attack_progress() -> void:
-	if _attack_timer == 0.0 and (attack_bar and not attack_bar.visible):
-		return # 已经是重置状态，无需重复操作
+func reset_attack_progress(is_full_reset: bool = false) -> void:
+	if not is_full_reset and _attack_timer == 0.0:
+		return
 		
 	_attack_timer = 0.0
+	
+	if is_full_reset:
+		_is_first_attack = true
+	
 	if attack_bar:
-		attack_bar.value = 0.0
 		attack_bar.visible = false
+		attack_bar.value = 0.0
+#endregion
+
+#region [新增] 攻击伤害判定逻辑 (Hitbox Sequence)
+## 执行攻击判定序列：等待前摇 -> 开启判定 -> 持续 -> 关闭判定
+func _perform_attack_sequence() -> void:
+	if not attack_hitbox: return
+
+	# [新增] 1. 核心修改：同步攻击方向！
+	# 在攻击开始的瞬间，让判定区的朝向与指示箭头一致
+	if direction_Sign:
+		# 使用 global_rotation 是最稳妥的，防止父节点缩放导致的角度错乱
+		attack_hitbox.global_rotation = direction_Sign.global_rotation
+	
+	# 2. 确保初始关闭
+	attack_hitbox.monitoring = false
+	
+	# 3. 等待前摇 (Delay)
+	if attack_delay > 0:
+		await get_tree().create_timer(attack_delay).timeout
+		if not is_instance_valid(self) or is_dead: return
+	
+	# 4. 开启 Hitbox
+	attack_hitbox.monitoring = true
+	
+	# 4.1 立即处理已经在范围内的人
+	_process_hitbox_overlap()
+	
+	# 4.2 监听后续进入的人
+	if not attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
+		attack_hitbox.body_entered.connect(_on_hitbox_body_entered)
+	
+	# 5. 等待持续时间 (Duration)
+	if attack_duration > 0:
+		await get_tree().create_timer(attack_duration).timeout
+	
+	# 6. 关闭 Hitbox
+	attack_hitbox.monitoring = false
+	if attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
+		attack_hitbox.body_entered.disconnect(_on_hitbox_body_entered)
+
+## 处理 Hitbox 开启瞬间已经在圈里的敌人
+func _process_hitbox_overlap() -> void:
+	var bodies = attack_hitbox.get_overlapping_bodies()
+	for body in bodies:
+		_apply_damage_to(body)
+
+## 处理 Hitbox 开启期间新闯入的敌人
+func _on_hitbox_body_entered(body: Node2D) -> void:
+	_apply_damage_to(body)
+
+## 统一造成伤害
+func _apply_damage_to(body: Node2D) -> void:
+	if body == self: return # 不打自己
+	
+	# 阵营检查：CharacterBase 互殴
+	if body is CharacterBase:
+		# 简单的敌我判断：阵营不同就打 (Player vs Enemy)
+		if body.character_type != self.character_type:
+			# 造成伤害
+			body.take_damage(attack_damage, self.character_type, self)
+			# print(">>> [Hit] 命中目标: ", body.name)
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)
@@ -176,7 +241,6 @@ func _die() -> void:
 	on_dead.emit()
 	print("%s 已死亡" % name)
 	
-	# 如果是玩家，切断输入
 	if character_type == CharacterType.PLAYER:
 		GameInputEvents.input_enabled = false
 	
@@ -193,38 +257,28 @@ func _die() -> void:
 	if healthbar: healthbar.visible = false
 	if direction_Sign: direction_Sign.visible = false
 	
-	# 死亡时隐藏攻击条
 	if attack_bar: attack_bar.visible = false
+	
+	# [新增] 死亡时强制关闭 Hitbox
+	if attack_hitbox: attack_hitbox.set_deferred("monitoring", false)
 	
 	_play_mario_death_anim()
 
 func _play_mario_death_anim() -> void:
 	if not sprite: return
-	
 	z_index = 100 
 	sprite.stop()
 	sprite.modulate = Color(0.8, 0.8, 0.8, 1.0) 
-	
 	var start_y = sprite.position.y
-	
 	if _death_tween: _death_tween.kill()
 	_death_tween = create_tween()
-	
-	_death_tween.tween_property(sprite, "position:y", start_y - 60, 0.3)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		
-	_death_tween.tween_property(sprite, "position:y", start_y + 1000, 1.0)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	
-	if character_type == CharacterType.ENEMY:
-		_death_tween.tween_callback(queue_free)
+	_death_tween.tween_property(sprite, "position:y", start_y - 60, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_death_tween.tween_property(sprite, "position:y", start_y + 1000, 1.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	if character_type == CharacterType.ENEMY: _death_tween.tween_callback(queue_free)
 
 func reset_status() -> void:
 	print(">>> [CharacterBase] 重置角色状态: ", name)
-	
-	if character_type == CharacterType.PLAYER:
-		GameInputEvents.input_enabled = true
-	
+	if character_type == CharacterType.PLAYER: GameInputEvents.input_enabled = true
 	if _death_tween: _death_tween.kill()
 	if _damage_tween: _damage_tween.kill()
 	
@@ -233,11 +287,14 @@ func reset_status() -> void:
 	velocity = Vector2.ZERO
 	z_index = 0
 	
-	# 重置攻击进度
+	# 重置攻击相关
 	_attack_timer = 0.0
+	_is_first_attack = true 
 	if attack_bar:
 		attack_bar.value = 0.0
 		attack_bar.visible = false
+	if attack_hitbox:
+		attack_hitbox.monitoring = false
 
 	enter_Character.clear()
 	current_target = null
@@ -251,7 +308,6 @@ func reset_status() -> void:
 	var collider = get_node_or_null("CollisionShape2D")
 	if collider: collider.set_deferred("disabled", false)
 	
-	# 重置侦查并手动扫描
 	if detection_Area: 
 		detection_Area.monitoring = true
 		var existing_bodies = detection_Area.get_overlapping_bodies()
@@ -267,10 +323,8 @@ func reset_status() -> void:
 		sprite.modulate = Color.WHITE
 		sprite.show()
 		sprite.play("Idle")
-	
 	if healthbar: healthbar.visible = true
 	if direction_Sign: direction_Sign.visible = false
-	
 	if stats:
 		stats.reset_stats()
 		if healthbar: healthbar.value = stats.current_health
@@ -282,7 +336,6 @@ func _on_playerAttack_Area_body_entered(body: Node2D) -> void:
 		var target: CharacterBase = body
 		enter_Character.append(target)
 		target.set_target_tag(enter_Character.size())
-		# print(">> [侦查] 锁定目标！")
 
 func _on_playerAttack_Area_body_exited(body: Node2D) -> void:
 	if body is CharacterBase and target_types.has(body.character_type):
@@ -301,7 +354,6 @@ func get_closest_target() -> CharacterBase:
 	var closest_target: CharacterBase = null
 	var closest_dist_sq: float = INF
 	var self_pos: Vector2 = global_position
-	
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
 		if body != self and target_types.has(body.character_type):
@@ -335,13 +387,11 @@ func Turn() -> void:
 func damage_effects() -> void:
 	invincible = true
 	if hit_particles: hit_particles.emitting = true
-	
 	if _damage_tween: _damage_tween.kill()
 	_damage_tween = create_tween()
 	_damage_tween.tween_property(sprite, "modulate", Color(10, 10, 10), 0.1) 
 	_damage_tween.tween_property(sprite, "modulate", Color.RED, 0.1)
 	_damage_tween.tween_property(sprite, "modulate", Color.WHITE, 0.1)
-	
 	await _damage_tween.finished
 	invincible = false
 

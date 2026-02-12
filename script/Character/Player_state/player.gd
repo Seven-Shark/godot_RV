@@ -19,7 +19,7 @@ enum AimMode_Type {
 	AUTO_NEAREST, ## 自动锁定最近
 	MOUSE_ASSIST  ## 鼠标辅助扇形
 }
-var player_current_aim_mode: AimMode_Type = AimMode_Type.MOUSE_ASSIST
+var player_current_aim_mode: AimMode_Type = AimMode_Type.AUTO_NEAREST
 #endregion
 
 #region 4. 生命周期
@@ -37,19 +37,25 @@ func _ready() -> void:
 		on_perform_attack.connect(_on_perform_auto_attack)
 
 func _physics_process(delta: float) -> void:
-	# 1. 调用父类物理逻辑 (处理击退等)
+	# 1. 调用父类物理逻辑
 	super._physics_process(delta)
 
-	# 2. [核心逻辑] 根据瞄准模式控制自动攻击
+	# [修改] 攻击状态下，进行“部分重置” (False)
+	# 这样不会把 _is_first_attack 重置为 true，保证回到 Idle 后继续用长间隔
+	if state_machine.current_node_state_name == "attack":
+		reset_attack_progress(false) 
+		return
+
+	# 2. 根据瞄准模式控制自动攻击
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
-			# 自动模式：启用走A逻辑 (调用父类方法进行读条)
+			# 自动模式：计算进度
 			update_auto_attack_progress(delta)
 			
 		AimMode_Type.MOUSE_ASSIST:
-			# 鼠标模式：强制关闭走A (重置进度)
-			reset_attack_progress()
-
+			# 鼠标模式：强制“完全重置” (True)
+			reset_attack_progress(true)
+			
 func _process(_delta: float) -> void:
 	# 1. 视觉朝向
 	_update_facing_direction()

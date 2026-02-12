@@ -20,7 +20,6 @@ class_name Enemy
 
 #region 2. 攻击配置
 @export_group("Attack Settings")
-@export var attack_damage: int = 20            ## [供状态机读取] 攻击伤害
 @export var attack_range_length: float = 150.0 ## 攻击框长度
 @export var attack_width: float = 60.0         ## 攻击框宽度
 @export var charge_duration: float = 1.0       ## [供状态机读取] 蓄力时间

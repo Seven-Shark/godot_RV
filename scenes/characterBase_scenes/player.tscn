@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=45 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -125,7 +125,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wpaat")
 }],
-"loop": true,
+"loop": false,
 "name": &"Attack",
 "speed": 12.0
 }, {
@@ -209,21 +209,41 @@ animations = [{
 radius = 43.0
 height = 94.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xl87i"]
+size = Vector2(162, 109)
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
 radius = 258.43567
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
 bg_color = Color(0, 0, 0, 1)
+border_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxg0l"]
-bg_color = Color(2.0214916e-06, 0.7261122, 0.17636192, 1)
+bg_color = Color(0.53701437, 0.99599725, 0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.77254903)
+border_blend = true
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "sprite", "healthbar")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xl87i"]
+bg_color = Color(0.99586946, 0.9038984, 0.62664026, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "attack_hitbox", "sprite", "healthbar")]
 y_sort_enabled = true
 collision_mask = 7
 script = ExtResource("1_yv1sj")
 character_type = 1
+attack_interval = 0.5
 attack_bar = NodePath("AttackBar")
+attack_hitbox = NodePath("AttackHitbox")
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
 
@@ -237,9 +257,8 @@ healthbar = NodePath("../HpBar")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_vuht5")
-animation = &"Idle"
+animation = &"Attack"
 autoplay = "Idle"
-frame_progress = 0.17431688
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(0.8800007, 0.8800007)
@@ -279,6 +298,15 @@ animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
 position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
 
+[node name="AttackHitbox" type="Area2D" parent="."]
+collision_mask = 7
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
+position = Vector2(81, -1.5)
+shape = SubResource("RectangleShape2D_xl87i")
+
 [node name="DetectionArea" type="Area2D" parent="."]
 visible = false
 collision_mask = 3
@@ -305,7 +333,7 @@ offset_top = -65.0
 offset_right = 50.0
 offset_bottom = -55.0
 theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
-theme_override_styles/fill = SubResource("StyleBoxFlat_kxg0l")
+theme_override_styles/fill = SubResource("StyleBoxFlat_xl87i")
 show_percentage = false
 
 [connection signal="on_dead" from="." to="." method="_on_on_dead"]
