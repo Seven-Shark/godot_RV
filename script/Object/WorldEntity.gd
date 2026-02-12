@@ -78,7 +78,6 @@ func _init_physics_state():
 			# [修正] 使用位掩码赋值
 			collision_layer = LAYER_PROP_MASK
 			# Mask 通常保留 Layer 2 (World/Player) 等交互
-			collision_mask = 2 
 			_apply_material()
 			
 		EntityType.RESOURCE:

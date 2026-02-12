@@ -232,7 +232,13 @@ func _perform_attack_sequence() -> void:
 ## 处理 Hitbox 开启瞬间已经在圈里的敌人
 func _process_hitbox_overlap() -> void:
 	var bodies = attack_hitbox.get_overlapping_bodies()
+	
+	# [修正] 打印数组大小，看看是不是空的
+	print(">>> [Hitbox Overlap] 检测到重叠物体数量: ", bodies.size())
+	
 	for body in bodies:
+		# [修正]在这里打印每个物体的名字
+		print("  -> 物体: ", body.name, " | 层级: ", body.collision_layer)
 		_apply_damage_to(body)
 
 ## 处理 Hitbox 开启期间新闯入的敌人

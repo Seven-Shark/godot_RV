@@ -301,7 +301,7 @@ position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
 
 [node name="AttackHitbox" type="Area2D" parent="."]
-collision_mask = 7
+collision_mask = 6
 monitoring = false
 monitorable = false
 

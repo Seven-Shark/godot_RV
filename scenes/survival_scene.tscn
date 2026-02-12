@@ -771,10 +771,9 @@ new_day_button = NodePath("../GameHUD/NewDayButton")
 game_over_overlay = NodePath("../GameOverLayer/GameOverOverlay")
 game_over_label = NodePath("../GameOverLayer/GameOverOverlay/CountDownLabel")
 
-[node name="LevelManager" type="Node2D" parent="." node_paths=PackedStringArray("tile_map", "player", "object_container", "ers_manager")]
+[node name="LevelManager" type="Node2D" parent="." node_paths=PackedStringArray("tile_map", "object_container", "ers_manager")]
 script = ExtResource("1_dqgb5")
 tile_map = NodePath("../TileMapLayer")
-player = NodePath("../Player")
 object_container = NodePath("../ObjectContainer")
 ers_manager = NodePath("../ERSLayer")
 spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce"), SubResource("Resource_j17jc")])
@@ -799,14 +798,14 @@ tile_set = SubResource("TileSet_dqgb5")
 
 [node name="ObjectContainer" type="Node2D" parent="."]
 
-[node name="Player" parent="." instance=ExtResource("1_8jv7c")]
-collision_mask = 3
-
 [node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
 position = Vector2(820, -196)
 
 [node name="Enemy2" parent="." instance=ExtResource("2_h8imf")]
 position = Vector2(504, 120)
+
+[node name="Player" parent="." instance=ExtResource("1_8jv7c")]
+collision_mask = 6
 
 [node name="GameHUD" type="CanvasLayer" parent="."]
 script = ExtResource("7_ai1qu")
