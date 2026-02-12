@@ -29,6 +29,7 @@ metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 [sub_resource type="Resource" id="Resource_j17jc"]
 script = ExtResource("2_yfs36")
 object_prefab = ExtResource("14_d7qbs")
+spawn_count = 0
 metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cxslg"]
@@ -800,7 +801,6 @@ tile_set = SubResource("TileSet_dqgb5")
 [node name="ObjectContainer" type="Node2D" parent="."]
 
 [node name="Player" parent="." instance=ExtResource("1_8jv7c")]
-collision_mask = 3
 
 [node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
 position = Vector2(820, -196)

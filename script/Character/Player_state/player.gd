@@ -32,7 +32,6 @@ func _ready() -> void:
 	super._ready() # [必须] 调用父类初始化，否则层级记忆和侦查圈失效
 	
 	# [新增] 连接父类的自动攻击信号
-	# 当 CharacterBase 的进度条涨满时，会发出此信号
 	if not on_perform_attack.is_connected(_on_perform_auto_attack):
 		on_perform_attack.connect(_on_perform_auto_attack)
 
@@ -41,7 +40,6 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
 	# [修改] 攻击状态下，进行“部分重置” (False)
-	# 这样不会把 _is_first_attack 重置为 true，保证回到 Idle 后继续用长间隔
 	if state_machine.current_node_state_name == "attack":
 		reset_attack_progress(false) 
 		return
@@ -63,8 +61,8 @@ func _process(_delta: float) -> void:
 	# 2. 获取鼠标位置
 	var mouse_pos = get_global_mouse_position()
 	
-	# 3. 获取目标
-	var final_target: CharacterBase = _get_target_by_mode(mouse_pos)
+	# 3. 获取目标 [修改] 类型改为 Node2D
+	var final_target: Node2D = _get_target_by_mode(mouse_pos)
 	
 	# 4. 更新锁定
 	_update_target_locking(final_target)
@@ -87,20 +85,21 @@ func _draw() -> void:
 
 #region 5. 战斗响应 (核心)
 ## [回调] 当自动攻击蓄力完成时触发
-func _on_perform_auto_attack(target: CharacterBase) -> void:
+## [修改] 参数类型改为 Node2D，以接收 WorldEntity
+func _on_perform_auto_attack(target: Node2D) -> void:
 	print(">>> [Player] 自动攻击触发！目标: ", target.name)
 	
 	# 1. 可以在这里生成子弹逻辑 (例如调用 WeaponManager)
 	# create_bullet(target)
 	
 	# 2. [关键] 切换状态机到 Attack 状态
-	# 这会播放攻击动画，并暂时定住角色
 	if state_machine:
 		state_machine.transition_to("Attack")
 #endregion
 
 #region 6. 目标获取逻辑
-func _get_target_by_mode(mouse_pos: Vector2) -> CharacterBase:
+## [修改] 返回类型改为 Node2D
+func _get_target_by_mode(mouse_pos: Vector2) -> Node2D:
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
 			return get_closest_target()
@@ -108,32 +107,41 @@ func _get_target_by_mode(mouse_pos: Vector2) -> CharacterBase:
 			return get_mouse_assist_target(mouse_pos)
 	return null
 
-func get_mouse_assist_target(mouse_position: Vector2) -> CharacterBase:
+## [修改] 返回类型改为 Node2D
+func get_mouse_assist_target(mouse_position: Vector2) -> Node2D:
 	var self_pos = global_position
 	var to_mouse_dir = (mouse_position - self_pos).normalized()
-	var closest_assist_target: CharacterBase = null
+	var closest_assist_target: Node2D = null # 类型改为 Node2D
 	var closest_dist_sq = INF
 	
 	var half_angle_rad = deg_to_rad(ASSIST_ANGLE / 2.0)
 	
-	# 使用父类的 enter_Character (逻辑列表) 更加稳定
+	# 使用父类的 enter_Character (现在里面存的是 Node2D)
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
-		if body is CharacterBase and body != self and target_types.has(body.character_type):
-			if body.is_dead: continue
+		
+		# 逻辑判断：是敌人且未死，或者是物件
+		var is_valid_target = false
+		if body is CharacterBase and target_types.has(body.character_type):
+			if not body.is_dead: is_valid_target = true
+		elif body is WorldEntity and body.entity_type == WorldEntity.EntityType.PROP:
+			is_valid_target = true
 			
-			var target_vec = body.global_position - self_pos
-			var dist_sq = target_vec.length_squared()
+		if not is_valid_target: continue
 			
-			if dist_sq <= ASSIST_RANGE_SQ:
-				if abs(to_mouse_dir.angle_to(target_vec)) <= half_angle_rad:
-					if dist_sq < closest_dist_sq:
-						closest_dist_sq = dist_sq
-						closest_assist_target = body
+		var target_vec = body.global_position - self_pos
+		var dist_sq = target_vec.length_squared()
+		
+		if dist_sq <= ASSIST_RANGE_SQ:
+			if abs(to_mouse_dir.angle_to(target_vec)) <= half_angle_rad:
+				if dist_sq < closest_dist_sq:
+					closest_dist_sq = dist_sq
+					closest_assist_target = body
 						
 	return closest_assist_target
 
-func _update_target_locking(new_target: CharacterBase) -> void:
+## [修改] 参数类型改为 Node2D
+func _update_target_locking(new_target: Node2D) -> void:
 	if new_target and new_target != current_target:
 		current_target = new_target
 	elif not new_target and is_instance_valid(current_target):

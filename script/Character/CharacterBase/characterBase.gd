@@ -4,10 +4,13 @@ class_name CharacterBase
 ## 角色基础类 (CharacterBase)
 ## 职责：管理通用行为（战斗、侦查、物理、死亡）。
 ## 新增特性：集成 Hit & Run (走A) 机制 + 攻击范围延迟判定(Hitbox)。
+## 优化：
+## 1. 采用常驻监测 (Always Monitoring) 方案，消除物理帧延迟。
+## 2. [新增] 自动攻击系统兼容 WorldEntity (树木/石头等物件)。
 
 #region 1. 信号定义
 signal on_dead ## 当角色死亡时发出此信号
-signal on_perform_attack(target: CharacterBase) ## 当自动攻击蓄力完成时触发
+signal on_perform_attack(target: Node2D) ## [修改] 当自动攻击蓄力完成时触发 (目标改为 Node2D)
 #endregion
 
 #region 2. 枚举定义
@@ -32,6 +35,7 @@ enum CharacterType {
 @export var attack_interval: float = 1.0        ## 连续攻击间隔 (秒)
 @export var first_attack_interval: float = 0.2  ## 首次攻击间隔
 @export var attack_bar: ProgressBar             ## 头顶进度条
+@export var attack_knockback_force: float = 500.0 ## 普通攻击击退力度
 
 # 伤害判定参数
 @export_subgroup("Hitbox Settings")
@@ -60,8 +64,8 @@ var is_dead: bool = false
 var current_tag: int = 0     
 
 # --- 侦查与索敌 ---
-var current_target: CharacterBase = null       
-var enter_Character: Array[CharacterBase] = [] 
+var current_target: Node2D = null              ## [修改] 当前目标 (可能是敌人或物件)
+var enter_Character: Array[Node2D] = []        ## [修改] 侦查范围内的所有目标
 
 # --- 物理计算 ---
 var knockback_velocity: Vector2 = Vector2.ZERO 
@@ -69,7 +73,8 @@ var knockback_velocity: Vector2 = Vector2.ZERO
 # --- 自动攻击状态 ---
 var _attack_timer: float = 0.0 ## 内部攻击计时器
 var _is_first_attack: bool = true ## 标记是否为停止后的第一发
-var _is_attack_valid: bool = false ## [新增] 标记本次攻击判定是否有效 (用于处理移动打断)
+var _is_attack_valid: bool = false ## 标记本次攻击判定是否有效 (用于处理移动打断)
+var _is_damage_active: bool = false ## 标记 Hitbox 当前是否有伤害能力 (逻辑开关)
 
 # --- 初始状态记忆 ---
 var _initial_layer: int = 1 
@@ -103,10 +108,15 @@ func _ready() -> void:
 		attack_bar.visible = false
 		attack_bar.value = 0
 	
-	# 初始化 Hitbox 为关闭状态
+	# 初始化 Hitbox 为常驻开启状态，但逻辑关闭
 	if attack_hitbox:
-		attack_hitbox.monitoring = false
+		attack_hitbox.monitoring = true
 		attack_hitbox.monitorable = false
+		_is_damage_active = false
+		
+		# 提前连接信号
+		if not attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
+			attack_hitbox.body_entered.connect(_on_hitbox_body_entered)
 
 func _physics_process(delta: float) -> void:
 	_handle_knockback(delta)
@@ -118,13 +128,20 @@ func _physics_process(delta: float) -> void:
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
 
-	# 条件 1: 正在移动？ -> 完全重置 (下一次停下来算首次攻击)
+	# 条件 1: 正在移动？ -> 完全重置
 	if velocity.length_squared() > 10.0:
 		reset_attack_progress(true) 
 		return
 
 	# 条件 2: 没有有效目标？ -> 完全重置
-	if not is_instance_valid(current_target) or current_target.is_dead:
+	# [修改] 兼容 WorldEntity (没有 is_dead 属性)
+	var target_valid = is_instance_valid(current_target)
+	if target_valid:
+		if current_target is CharacterBase and current_target.is_dead:
+			target_valid = false
+		# WorldEntity 销毁时 is_instance_valid 会变 false，所以这里不需要特判
+		
+	if not target_valid:
 		reset_attack_progress(true)
 		return
 
@@ -158,18 +175,12 @@ func _trigger_attack() -> void:
 	_perform_attack_sequence()
 
 ## 重置进度
-## @param is_full_reset: True(移动/无目标) | False(攻击间隙)
 func reset_attack_progress(is_full_reset: bool = false) -> void:
-	# [核心] 如果是完全重置 (例如玩家移动了)，立即撤销攻击许可！
 	if is_full_reset:
 		_is_first_attack = true
-		_is_attack_valid = false # <--- 关键：如果此时前摇还没结束，攻击将被取消
-		
-		# 强制关闭 Hitbox (防止意外残留)
-		if attack_hitbox:
-			attack_hitbox.set_deferred("monitoring", false)
+		_is_attack_valid = false
+		_is_damage_active = false
 	
-	# 优化：如果计时器已经是0，无需更新UI
 	if not is_full_reset and _attack_timer == 0.0:
 		return
 		
@@ -180,85 +191,68 @@ func reset_attack_progress(is_full_reset: bool = false) -> void:
 		attack_bar.value = 0.0
 #endregion
 
-#region [新增] 攻击伤害判定逻辑 (Hitbox Sequence)
-## 执行攻击判定序列：等待前摇 -> 检查有效性 -> 开启判定 -> 持续 -> 关闭判定
+#region 攻击伤害判定逻辑 (Hitbox Sequence)
 func _perform_attack_sequence() -> void:
 	if not attack_hitbox: return
 
-	# 1. 同步攻击方向 (让范围朝向目标/指示器)
+	# 1. 同步攻击方向
 	if direction_Sign:
 		attack_hitbox.global_rotation = direction_Sign.global_rotation
 	
-	# 2. 确保初始关闭
-	attack_hitbox.set_deferred("monitoring", false)
+	_is_damage_active = false
 	
-	# 3. 等待前摇 (Delay)
+	# 3. 等待前摇
 	if attack_delay > 0:
 		await get_tree().create_timer(attack_delay).timeout
-		
-		# [关键检查] 前摇结束后，检查攻击是否还被允许？
-		# 如果在等待期间玩家移动了，_is_attack_valid 会变成 false，此时必须终止伤害
-		if not _is_attack_valid: 
-			# print(">>> [Attack] 攻击被打断，取消伤害生成")
-			return
-		
-		# 安全检查
+		if not _is_attack_valid: return
 		if not is_instance_valid(self) or is_dead: return
 	
-	# 4. 开启 Hitbox (造成伤害)
-	attack_hitbox.set_deferred("monitoring", true)
+	# 4. 开启伤害逻辑
+	_is_damage_active = true
 	
-	# 等待一帧物理帧，确保重叠检测准确
-	await get_tree().physics_frame
-	if not is_instance_valid(self): return # 防御性检查
-	
-	# 4.1 立即处理已经在范围内的人
+	# 4.1 立即处理已经在圈里的敌人
 	_process_hitbox_overlap()
 	
-	# 4.2 监听后续进入的人
-	if not attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
-		attack_hitbox.body_entered.connect(_on_hitbox_body_entered)
-	
-	# 5. 等待持续时间 (Duration)
+	# 5. 等待持续时间
 	if attack_duration > 0:
 		await get_tree().create_timer(attack_duration).timeout
 	
-	# 6. 关闭 Hitbox
-	attack_hitbox.set_deferred("monitoring", false)
-	
-	if attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
-		attack_hitbox.body_entered.disconnect(_on_hitbox_body_entered)
+	# 6. 关闭伤害逻辑
+	_is_damage_active = false
 
-## 处理 Hitbox 开启瞬间已经在圈里的敌人
 func _process_hitbox_overlap() -> void:
 	var bodies = attack_hitbox.get_overlapping_bodies()
+	# print(">>> [Instant Hit] 瞬间命中数量: ", bodies.size())
 	for body in bodies:
 		_apply_damage_to(body)
 
-## 处理 Hitbox 开启期间新闯入的敌人
 func _on_hitbox_body_entered(body: Node2D) -> void:
-	print("Hitbox 检测到物体: ", body.name, " | 层级: ", body.collision_layer)
+	if not _is_damage_active: return
 	_apply_damage_to(body)
 
-## 统一造成伤害
+## 统一造成伤害 (普通攻击)
 func _apply_damage_to(body: Node2D) -> void:
 	if body == self: return 
 	
-	# 1. 优先尝试调用 take_damage (鸭子类型：只要有这个方法就能打)
 	if body.has_method("take_damage"):
-		# 获取阵营：如果有 character_type 属性就用，没有就默认视为不同阵营
 		var body_faction = null
 		if "character_type" in body:
 			body_faction = body.character_type
 		
-		# 简单的敌我判断：如果是同类就不打 (防误伤)
+		# 同类判断
 		if body_faction != null and body_faction == self.character_type:
 			return
 			
-		# 执行伤害
-		# 注意：这里我们做了兼容，如果 WorldEntity 需要 float，我们就传 float
+		# A. 造成伤害
 		body.take_damage(float(attack_damage), self.character_type, self)
-		# print(">>> [Hit] 命中: ", body.name)
+		
+		# B. 施加击退
+		var knockback_dir = (body.global_position - global_position).normalized()
+		
+		if body.has_method("apply_knockback"):
+			body.apply_knockback(knockback_dir, attack_knockback_force)
+		elif body is RigidBody2D:
+			body.apply_central_impulse(knockback_dir * attack_knockback_force * 0.5)
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)
@@ -297,7 +291,7 @@ func _die() -> void:
 	if direction_Sign: direction_Sign.visible = false
 	if attack_bar: attack_bar.visible = false
 	
-	# [修复] 死亡时强制关闭 Hitbox
+	_is_damage_active = false
 	if attack_hitbox: attack_hitbox.set_deferred("monitoring", false)
 	
 	_play_mario_death_anim()
@@ -325,15 +319,17 @@ func reset_status() -> void:
 	velocity = Vector2.ZERO
 	z_index = 0
 	
-	# 重置攻击相关
 	_attack_timer = 0.0
 	_is_first_attack = true 
-	_is_attack_valid = false # 重置时取消攻击许可
+	_is_attack_valid = false
+	_is_damage_active = false
+	
 	if attack_bar:
 		attack_bar.value = 0.0
 		attack_bar.visible = false
+	
 	if attack_hitbox:
-		attack_hitbox.set_deferred("monitoring", false)
+		attack_hitbox.set_deferred("monitoring", true)
 
 	enter_Character.clear()
 	current_target = null
@@ -347,15 +343,13 @@ func reset_status() -> void:
 	var collider = get_node_or_null("CollisionShape2D")
 	if collider: collider.set_deferred("disabled", false)
 	
+	# 重启侦查圈逻辑
 	if detection_Area: 
 		detection_Area.monitoring = true
 		var existing_bodies = detection_Area.get_overlapping_bodies()
+		# 手动触发一次进入逻辑
 		for body in existing_bodies:
-			if body is CharacterBase and body != self and target_types.has(body.character_type):
-				if not body.is_dead:
-					if not enter_Character.has(body):
-						enter_Character.append(body)
-						body.set_target_tag(enter_Character.size())
+			_on_playerAttack_Area_body_entered(body)
 
 	if sprite:
 		sprite.position = Vector2.ZERO
@@ -369,41 +363,72 @@ func reset_status() -> void:
 		if healthbar: healthbar.value = stats.current_health
 #endregion
 
-#region 侦查与索敌逻辑 (保持不变)
+#region 侦查与索敌逻辑
 func _on_playerAttack_Area_body_entered(body: Node2D) -> void:
+	if body == self: return
+	var is_valid = false
+	
+	# A. 敌人
 	if body is CharacterBase and target_types.has(body.character_type):
-		var target: CharacterBase = body
-		enter_Character.append(target)
-		target.set_target_tag(enter_Character.size())
+		is_valid = true
+		
+	# B. 物件 (严格限制：只允许 PROP 或 HEAVY，绝对不允许 RESOURCE)
+	elif body is WorldEntity:
+		# [关键] 显式白名单：只有 PROP 和 HEAVY 能被锁定
+		if body.entity_type == WorldEntity.EntityType.PROP or body.entity_type == WorldEntity.EntityType.HEAVY:
+			is_valid = true
+		# 如果是 RESOURCE，is_valid 保持 false，不会被加入列表
+			
+	if is_valid:
+		if not enter_Character.has(body):
+			enter_Character.append(body)
+			if body.has_method("set_target_tag"):
+				body.set_target_tag(enter_Character.size())
 
 func _on_playerAttack_Area_body_exited(body: Node2D) -> void:
-	if body is CharacterBase and target_types.has(body.character_type):
-		var target: CharacterBase = body
-		var index = enter_Character.find(target)
-		if index != -1:
-			enter_Character.remove_at(index)
-			_update_all_enter_Character()
-			target.clear_target_tag()
+	var index = enter_Character.find(body)
+	if index != -1:
+		enter_Character.remove_at(index)
+		_update_all_enter_Character()
+		if body.has_method("clear_target_tag"):
+			body.clear_target_tag()
 
 func _update_all_enter_Character() -> void:
 	for i in range(enter_Character.size()):
-		enter_Character[i].set_target_tag(i + 1)
+		var body = enter_Character[i]
+		if body.has_method("set_target_tag"):
+			body.set_target_tag(i + 1)
 
-func get_closest_target() -> CharacterBase:
-	var closest_target: CharacterBase = null
+## [修改] 获取最近目标 (支持 Node2D)
+func get_closest_target() -> Node2D:
+	var closest_target: Node2D = null
 	var closest_dist_sq: float = INF
 	var self_pos: Vector2 = global_position
+	
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
-		if body != self and target_types.has(body.character_type):
-			if body.is_dead: continue
-			var dist_sq = self_pos.distance_squared_to(body.global_position)
-			if dist_sq < closest_dist_sq:
-				closest_dist_sq = dist_sq
-				closest_target = body
+		
+		# 再次检查类型，防止漏网之鱼
+		var is_valid_target = false
+		
+		if body is CharacterBase:
+			if not body.is_dead: is_valid_target = true
+			
+		elif body is WorldEntity:
+			# [关键] 再次过滤：如果是 RESOURCE 直接跳过
+			if body.entity_type != WorldEntity.EntityType.RESOURCE:
+				is_valid_target = true
+		
+		if not is_valid_target: continue
+			
+		var dist_sq = self_pos.distance_squared_to(body.global_position)
+		if dist_sq < closest_dist_sq:
+			closest_dist_sq = dist_sq
+			closest_target = body
+			
 	return closest_target
 
-func Target_Lock_On(target: CharacterBase) -> void:
+func Target_Lock_On(target: Node2D) -> void:
 	if not is_instance_valid(direction_Sign): return
 	if target:
 		direction_Sign.rotation = (target.global_position - global_position).angle()

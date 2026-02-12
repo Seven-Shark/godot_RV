@@ -75,10 +75,14 @@ func _init_physics_state():
 	match entity_type:
 		EntityType.PROP:
 			freeze = true # 默认静止
-			# [修正] 使用位掩码赋值
+			freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
+			# [位掩码] Layer 3 (Value 4)
 			collision_layer = LAYER_PROP_MASK
-			# Mask 通常保留 Layer 2 (World/Player) 等交互
-			collision_mask = 2 
+			
+			# [修正] 碰撞掩码：同时侦测 Layer 1, 2, 3
+			# Layer 1(1) | Layer 2(2) | Layer 3(4) = 7
+			collision_mask = 1 | 2 | 4
+			
 			_apply_material()
 			
 		EntityType.RESOURCE:
@@ -90,7 +94,7 @@ func _init_physics_state():
 		EntityType.HEAVY:
 			freeze = false # 重物受物理引擎控制
 			linear_damp = 5.0 # 增加阻尼防止滑行过远
-			# [修正] 使用位掩码赋值
+			# [位掩码] Layer 3 (Value 4)
 			collision_layer = LAYER_PROP_MASK
 			_apply_material()
 
@@ -108,15 +112,16 @@ func _apply_material():
 #region 交互接口 (供 Weapon 调用)
 
 ## 1. 承受伤害 (PROP 专属)
-# [注意] 为了兼容旧代码，这里保留了 _attacker_type 参数位
 func take_damage(amount: float, _attacker_type: int, attacker_node: Node2D = null):
-	# print(">>> [WorldEntity] %s 受到伤害: %s" % [name, amount])
-	if entity_type != EntityType.PROP: return
+	# [修改] 严格屏蔽 RESOURCE
+	# 只有 PROP 和 HEAVY (如果设计允许) 可以受伤
+	if entity_type == EntityType.RESOURCE: return 
 	
-	# 数值处理
+	# 如果 HEAVY (石头) 也是无敌的，把这行也加上：a
+	# if entity_type == EntityType.HEAVY: return 
+	
 	if stats: stats.take_damage(amount)
 	
-	# 视觉反馈
 	if attacker_node:
 		var dir = (global_position - attacker_node.global_position).normalized()
 		visuals_hit_requested.emit(dir)
@@ -158,13 +163,12 @@ func launch(start: Vector2, end: Vector2):
 
 ## 6. 开启捡起检测 (由 Visual 回调)
 func enable_pickup_detection():
-	# [修复 3] 只有资源才能开启“被捡起”的物理层级
-	# 如果是 PROP (比如生成的小石头)，落地后应该保持 PROP 的物理状态，不能变成可捡起状态
+	# [修复] 只有资源才能开启“被捡起”的物理层级
 	if entity_type != EntityType.RESOURCE: return
 	
 	if _is_absorbed: return
 	
-	# [修正] 使用位掩码赋值
+	# [位掩码] Layer 4 (Value 8)
 	collision_layer = LAYER_RESOURCE_MASK
 	collision_mask = 0
 	freeze = true
@@ -183,7 +187,7 @@ func _on_death():
 	
 	visuals_death_requested.emit()
 	
-	# 延迟执行掉落，防止物理报错 (Flushing Queries Error)
+	# 延迟执行掉落，防止物理报错
 	call_deferred("_spawn_loot")
 
 func _spawn_loot():
@@ -194,12 +198,8 @@ func _spawn_loot():
 		return
 
 	for loot in loot_table:
-		
-		# [修复 1] 检查 loot 数据本身是否存在
 		if not loot: continue
 		
-		# [修复 2] 关键检查：检查 Item Scene 是否为空！
-		# 如果你在检查器里忘了把木头/石头的场景拖进去，这里就会拦截并警告，而不是报错崩溃
 		if not loot.item_scene:
 			push_warning("[%s] 的掉落表中有一项缺少 Item Scene！已跳过。" % name)
 			continue
@@ -207,7 +207,7 @@ func _spawn_loot():
 		var count = loot.get_drop_count()
 		for i in range(count):
 			var item = loot.item_scene.instantiate()
-			get_parent().add_child(item) # 此时已在 deferred 中，操作安全
+			get_parent().add_child(item) 
 			
 			# 计算随机落点
 			var angle = randf() * TAU

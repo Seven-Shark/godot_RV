@@ -210,10 +210,10 @@ radius = 43.0
 height = 94.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xl87i"]
-size = Vector2(162, 109)
+size = Vector2(116, 109)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
-radius = 258.43567
+radius = 127.03543
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
 bg_color = Color(0, 0, 0, 1)
@@ -242,6 +242,8 @@ script = ExtResource("1_yv1sj")
 character_type = 1
 attack_interval = 0.5
 attack_bar = NodePath("AttackBar")
+attack_knockback_force = 0.0
+attack_damage = 30
 attack_delay = 0.2
 attack_hitbox = NodePath("AttackHitbox")
 sprite = NodePath("AnimatedSprite2D")
@@ -301,12 +303,11 @@ position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
 
 [node name="AttackHitbox" type="Area2D" parent="."]
-collision_mask = 7
-monitoring = false
+collision_mask = 6
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
-position = Vector2(81, -1.5)
+position = Vector2(58, -1.5)
 shape = SubResource("RectangleShape2D_xl87i")
 
 [node name="DetectionArea" type="Area2D" parent="."]

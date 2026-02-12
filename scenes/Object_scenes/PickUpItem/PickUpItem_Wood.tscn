@@ -1,18 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://dslvb6l86vgqu"]
+[gd_scene load_steps=6 format=3 uid="uid://dslvb6l86vgqu"]
 
 [ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/WorldEntity.gd" id="1_666f2"]
 [ext_resource type="Texture2D" uid="uid://bm8ksw5yxt257" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png" id="2_6mmyu"]
-[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_chcbt"]
 [ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="2_s7gyk"]
-[ext_resource type="PackedScene" uid="uid://dgya2qpjhrsyy" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Stone.tscn" id="3_84yba"]
 [ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_84yba"]
-
-[sub_resource type="Resource" id="Resource_ehqld"]
-script = ExtResource("2_chcbt")
-item_scene = ExtResource("3_84yba")
-min_quantity = 2
-max_quantity = 3
-metadata/_custom_type_script = "uid://bqxi33g2h11le"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
 radius = 23.021729
@@ -24,7 +15,7 @@ gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
 script = ExtResource("1_666f2")
-loot_table = Array[ExtResource("2_chcbt")]([SubResource("Resource_ehqld")])
+entity_type = 1
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("4_84yba")

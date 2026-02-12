@@ -389,6 +389,7 @@ throw_damp = 1.0
 rotation = -1.1454811
 
 [node name="Sprite2D" type="Sprite2D" parent="RotationPos"]
+visible = false
 position = Vector2(23, 17)
 rotation = -1.9473577
 scale = Vector2(3.517, -3.517)
