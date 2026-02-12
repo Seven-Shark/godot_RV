@@ -33,7 +33,7 @@ enum CharacterType {
 @export var first_attack_interval: float = 0.2  ## 首次攻击间隔
 @export var attack_bar: ProgressBar             ## 头顶进度条
 
-# [新增] 伤害判定参数
+# 伤害判定参数
 @export_subgroup("Hitbox Settings")
 @export var attack_damage: int = 10             ## 攻击伤害
 @export var attack_delay: float = 0.1           ## 伤害延迟 (前摇)
@@ -67,8 +67,9 @@ var enter_Character: Array[CharacterBase] = []
 var knockback_velocity: Vector2 = Vector2.ZERO 
 
 # --- 自动攻击状态 ---
-var _attack_timer: float = 0.0 
-var _is_first_attack: bool = true 
+var _attack_timer: float = 0.0 ## 内部攻击计时器
+var _is_first_attack: bool = true ## 标记是否为停止后的第一发
+var _is_attack_valid: bool = false ## [新增] 标记本次攻击判定是否有效 (用于处理移动打断)
 
 # --- 初始状态记忆 ---
 var _initial_layer: int = 1 
@@ -102,59 +103,77 @@ func _ready() -> void:
 		attack_bar.visible = false
 		attack_bar.value = 0
 	
-	# [新增] 初始化 Hitbox 为关闭状态
+	# 初始化 Hitbox 为关闭状态
 	if attack_hitbox:
 		attack_hitbox.monitoring = false
 		attack_hitbox.monitorable = false
 
 func _physics_process(delta: float) -> void:
 	_handle_knockback(delta)
+	# 子类负责 move_and_slide
 #endregion
 
 #region 自动攻击核心逻辑
+## 更新自动攻击进度 (由子类在合适时机调用)
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
 
-	# 移动或无目标时重置
+	# 条件 1: 正在移动？ -> 完全重置 (下一次停下来算首次攻击)
 	if velocity.length_squared() > 10.0:
 		reset_attack_progress(true) 
 		return
 
+	# 条件 2: 没有有效目标？ -> 完全重置
 	if not is_instance_valid(current_target) or current_target.is_dead:
 		reset_attack_progress(true)
 		return
 
-	# 蓄力逻辑
+	# 条件 3: 静止且有目标 -> 开始蓄力
 	var current_interval = first_attack_interval if _is_first_attack else attack_interval
 	_attack_timer += delta
 	
+	# 更新 UI
 	if attack_bar:
 		attack_bar.visible = true
 		var ratio = clamp(_attack_timer / current_interval, 0.0, 1.0)
 		attack_bar.value = ratio * 100.0
 	
+	# 判定触发
 	if _attack_timer >= current_interval:
 		_trigger_attack()
 
+## 触发攻击 (内部调用)
 func _trigger_attack() -> void:
 	if current_target:
 		on_perform_attack.emit(current_target)
 	
-	# 重置计时器
+	# 1. 逻辑重置
 	_attack_timer = 0.0
 	_is_first_attack = false 
 	
-	# [新增] 启动伤害判定流程 (无需等待，异步执行)
+	# 2. [核心] 发放攻击有效性标记
+	_is_attack_valid = true
+	
+	# 3. 启动伤害判定流程 (异步执行)
 	_perform_attack_sequence()
 
+## 重置进度
+## @param is_full_reset: True(移动/无目标) | False(攻击间隙)
 func reset_attack_progress(is_full_reset: bool = false) -> void:
+	# [核心] 如果是完全重置 (例如玩家移动了)，立即撤销攻击许可！
+	if is_full_reset:
+		_is_first_attack = true
+		_is_attack_valid = false # <--- 关键：如果此时前摇还没结束，攻击将被取消
+		
+		# 强制关闭 Hitbox (防止意外残留)
+		if attack_hitbox:
+			attack_hitbox.set_deferred("monitoring", false)
+	
+	# 优化：如果计时器已经是0，无需更新UI
 	if not is_full_reset and _attack_timer == 0.0:
 		return
 		
 	_attack_timer = 0.0
-	
-	if is_full_reset:
-		_is_first_attack = true
 	
 	if attack_bar:
 		attack_bar.visible = false
@@ -162,26 +181,36 @@ func reset_attack_progress(is_full_reset: bool = false) -> void:
 #endregion
 
 #region [新增] 攻击伤害判定逻辑 (Hitbox Sequence)
-## 执行攻击判定序列：等待前摇 -> 开启判定 -> 持续 -> 关闭判定
+## 执行攻击判定序列：等待前摇 -> 检查有效性 -> 开启判定 -> 持续 -> 关闭判定
 func _perform_attack_sequence() -> void:
 	if not attack_hitbox: return
 
-	# [新增] 1. 核心修改：同步攻击方向！
-	# 在攻击开始的瞬间，让判定区的朝向与指示箭头一致
+	# 1. 同步攻击方向 (让范围朝向目标/指示器)
 	if direction_Sign:
-		# 使用 global_rotation 是最稳妥的，防止父节点缩放导致的角度错乱
 		attack_hitbox.global_rotation = direction_Sign.global_rotation
 	
 	# 2. 确保初始关闭
-	attack_hitbox.monitoring = false
+	attack_hitbox.set_deferred("monitoring", false)
 	
 	# 3. 等待前摇 (Delay)
 	if attack_delay > 0:
 		await get_tree().create_timer(attack_delay).timeout
+		
+		# [关键检查] 前摇结束后，检查攻击是否还被允许？
+		# 如果在等待期间玩家移动了，_is_attack_valid 会变成 false，此时必须终止伤害
+		if not _is_attack_valid: 
+			# print(">>> [Attack] 攻击被打断，取消伤害生成")
+			return
+		
+		# 安全检查
 		if not is_instance_valid(self) or is_dead: return
 	
-	# 4. 开启 Hitbox
-	attack_hitbox.monitoring = true
+	# 4. 开启 Hitbox (造成伤害)
+	attack_hitbox.set_deferred("monitoring", true)
+	
+	# 等待一帧物理帧，确保重叠检测准确
+	await get_tree().physics_frame
+	if not is_instance_valid(self): return # 防御性检查
 	
 	# 4.1 立即处理已经在范围内的人
 	_process_hitbox_overlap()
@@ -195,7 +224,8 @@ func _perform_attack_sequence() -> void:
 		await get_tree().create_timer(attack_duration).timeout
 	
 	# 6. 关闭 Hitbox
-	attack_hitbox.monitoring = false
+	attack_hitbox.set_deferred("monitoring", false)
+	
 	if attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
 		attack_hitbox.body_entered.disconnect(_on_hitbox_body_entered)
 
@@ -211,15 +241,13 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 
 ## 统一造成伤害
 func _apply_damage_to(body: Node2D) -> void:
-	if body == self: return # 不打自己
+	if body == self: return 
 	
-	# 阵营检查：CharacterBase 互殴
 	if body is CharacterBase:
-		# 简单的敌我判断：阵营不同就打 (Player vs Enemy)
+		# 敌我判定：阵营不同才造成伤害
 		if body.character_type != self.character_type:
-			# 造成伤害
 			body.take_damage(attack_damage, self.character_type, self)
-			# print(">>> [Hit] 命中目标: ", body.name)
+			# print(">>> [Hit] 命中: ", body.name)
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)
@@ -256,10 +284,9 @@ func _die() -> void:
 	if detection_Area: detection_Area.monitoring = false
 	if healthbar: healthbar.visible = false
 	if direction_Sign: direction_Sign.visible = false
-	
 	if attack_bar: attack_bar.visible = false
 	
-	# [新增] 死亡时强制关闭 Hitbox
+	# [修复] 死亡时强制关闭 Hitbox
 	if attack_hitbox: attack_hitbox.set_deferred("monitoring", false)
 	
 	_play_mario_death_anim()
@@ -290,11 +317,12 @@ func reset_status() -> void:
 	# 重置攻击相关
 	_attack_timer = 0.0
 	_is_first_attack = true 
+	_is_attack_valid = false # 重置时取消攻击许可
 	if attack_bar:
 		attack_bar.value = 0.0
 		attack_bar.visible = false
 	if attack_hitbox:
-		attack_hitbox.monitoring = false
+		attack_hitbox.set_deferred("monitoring", false)
 
 	enter_Character.clear()
 	current_target = null
