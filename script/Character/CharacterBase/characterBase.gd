@@ -237,17 +237,28 @@ func _process_hitbox_overlap() -> void:
 
 ## 处理 Hitbox 开启期间新闯入的敌人
 func _on_hitbox_body_entered(body: Node2D) -> void:
+	print("Hitbox 检测到物体: ", body.name, " | 层级: ", body.collision_layer)
 	_apply_damage_to(body)
 
 ## 统一造成伤害
 func _apply_damage_to(body: Node2D) -> void:
 	if body == self: return 
 	
-	if body is CharacterBase:
-		# 敌我判定：阵营不同才造成伤害
-		if body.character_type != self.character_type:
-			body.take_damage(attack_damage, self.character_type, self)
-			# print(">>> [Hit] 命中: ", body.name)
+	# 1. 优先尝试调用 take_damage (鸭子类型：只要有这个方法就能打)
+	if body.has_method("take_damage"):
+		# 获取阵营：如果有 character_type 属性就用，没有就默认视为不同阵营
+		var body_faction = null
+		if "character_type" in body:
+			body_faction = body.character_type
+		
+		# 简单的敌我判断：如果是同类就不打 (防误伤)
+		if body_faction != null and body_faction == self.character_type:
+			return
+			
+		# 执行伤害
+		# 注意：这里我们做了兼容，如果 WorldEntity 需要 float，我们就传 float
+		body.take_damage(float(attack_damage), self.character_type, self)
+		# print(">>> [Hit] 命中: ", body.name)
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)

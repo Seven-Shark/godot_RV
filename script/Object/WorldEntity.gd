@@ -10,16 +10,16 @@ class_name WorldEntity
 
 #region 信号定义 (指挥 VisualController)
 # --- 物件 (PROP) 相关 ---
-signal visuals_hit_requested(dir: Vector2)         ## 请求受击震动
-signal visuals_death_requested                     ## 请求死亡动画
-signal visuals_gravity_process(attractor: Vector2) ## [新增] 请求引力悬停抖动
+signal visuals_hit_requested(dir: Vector2)          ## 请求受击震动
+signal visuals_death_requested                      ## 请求死亡动画
+signal visuals_gravity_process(attractor: Vector2)  ## [新增] 请求引力悬停抖动
 
 # --- 资源 (RESOURCE) 相关 ---
 signal visuals_launch_requested(start: Vector2, end: Vector2) ## 请求爆出抛物线动画
-signal visuals_absorb_requested(target: Node2D)    ## 请求吸附飞行
+signal visuals_absorb_requested(target: Node2D)     ## 请求吸附飞行
 
 # --- 通用/重物 (HEAVY) 相关 ---
-signal visuals_recover_requested                   ## 请求恢复物理或重置动画状态
+signal visuals_recover_requested                    ## 请求恢复物理或重置动画状态
 #endregion
 
 #region 1. 类型与配置
@@ -44,9 +44,11 @@ enum ObjectMaterial {
 @export var loot_table: Array[LootData] = []            ## 掉落表配置
 @export var drop_radius: float = 60.0                   ## 掉落散布半径
 
-# 物理层级常量 (根据项目设置调整)
-const LAYER_PROP = 3      ## 环境层
-const LAYER_RESOURCE = 4  ## 掉落物层
+# 物理层级常量 (使用位移运算修正)
+# Layer 3 (Environment/Prop) = 2^(3-1) = 4 (二进制 100)
+const LAYER_PROP_MASK = 1 << 2  
+# Layer 4 (Items/Resource) = 2^(4-1) = 8 (二进制 1000)
+const LAYER_RESOURCE_MASK = 1 << 3 
 #endregion
 
 #region 2. 内部状态
@@ -73,18 +75,23 @@ func _init_physics_state():
 	match entity_type:
 		EntityType.PROP:
 			freeze = true # 默认静止
-			collision_layer = LAYER_PROP
-			collision_mask = 2
+			# [修正] 使用位掩码赋值
+			collision_layer = LAYER_PROP_MASK
+			# Mask 通常保留 Layer 2 (World/Player) 等交互
+			collision_mask = 2 
 			_apply_material()
+			
 		EntityType.RESOURCE:
 			freeze = true # 资源初始冻结，等待 Launch 动画
 			collision_layer = 0 # 初始无碰撞，防止乱撞
 			collision_mask = 0
 			gravity_scale = 0.0
+			
 		EntityType.HEAVY:
 			freeze = false # 重物受物理引擎控制
 			linear_damp = 5.0 # 增加阻尼防止滑行过远
-			collision_layer = LAYER_PROP
+			# [修正] 使用位掩码赋值
+			collision_layer = LAYER_PROP_MASK
 			_apply_material()
 
 ## 应用物理材质参数
@@ -103,6 +110,7 @@ func _apply_material():
 ## 1. 承受伤害 (PROP 专属)
 # [注意] 为了兼容旧代码，这里保留了 _attacker_type 参数位
 func take_damage(amount: float, _attacker_type: int, attacker_node: Node2D = null):
+	# print(">>> [WorldEntity] %s 受到伤害: %s" % [name, amount])
 	if entity_type != EntityType.PROP: return
 	
 	# 数值处理
@@ -151,11 +159,13 @@ func launch(start: Vector2, end: Vector2):
 ## 6. 开启捡起检测 (由 Visual 回调)
 func enable_pickup_detection():
 	# [修复 3] 只有资源才能开启“被捡起”的物理层级
-	# 如果是 PROP (比如生成的小石头)，落地后应该保持 PROP a的物理状态，不能变成可捡起状态
+	# 如果是 PROP (比如生成的小石头)，落地后应该保持 PROP 的物理状态，不能变成可捡起状态
 	if entity_type != EntityType.RESOURCE: return
 	
 	if _is_absorbed: return
-	collision_layer = LAYER_RESOURCE
+	
+	# [修正] 使用位掩码赋值
+	collision_layer = LAYER_RESOURCE_MASK
 	collision_mask = 0
 	freeze = true
 

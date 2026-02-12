@@ -159,7 +159,7 @@ func _shoot_held_object() -> void:
 	# [核心修复] 使用 WorldEntity 定义的常量，而不是写死数字
 	# =========================================================
 	# 恢复到物件层 (Layer 3)
-	obj.collision_layer = WorldEntity.LAYER_PROP 
+	obj.collision_layer = WorldEntity.LAYER_PROP_MASK
 	
 	# 恢复碰撞掩码 (与环境和玩家碰撞)
 	obj.collision_mask = 1 | 2 

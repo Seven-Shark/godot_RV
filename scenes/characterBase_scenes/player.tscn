@@ -311,7 +311,7 @@ shape = SubResource("RectangleShape2D_xl87i")
 
 [node name="DetectionArea" type="Area2D" parent="."]
 visible = false
-collision_mask = 3
+collision_mask = 7
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")
