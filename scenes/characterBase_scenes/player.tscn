@@ -213,7 +213,7 @@ height = 94.0
 size = Vector2(116, 109)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
-radius = 127.03543
+radius = 117.00427
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
 bg_color = Color(0, 0, 0, 1)
@@ -249,13 +249,15 @@ attack_hitbox = NodePath("AttackHitbox")
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-
 [node name="StatsComponent" type="Node2D" parent="." node_paths=PackedStringArray("healthbar")]
 script = ExtResource("2_kxg0l")
 base_walk_speed = 300.0
+sprint_speed = 150.0
 weight_slowdown_factor = 0.1
+dash_duration = 0.1
 healthbar = NodePath("../HpBar")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_vuht5")
@@ -275,14 +277,16 @@ zoom = Vector2(0.8, 0.8)
 script = ExtResource("6_w5jik")
 initial_node_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "animated_Sprite_2d")]
+[node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("7_asxtk")
 player = NodePath("../..")
-animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
+player_stats = NodePath("../..")
+animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "animated_sprite_2d")]
+[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("9_xl87i")
 player = NodePath("../..")
+player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
 [node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
@@ -291,10 +295,11 @@ player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Dash" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "animated_Sprite_2d")]
+[node name="Dash" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("9_2holh")
 player = NodePath("../..")
-animated_Sprite_2d = NodePath("../../AnimatedSprite2D")
+player_stats = NodePath("../..")
+animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
 [node name="DirectionSign" type="Node2D" parent="."]
 
@@ -311,7 +316,6 @@ position = Vector2(58, -1.5)
 shape = SubResource("RectangleShape2D_xl87i")
 
 [node name="DetectionArea" type="Area2D" parent="."]
-visible = false
 collision_mask = 7
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]

@@ -128,18 +128,16 @@ func _physics_process(delta: float) -> void:
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
 
-	# 条件 1: 正在移动？ -> 完全重置
+	# 条件 1: 正在移动？ -> 完全重置 (下一次停下来算首次攻击)
 	if velocity.length_squared() > 10.0:
 		reset_attack_progress(true) 
 		return
 
 	# 条件 2: 没有有效目标？ -> 完全重置
-	# [修改] 兼容 WorldEntity (没有 is_dead 属性)
 	var target_valid = is_instance_valid(current_target)
 	if target_valid:
 		if current_target is CharacterBase and current_target.is_dead:
 			target_valid = false
-		# WorldEntity 销毁时 is_instance_valid 会变 false，所以这里不需要特判
 		
 	if not target_valid:
 		reset_attack_progress(true)
@@ -149,16 +147,19 @@ func update_auto_attack_progress(delta: float) -> void:
 	var current_interval = first_attack_interval if _is_first_attack else attack_interval
 	_attack_timer += delta
 	
-	# 更新 UI
+	# [核心修改] 更新 UI
 	if attack_bar:
-		attack_bar.visible = true
+		# 优化：增加 0.05秒 的视觉阈值
+		# 只有当蓄力持续超过 0.05秒 (约3帧) 后才显示 UI
+		# 这能完美过滤掉 "起步瞬间" 或 "状态切换瞬间" 造成的 1帧 UI闪烁
+		attack_bar.visible = _attack_timer > 0.05
+		
 		var ratio = clamp(_attack_timer / current_interval, 0.0, 1.0)
 		attack_bar.value = ratio * 100.0
 	
 	# 判定触发
 	if _attack_timer >= current_interval:
 		_trigger_attack()
-
 ## 触发攻击 (内部调用)
 func _trigger_attack() -> void:
 	if current_target:

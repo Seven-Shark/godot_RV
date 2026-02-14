@@ -828,7 +828,7 @@ offset_right = -244.49011
 offset_bottom = 31.000004
 scale = Vector2(1.7518933, 1.7518933)
 min_value = 5.0
-value = 40.0
+value = 80.0
 
 [node name="WidthInput" type="SpinBox" parent="GameHUD/NewDayButton"]
 layout_mode = 0
@@ -838,7 +838,7 @@ offset_right = -81.53667
 offset_bottom = 32.715298
 scale = Vector2(1.7518933, 1.7518933)
 min_value = 5.0
-value = 40.0
+value = 80.0
 
 [node name="AimSwitchButton" type="CheckButton" parent="GameHUD"]
 offset_left = 1079.0

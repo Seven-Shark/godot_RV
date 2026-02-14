@@ -26,12 +26,13 @@ var player_current_aim_mode: AimMode_Type = AimMode_Type.AUTO_NEAREST
 func _init() -> void:
 	# 设置阵营与目标类型
 	character_type = CharacterType.PLAYER
+	# 设定玩家可攻击的目标类型 (敌人和箱子/物品)
 	target_types = [CharacterType.ITEM, CharacterType.ENEMY]
 
 func _ready() -> void:
 	super._ready() # [必须] 调用父类初始化，否则层级记忆和侦查圈失效
 	
-	# [新增] 连接父类的自动攻击信号
+	# 连接父类的自动攻击信号
 	if not on_perform_attack.is_connected(_on_perform_auto_attack):
 		on_perform_attack.connect(_on_perform_auto_attack)
 
@@ -39,19 +40,29 @@ func _physics_process(delta: float) -> void:
 	# 1. 调用父类物理逻辑
 	super._physics_process(delta)
 
-	# [修改] 攻击状态下，进行“部分重置” (False)
-	if state_machine.current_node_state_name == "attack":
-		reset_attack_progress(false) 
+	# 获取当前状态
+	var current_state = ""
+	if state_machine:
+		current_state = state_machine.current_node_state_name.to_lower()
+
+	# -----------------------------------------------------------------
+	# [修复] 逻辑分离：
+	# 1. 如果是 Dash：说明玩家主动取消了动作 -> 强制打断 (True)
+	if current_state == "dash":
+		reset_attack_progress(true)
 		return
+
+	# 2. 如果是 Attack：说明正在播动画/读前摇 -> 保持现状 (不重置也不计时)
+	if current_state == "attack":
+		return # 直接返回，保留 _is_attack_valid = true，让 CharacterBase 跑完协程
+	# -----------------------------------------------------------------
 
 	# 2. 根据瞄准模式控制自动攻击
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
-			# 自动模式：计算进度
 			update_auto_attack_progress(delta)
 			
 		AimMode_Type.MOUSE_ASSIST:
-			# 鼠标模式：强制“完全重置” (True)
 			reset_attack_progress(true)
 			
 func _process(_delta: float) -> void:
@@ -61,7 +72,7 @@ func _process(_delta: float) -> void:
 	# 2. 获取鼠标位置
 	var mouse_pos = get_global_mouse_position()
 	
-	# 3. 获取目标 [修改] 类型改为 Node2D
+	# 3. 获取目标 [修改] 类型改为 Node2D (兼容 WorldEntity)
 	var final_target: Node2D = _get_target_by_mode(mouse_pos)
 	
 	# 4. 更新锁定
@@ -79,6 +90,7 @@ func _draw() -> void:
 		var to_mouse = (mouse_pos - global_position).normalized()
 		var angle = deg_to_rad(ASSIST_ANGLE / 2.0)
 		
+		# 绘制辅助瞄准扇形线
 		draw_line(Vector2.ZERO, to_mouse.rotated(angle) * ASSIST_RANGE, Color(1, 0, 0, 0.5), 2)
 		draw_line(Vector2.ZERO, to_mouse.rotated(-angle) * ASSIST_RANGE, Color(1, 0, 0, 0.5), 2)
 #endregion
@@ -120,15 +132,20 @@ func get_mouse_assist_target(mouse_position: Vector2) -> Node2D:
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
 		
-		# 逻辑判断：是敌人且未死，或者是物件
+		# 逻辑判断：是敌人且未死，或者是物件(Prop)
 		var is_valid_target = false
+		
+		# 1. 判断 CharacterBase (敌人/其他玩家)
 		if body is CharacterBase and target_types.has(body.character_type):
 			if not body.is_dead: is_valid_target = true
+			
+		# 2. 判断 WorldEntity (只允许 PROP 类型，不允许 RESOURCE)
 		elif body is WorldEntity and body.entity_type == WorldEntity.EntityType.PROP:
 			is_valid_target = true
 			
 		if not is_valid_target: continue
 			
+		# 计算距离和角度
 		var target_vec = body.global_position - self_pos
 		var dist_sq = target_vec.length_squared()
 		
