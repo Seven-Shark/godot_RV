@@ -1,57 +1,57 @@
-[gd_scene load_steps=29 format=3 uid="uid://dp7yile35s8s7"]
+[gd_scene load_steps=29 format=3 uid="uid://cvkggb8wmur8h"]
 
-[ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_gj3g1"]
-[ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
-[ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_nr6f4"]
-[ext_resource type="Texture2D" uid="uid://bpwqbhulp6ig0" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Run.png" id="3_3kun7"]
-[ext_resource type="Script" uid="uid://dgv04pqcpkc0r" path="res://script/Character/Enemy_state/EnemyStateMachine.gd" id="5_j2r2h"]
-[ext_resource type="Script" uid="uid://dnr47acxkffvp" path="res://script/Character/Enemy_state/EnemyPatrolState.gd" id="7_1ef74"]
-[ext_resource type="Script" uid="uid://con1jucromyi5" path="res://script/Character/Enemy_state/EnemyIdleState.gd" id="7_jerxs"]
-[ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="7_wavxh"]
-[ext_resource type="Script" uid="uid://bsm7u84fsmw44" path="res://script/Character/Enemy_state/EnemyChaseState.gd" id="8_6sfd3"]
-[ext_resource type="Script" uid="uid://5ccljsskydf6" path="res://script/Character/Enemy_state/EnemyReturnState.gd" id="8_7wpf5"]
-[ext_resource type="Script" uid="uid://bnsffwpuo5wln" path="res://script/Character/Enemy_state/EnemyAttackState.gd" id="8_j2r2h"]
-[ext_resource type="Script" uid="uid://cba057rcblou1" path="res://script/Character/Enemy_state/EnemyCooldownState.gd" id="9_siouf"]
-[ext_resource type="Script" uid="uid://88d7i65cfsth" path="res://script/Character/Enemy_state/EnemyDeadState.gd" id="9_v8frg"]
+[ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_0o22s"]
+[ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_uqfet"]
+[ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="3_n7ajg"]
+[ext_resource type="Texture2D" uid="uid://bpwqbhulp6ig0" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Run.png" id="4_ovn15"]
+[ext_resource type="Script" uid="uid://dgv04pqcpkc0r" path="res://script/Character/Enemy_state/EnemyStateMachine.gd" id="5_0f1j0"]
+[ext_resource type="Script" uid="uid://con1jucromyi5" path="res://script/Character/Enemy_state/EnemyIdleState.gd" id="6_wky1r"]
+[ext_resource type="Script" uid="uid://dnr47acxkffvp" path="res://script/Character/Enemy_state/EnemyPatrolState.gd" id="7_n7ajg"]
+[ext_resource type="Script" uid="uid://bsm7u84fsmw44" path="res://script/Character/Enemy_state/EnemyChaseState.gd" id="7_t8g2h"]
+[ext_resource type="Script" uid="uid://bnsffwpuo5wln" path="res://script/Character/Enemy_state/EnemyAttackState.gd" id="8_c4r8r"]
+[ext_resource type="Script" uid="uid://5ccljsskydf6" path="res://script/Character/Enemy_state/EnemyReturnState.gd" id="8_ovn15"]
+[ext_resource type="Script" uid="uid://cba057rcblou1" path="res://script/Character/Enemy_state/EnemyCooldownState.gd" id="9_ysiaw"]
+[ext_resource type="Script" uid="uid://88d7i65cfsth" path="res://script/Character/Enemy_state/EnemyDeadState.gd" id="10_a5cyx"]
+[ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="11_07p27"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqkjm"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(0, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8ihm7"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(192, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uagpu"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(384, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vtfoo"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(576, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2kejv"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(768, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hfx3f"]
-atlas = ExtResource("2_b37dv")
+atlas = ExtResource("3_n7ajg")
 region = Rect2(960, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0h1wf"]
-atlas = ExtResource("3_3kun7")
+atlas = ExtResource("4_ovn15")
 region = Rect2(0, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7ghrf"]
-atlas = ExtResource("3_3kun7")
+atlas = ExtResource("4_ovn15")
 region = Rect2(192, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fhfpx"]
-atlas = ExtResource("3_3kun7")
+atlas = ExtResource("4_ovn15")
 region = Rect2(384, 0, 192, 192)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3qfla"]
-atlas = ExtResource("3_3kun7")
+atlas = ExtResource("4_ovn15")
 region = Rect2(576, 0, 192, 192)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_hhs0w"]
@@ -113,7 +113,8 @@ bg_color = Color(1, 0, 0, 1)
 y_sort_enabled = true
 collision_layer = 2
 collision_mask = 7
-script = ExtResource("1_gj3g1")
+script = ExtResource("1_0o22s")
+patrol_mode = 1
 separation_force = 50.0
 push_force = 1.0
 show_patrol_area = true
@@ -131,40 +132,41 @@ healthbar = NodePath("HpBar")
 
 [node name="StatsComponent" type="Node2D" parent="."]
 position = Vector2(-3, 0)
-script = ExtResource("2_nr6f4")
+script = ExtResource("2_uqfet")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_hhs0w")
-animation = &"Walk"
+animation = &"Idle"
 autoplay = "Idle"
+frame_progress = 0.672337
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_j2r2h")
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
-script = ExtResource("5_j2r2h")
+script = ExtResource("5_0f1j0")
 initial_node_state = NodePath("Idle")
 
 [node name="Idle" type="Node" parent="StateMachine"]
-script = ExtResource("7_jerxs")
+script = ExtResource("6_wky1r")
 
 [node name="Patrol" type="Node" parent="StateMachine"]
-script = ExtResource("7_1ef74")
+script = ExtResource("7_n7ajg")
 
 [node name="Return" type="Node" parent="StateMachine"]
-script = ExtResource("8_7wpf5")
+script = ExtResource("8_ovn15")
 
 [node name="Chase" type="Node" parent="StateMachine"]
-script = ExtResource("8_6sfd3")
+script = ExtResource("7_t8g2h")
 
 [node name="Attack" type="Node" parent="StateMachine"]
-script = ExtResource("8_j2r2h")
+script = ExtResource("8_c4r8r")
 
 [node name="Cooldown" type="Node" parent="StateMachine"]
-script = ExtResource("9_siouf")
+script = ExtResource("9_ysiaw")
 
 [node name="Dead" type="Node" parent="StateMachine"]
-script = ExtResource("9_v8frg")
+script = ExtResource("10_a5cyx")
 
 [node name="DetectionArea" type="Area2D" parent="."]
 collision_layer = 2
@@ -176,7 +178,7 @@ shape = SubResource("CircleShape2D_8lvt1")
 
 [node name="Arrows" type="Sprite2D" parent="DirectionSign"]
 position = Vector2(61, -2)
-texture = ExtResource("7_wavxh")
+texture = ExtResource("11_07p27")
 
 [node name="HpBar" type="ProgressBar" parent="."]
 offset_left = -50.0

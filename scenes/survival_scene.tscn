@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=31 format=4 uid="uid://xk5htmcg3umc"]
 
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_dqgb5"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
+[ext_resource type="PackedScene" uid="uid://bctkycvc4dget" path="res://scenes/Object_scenes/Object_SpawnSpot_1.tscn" id="6_d7qbs"]
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="7_ai1qu"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="8_6x3ce"]
 [ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://script/HUD/ERS_Manager.gd" id="10_1uchc"]
@@ -19,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://ft16e0isym75" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/seeds.png" id="15_4byrr"]
 [ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="16_o8ac1"]
 [ext_resource type="Texture2D" uid="uid://bjr34thy8ryfk" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png" id="17_ddb2m"]
+[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="21_4byrr"]
 
 [sub_resource type="Resource" id="Resource_6x3ce"]
 script = ExtResource("2_yfs36")
@@ -30,6 +32,12 @@ metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 script = ExtResource("2_yfs36")
 object_prefab = ExtResource("14_d7qbs")
 spawn_count = 0
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[sub_resource type="Resource" id="Resource_4byrr"]
+script = ExtResource("2_yfs36")
+object_prefab = ExtResource("6_d7qbs")
+spawn_count = 1
 metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cxslg"]
@@ -761,6 +769,7 @@ spawn_weight = 4
 metadata/_custom_type_script = "uid://dam5k0hma5pma"
 
 [node name="SurvivalScene" type="Node2D"]
+y_sort_enabled = true
 
 [node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "ers_manager", "game_hud", "new_day_button", "game_over_overlay", "game_over_label")]
 process_mode = 3
@@ -778,7 +787,7 @@ tile_map = NodePath("../TileMapLayer")
 player = NodePath("../Player")
 object_container = NodePath("../ObjectContainer")
 ers_manager = NodePath("../ERSLayer")
-spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce"), SubResource("Resource_j17jc")])
+spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce"), SubResource("Resource_j17jc"), SubResource("Resource_4byrr")])
 safe_zone_radius = 10
 atlas_top_right = Vector2i(11, 0)
 atlas_bottom_left = Vector2i(0, 11)
@@ -799,14 +808,9 @@ tile_map_data = PackedByteArray("AADB/+7/AAAAAAIAAADB/+//AAAAAAMAAADB//D/AAAAAAQ
 tile_set = SubResource("TileSet_dqgb5")
 
 [node name="ObjectContainer" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="Player" parent="." instance=ExtResource("1_8jv7c")]
-
-[node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
-position = Vector2(820, -196)
-
-[node name="Enemy2" parent="." instance=ExtResource("2_h8imf")]
-position = Vector2(504, 120)
 
 [node name="GameHUD" type="CanvasLayer" parent="."]
 script = ExtResource("7_ai1qu")
@@ -1113,6 +1117,12 @@ theme_override_font_sizes/font_size = 64
 text = "你挂了：5"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
+position = Vector2(981, 149)
+
+[node name="Enemy2" parent="." instance=ExtResource("21_4byrr")]
+position = Vector2(134, 158)
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]
