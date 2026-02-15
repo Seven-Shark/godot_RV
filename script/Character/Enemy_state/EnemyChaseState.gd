@@ -2,42 +2,40 @@
 extends EnemyState
 class_name EnemyChaseState
 
-@export var move_speed: float = 100.0
-
 func enter() -> void:
-	anim.play("Walk") # 请确保你的动画机里有 Walk 或者 Run
+	# [修改] 使用 Run 动画，如果没有请确保 AnimationPlayer 里有对应的 key
+	anim.play("Walk")
 
-func _on_physics_process(delta: float) -> void:
-	if not is_instance_valid(enemy.current_target):
-		enemy.velocity = Vector2.ZERO
+func exit() -> void:
+	# [关键] 退出追逐时，强制将导航代理的目标设为自己脚下，防止惯性
+	if enemy.nav_agent:
+		enemy.nav_agent.target_position = enemy.global_position
+	enemy.velocity = Vector2.ZERO
+
+func _on_physics_process(_delta: float) -> void:
+	if not is_instance_valid(enemy.current_target) or enemy.current_target.is_dead:
+		enemy.is_aggro_active = false
 		return
 
-	# 1. 转身
-	enemy.face_current_target()
+	# 1. 更新导航目标
+	enemy.set_navigation_target(enemy.current_target.global_position)
 	
-	# 2. 移动逻辑
-	var to_target = enemy.current_target.global_position - enemy.global_position
-	var dist = to_target.length()
-	var dir = to_target.normalized()
-	
-	var final_speed = move_speed
+	# 2. 执行移动 (追逐速度快一点)
+	var chase_speed = 100.0
 	if enemy.stats:
-		final_speed = enemy.stats.get_final_speed(false, delta)
-
-	# 三段式位移
-	if dist > enemy.attack_distance:
-		enemy.velocity = dir * final_speed
-	elif dist < enemy.retreat_distance:
-		enemy.velocity = -dir * final_speed * 0.8
-	else:
-		enemy.velocity = Vector2.ZERO
+		chase_speed = enemy.stats.base_walk_speed * 1.2
+	
+	# [关键] 保存返回值，用于调试或判断
+	enemy.process_navigation_movement(chase_speed)
 
 func _on_next_transitions() -> void:
 	if not enemy.is_aggro_active:
-		transition.emit("Idle")
+		transition.emit("Patrol")
 		return
 	
 	if is_instance_valid(enemy.current_target):
 		var dist = enemy.global_position.distance_to(enemy.current_target.global_position)
+		
+		# [关键] 进入攻击范围
 		if dist <= enemy.attack_distance:
 			transition.emit("Attack")

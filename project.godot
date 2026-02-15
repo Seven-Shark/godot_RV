@@ -85,6 +85,7 @@ mouse_right={
 2d_physics/layer_2="Enemy"
 2d_physics/layer_3="PROP"
 2d_physics/layer_4="RESOURCE"
+2d_physics/layer_5="wall"
 
 [rendering]
 

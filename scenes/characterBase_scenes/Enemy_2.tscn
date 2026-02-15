@@ -112,23 +112,27 @@ bg_color = Color(1, 0, 0, 1)
 [node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "sprite", "healthbar")]
 y_sort_enabled = true
 collision_layer = 2
-collision_mask = 4
+collision_mask = 21
 script = ExtResource("1_0o22s")
-patrol_mode = 1
-separation_force = 50.0
+separation_force = 10.0
 push_force = 1.0
 show_patrol_area = true
 show_path_line = true
 attack_width = 80.0
 attack_cooldown = 1.0
 character_type = 2
-target_types = Array[int]([1])
 health = 20
+target_types = Array[int]([1])
 attack_bar = NodePath("AttackBar")
 attack_delay = 0.5
 attack_duration = 0.5
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+avoidance_enabled = true
+radius = 5.0
+debug_enabled = true
 
 [node name="StatsComponent" type="Node2D" parent="."]
 position = Vector2(-3, 0)
@@ -170,6 +174,7 @@ script = ExtResource("10_a5cyx")
 
 [node name="DetectionArea" type="Area2D" parent="."]
 collision_layer = 2
+collision_mask = 3
 
 [node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
 shape = SubResource("CircleShape2D_8lvt1")

@@ -237,9 +237,13 @@ border_color = Color(0, 0, 0, 1)
 
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "attack_hitbox", "sprite", "healthbar")]
 y_sort_enabled = true
-collision_mask = 7
+collision_mask = 23
 script = ExtResource("1_yv1sj")
 character_type = 1
+target_types = Array[int]([0, 2])
+target_entity_types = Array[int]([0, 2, 3])
+damageable_character_types = Array[int]([2, 0])
+damageable_entity_types = Array[int]([0, 2, 3])
 attack_interval = 0.5
 attack_bar = NodePath("AttackBar")
 attack_knockback_force = 0.0

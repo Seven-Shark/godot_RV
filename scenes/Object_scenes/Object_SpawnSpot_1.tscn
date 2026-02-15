@@ -27,7 +27,7 @@ size = Vector2(118, 53)
 [node name="Object_SpawnSpot_1" type="RigidBody2D"]
 y_sort_enabled = true
 collision_layer = 4
-collision_mask = 7
+collision_mask = 23
 gravity_scale = 0.0
 freeze = true
 linear_damp = 5.0
@@ -35,6 +35,7 @@ angular_damp = 3.0
 script = ExtResource("1_qwgs8")
 spawn_options = Array[ExtResource("2_v0srr")]([SubResource("Resource_o3qtk")])
 spawn_interval = 4.0
+spawn_count_per_wave = 10
 max_total_spawns = 20
 spawn_radius_min = 80.0
 entity_type = 3
@@ -42,7 +43,7 @@ loot_table = Array[ExtResource("4_fosrp")]([SubResource("Resource_1qs48")])
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("4_o3qtk")
-max_health = 600.0
+max_health = 20.0
 
 [node name="VisualController" type="Node2D" parent="."]
 script = ExtResource("5_1qs48")

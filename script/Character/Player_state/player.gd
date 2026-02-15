@@ -5,7 +5,7 @@ class_name Player
 ## 职责：处理玩家特有的输入交互、瞄准模式、视觉反馈以及响应自动攻击信号。
 
 #region 1. 节点引用
-@onready var state_machine: NodeStateMachine = $StateMachine ## 引用状态机，用于切换攻击状态
+@onready var state_machine: NodeStateMachine = $StateMachine ## 引用状态机
 #endregion
 
 #region 2. 瞄准配置
@@ -23,65 +23,45 @@ var player_current_aim_mode: AimMode_Type = AimMode_Type.AUTO_NEAREST
 #endregion
 
 #region 4. 生命周期
-func _init() -> void:
-	# 设置阵营与目标类型
-	character_type = CharacterType.PLAYER
-	# 设定玩家可攻击的目标类型 (敌人和箱子/物品)
-	target_types = [CharacterType.ITEM, CharacterType.ENEMY]
+# [修改] 移除了 _init() 方法
+# 请直接在 Godot 编辑器右侧的 "Target Settings" 中配置:
+# Target Types: [ENEMY, ITEM]
+# Target Entity Types: [PROP, NEST]
 
 func _ready() -> void:
-	super._ready() # [必须] 调用父类初始化，否则层级记忆和侦查圈失效
+	# 确保父类初始化 (此时 CharacterType.PLAYER 应该在编辑器里配置，或者在这里强指)
+	character_type = CharacterType.PLAYER
+	super._ready() 
 	
-	# 连接父类的自动攻击信号
 	if not on_perform_attack.is_connected(_on_perform_auto_attack):
 		on_perform_attack.connect(_on_perform_auto_attack)
 
 func _physics_process(delta: float) -> void:
-	# 1. 调用父类物理逻辑
 	super._physics_process(delta)
 
-	# 获取当前状态
 	var current_state = ""
 	if state_machine:
 		current_state = state_machine.current_node_state_name.to_lower()
 
-	# -----------------------------------------------------------------
-	# [修复] 逻辑分离：
-	# 1. 如果是 Dash：说明玩家主动取消了动作 -> 强制打断 (True)
 	if current_state == "dash":
 		reset_attack_progress(true)
 		return
 
-	# 2. 如果是 Attack：说明正在播动画/读前摇 -> 保持现状 (不重置也不计时)
 	if current_state == "attack":
-		return # 直接返回，保留 _is_attack_valid = true，让 CharacterBase 跑完协程
-	# -----------------------------------------------------------------
+		return 
 
-	# 2. 根据瞄准模式控制自动攻击
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
 			update_auto_attack_progress(delta)
-			
 		AimMode_Type.MOUSE_ASSIST:
 			reset_attack_progress(true)
 			
 func _process(_delta: float) -> void:
-	# 1. 视觉朝向
 	_update_facing_direction()
-
-	# 2. 获取鼠标位置
 	var mouse_pos = get_global_mouse_position()
-	
-	# 3. 获取目标 [修改] 类型改为 Node2D (兼容 WorldEntity)
 	var final_target: Node2D = _get_target_by_mode(mouse_pos)
-	
-	# 4. 更新锁定
 	_update_target_locking(final_target)
-	
-	# 5. 更新指示箭头
 	_update_DirectionSign_Visible(mouse_pos)
-	
-	# 6. Debug 绘制
 	queue_redraw()
 
 func _draw() -> void:
@@ -89,28 +69,18 @@ func _draw() -> void:
 		var mouse_pos = get_global_mouse_position()
 		var to_mouse = (mouse_pos - global_position).normalized()
 		var angle = deg_to_rad(ASSIST_ANGLE / 2.0)
-		
-		# 绘制辅助瞄准扇形线
 		draw_line(Vector2.ZERO, to_mouse.rotated(angle) * ASSIST_RANGE, Color(1, 0, 0, 0.5), 2)
 		draw_line(Vector2.ZERO, to_mouse.rotated(-angle) * ASSIST_RANGE, Color(1, 0, 0, 0.5), 2)
 #endregion
 
 #region 5. 战斗响应 (核心)
-## [回调] 当自动攻击蓄力完成时触发
-## [修改] 参数类型改为 Node2D，以接收 WorldEntity
 func _on_perform_auto_attack(target: Node2D) -> void:
 	print(">>> [Player] 自动攻击触发！目标: ", target.name)
-	
-	# 1. 可以在这里生成子弹逻辑 (例如调用 WeaponManager)
-	# create_bullet(target)
-	
-	# 2. [关键] 切换状态机到 Attack 状态
 	if state_machine:
 		state_machine.transition_to("Attack")
 #endregion
 
 #region 6. 目标获取逻辑
-## [修改] 返回类型改为 Node2D
 func _get_target_by_mode(mouse_pos: Vector2) -> Node2D:
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
@@ -119,33 +89,30 @@ func _get_target_by_mode(mouse_pos: Vector2) -> Node2D:
 			return get_mouse_assist_target(mouse_pos)
 	return null
 
-## [修改] 返回类型改为 Node2D
 func get_mouse_assist_target(mouse_position: Vector2) -> Node2D:
 	var self_pos = global_position
 	var to_mouse_dir = (mouse_position - self_pos).normalized()
-	var closest_assist_target: Node2D = null # 类型改为 Node2D
+	var closest_assist_target: Node2D = null 
 	var closest_dist_sq = INF
-	
 	var half_angle_rad = deg_to_rad(ASSIST_ANGLE / 2.0)
 	
-	# 使用父类的 enter_Character (现在里面存的是 Node2D)
+	# 使用父类的 enter_Character (已经被父类根据配置筛选过了)
+	# 但为了双重保险和实时性，这里再做一次类型校验
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
 		
-		# 逻辑判断：是敌人且未死，或者是物件(Prop)
 		var is_valid_target = false
 		
-		# 1. 判断 CharacterBase (敌人/其他玩家)
+		# 1. 角色判断
 		if body is CharacterBase and target_types.has(body.character_type):
 			if not body.is_dead: is_valid_target = true
 			
-		# 2. 判断 WorldEntity (只允许 PROP 类型，不允许 RESOURCE)
-		elif body is WorldEntity and body.entity_type == WorldEntity.EntityType.PROP:
+		# 2. 物件判断 [修改] 使用父类的配置数组
+		elif body is WorldEntity and target_entity_types.has(body.entity_type):
 			is_valid_target = true
 			
 		if not is_valid_target: continue
 			
-		# 计算距离和角度
 		var target_vec = body.global_position - self_pos
 		var dist_sq = target_vec.length_squared()
 		
@@ -157,7 +124,6 @@ func get_mouse_assist_target(mouse_position: Vector2) -> Node2D:
 						
 	return closest_assist_target
 
-## [修改] 参数类型改为 Node2D
 func _update_target_locking(new_target: Node2D) -> void:
 	if new_target and new_target != current_target:
 		current_target = new_target
@@ -168,7 +134,6 @@ func _update_target_locking(new_target: Node2D) -> void:
 #region 7. 视觉表现
 func _update_facing_direction() -> void:
 	var look_at_point = null
-	
 	match player_current_aim_mode:
 		AimMode_Type.MOUSE_ASSIST:
 			look_at_point = get_global_mouse_position()
@@ -187,7 +152,6 @@ func _update_facing_direction() -> void:
 
 func _update_DirectionSign_Visible(mouse_pos: Vector2) -> void:
 	if not is_instance_valid(direction_Sign): return
-		
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
 			if is_instance_valid(current_target):

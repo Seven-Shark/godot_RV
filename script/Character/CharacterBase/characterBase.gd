@@ -6,11 +6,11 @@ class_name CharacterBase
 ## 新增特性：集成 Hit & Run (走A) 机制 + 攻击范围延迟判定(Hitbox)。
 ## 优化：
 ## 1. 采用常驻监测 (Always Monitoring) 方案，消除物理帧延迟。
-## 2. [新增] 自动攻击系统兼容 WorldEntity (树木/石头等物件)。
+## 2. [新增] 伤害判定白名单，可独立配置自动攻击对哪些目标生效。
 
 #region 1. 信号定义
 signal on_dead ## 当角色死亡时发出此信号
-signal on_perform_attack(target: Node2D) ## [修改] 当自动攻击蓄力完成时触发 (目标改为 Node2D)
+signal on_perform_attack(target: Node2D) ## 当自动攻击蓄力完成时触发
 #endregion
 
 #region 2. 枚举定义
@@ -24,9 +24,18 @@ enum CharacterType {
 #region 3. 基础配置
 @export_group("Base Settings")
 @export var character_type: CharacterType = CharacterType.ITEM 
-@export var target_types: Array[CharacterType] = []            
-@export var flipped_horizontal: bool = false                   
-@export var health: int = 100                                  
+@export var flipped_horizontal: bool = false                    
+@export var health: int = 100                                   
+
+# [索敌配置] 决定眼睛看谁 (自动瞄准/索敌圈)
+@export_group("Target Settings (Aiming)")
+@export var target_types: Array[CharacterType] = []             ## 索敌的角色类型
+@export var target_entity_types: Array[WorldEntity.EntityType] = [] ## 索敌的物件类型 (Prop, Nest...)
+
+# [新增] [伤害配置] 决定刀砍谁 (Hitbox生效列表)
+@export_group("Damage Rules (Hitbox)")
+@export var damageable_character_types: Array[CharacterType] = [] ## 可造成伤害的角色类型
+@export var damageable_entity_types: Array[WorldEntity.EntityType] = [] ## 可造成伤害的物件类型
 #endregion
 
 #region 4. 自动攻击配置
@@ -64,8 +73,8 @@ var is_dead: bool = false
 var current_tag: int = 0     
 
 # --- 侦查与索敌 ---
-var current_target: Node2D = null              ## [修改] 当前目标 (可能是敌人或物件)
-var enter_Character: Array[Node2D] = []        ## [修改] 侦查范围内的所有目标
+var current_target: Node2D = null              
+var enter_Character: Array[Node2D] = []        
 
 # --- 物理计算 ---
 var knockback_velocity: Vector2 = Vector2.ZERO 
@@ -93,6 +102,12 @@ var _damage_tween: Tween
 func _ready() -> void:
 	_initial_layer = collision_layer
 	_initial_mask = collision_mask
+	
+	# [新增] 智能兼容：如果没配置伤害列表，默认等于索敌列表 (防止升级脚本后无法攻击)
+	if damageable_character_types.is_empty() and not target_types.is_empty():
+		damageable_character_types = target_types.duplicate()
+	if damageable_entity_types.is_empty() and not target_entity_types.is_empty():
+		damageable_entity_types = target_entity_types.duplicate()
 	
 	if detection_Area:
 		detection_Area.body_entered.connect(_on_playerAttack_Area_body_entered)
@@ -127,7 +142,7 @@ func _physics_process(delta: float) -> void:
 ## 更新自动攻击进度 (由子类在合适时机调用)
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
-
+ 
 	# 条件 1: 正在移动？ -> 完全重置 (下一次停下来算首次攻击)
 	if velocity.length_squared() > 10.0:
 		reset_attack_progress(true) 
@@ -147,19 +162,17 @@ func update_auto_attack_progress(delta: float) -> void:
 	var current_interval = first_attack_interval if _is_first_attack else attack_interval
 	_attack_timer += delta
 	
-	# [核心修改] 更新 UI
+	# 更新 UI
 	if attack_bar:
-		# 优化：增加 0.05秒 的视觉阈值
-		# 只有当蓄力持续超过 0.05秒 (约3帧) 后才显示 UI
-		# 这能完美过滤掉 "起步瞬间" 或 "状态切换瞬间" 造成的 1帧 UI闪烁
+		# 优化：增加 0.05秒 的视觉阈值，防止闪烁
 		attack_bar.visible = _attack_timer > 0.05
-		
 		var ratio = clamp(_attack_timer / current_interval, 0.0, 1.0)
 		attack_bar.value = ratio * 100.0
 	
 	# 判定触发
 	if _attack_timer >= current_interval:
 		_trigger_attack()
+
 ## 触发攻击 (内部调用)
 func _trigger_attack() -> void:
 	if current_target:
@@ -223,7 +236,6 @@ func _perform_attack_sequence() -> void:
 
 func _process_hitbox_overlap() -> void:
 	var bodies = attack_hitbox.get_overlapping_bodies()
-	# print(">>> [Instant Hit] 瞬间命中数量: ", bodies.size())
 	for body in bodies:
 		_apply_damage_to(body)
 
@@ -231,29 +243,45 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if not _is_damage_active: return
 	_apply_damage_to(body)
 
-## 统一造成伤害 (普通攻击)
+## [核心修改] 统一造成伤害 (普通攻击)
 func _apply_damage_to(body: Node2D) -> void:
 	if body == self: return 
+	if not body.has_method("take_damage"): return
 	
-	if body.has_method("take_damage"):
-		var body_faction = null
-		if "character_type" in body:
-			body_faction = body.character_type
-		
-		# 同类判断
-		if body_faction != null and body_faction == self.character_type:
-			return
+	# --- 权限检查 (Whitelist) ---
+	var is_allowed_damage = false
+	
+	# 1. 检查 CharacterBase (敌人/玩家/物品)
+	if body is CharacterBase:
+		# 防止同阵营伤害 (Friendly Fire)
+		if body.character_type == self.character_type:
+			return 
+		# 检查是否在允许伤害的列表中
+		if damageable_character_types.has(body.character_type):
+			is_allowed_damage = true
 			
-		# A. 造成伤害
-		body.take_damage(float(attack_damage), self.character_type, self)
-		
-		# B. 施加击退
-		var knockback_dir = (body.global_position - global_position).normalized()
-		
-		if body.has_method("apply_knockback"):
-			body.apply_knockback(knockback_dir, attack_knockback_force)
-		elif body is RigidBody2D:
-			body.apply_central_impulse(knockback_dir * attack_knockback_force * 0.5)
+	# 2. 检查 WorldEntity (巢穴/物件/树木)
+	elif body is WorldEntity:
+		# 检查是否在允许伤害的列表中
+		if damageable_entity_types.has(body.entity_type):
+			is_allowed_damage = true
+	
+	# 如果不在白名单里，直接跳过，不造成伤害
+	if not is_allowed_damage:
+		# print(">>> 攻击命中 %s，但目标类型不在伤害白名单中，已忽略。" % body.name)
+		return
+	
+	# --- 执行伤害 ---
+	# A. 扣血
+	body.take_damage(float(attack_damage), self.character_type, self)
+	
+	# B. 施加击退
+	var knockback_dir = (body.global_position - global_position).normalized()
+	
+	if body.has_method("apply_knockback"):
+		body.apply_knockback(knockback_dir, attack_knockback_force)
+	elif body is RigidBody2D:
+		body.apply_central_impulse(knockback_dir * attack_knockback_force * 0.5)
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)
@@ -369,16 +397,14 @@ func _on_playerAttack_Area_body_entered(body: Node2D) -> void:
 	if body == self: return
 	var is_valid = false
 	
-	# A. 敌人
+	# A. 敌人 (判断 target_types)
 	if body is CharacterBase and target_types.has(body.character_type):
 		is_valid = true
 		
-	# B. 物件 (严格限制：只允许 PROP 或 HEAVY，绝对不允许 RESOURCE)
+	# B. 物件 (判断 target_entity_types)
 	elif body is WorldEntity:
-		# [关键] 显式白名单：只有 PROP 和 HEAVY 能被锁定
-		if body.entity_type == WorldEntity.EntityType.PROP or body.entity_type == WorldEntity.EntityType.HEAVY:
+		if target_entity_types.has(body.entity_type):
 			is_valid = true
-		# 如果是 RESOURCE，is_valid 保持 false，不会被加入列表
 			
 	if is_valid:
 		if not enter_Character.has(body):
@@ -400,7 +426,7 @@ func _update_all_enter_Character() -> void:
 		if body.has_method("set_target_tag"):
 			body.set_target_tag(i + 1)
 
-## [修改] 获取最近目标 (支持 Node2D)
+## 获取最近目标
 func get_closest_target() -> Node2D:
 	var closest_target: Node2D = null
 	var closest_dist_sq: float = INF
@@ -409,15 +435,15 @@ func get_closest_target() -> Node2D:
 	for body in enter_Character:
 		if not is_instance_valid(body): continue
 		
-		# 再次检查类型，防止漏网之鱼
 		var is_valid_target = false
 		
+		# 1. 角色类型检查
 		if body is CharacterBase:
 			if not body.is_dead: is_valid_target = true
 			
+		# 2. 物件类型检查
 		elif body is WorldEntity:
-			# [关键] 再次过滤：如果是 RESOURCE 直接跳过
-			if body.entity_type != WorldEntity.EntityType.RESOURCE:
+			if target_entity_types.has(body.entity_type):
 				is_valid_target = true
 		
 		if not is_valid_target: continue
