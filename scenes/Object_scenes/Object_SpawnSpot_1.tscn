@@ -1,24 +1,24 @@
-[gd_scene load_steps=11 format=3 uid="uid://bctkycvc4dget"]
+[gd_scene load_steps=12 format=3 uid="uid://bctkycvc4dget"]
 
-[ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/WorldEntity.gd" id="1_qwgs8"]
-[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_v0srr"]
-[ext_resource type="PackedScene" uid="uid://dslvb6l86vgqu" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Wood.tscn" id="3_fosrp"]
+[ext_resource type="Script" uid="uid://hs0duvgmwnpg" path="res://script/Object/NestEntity.gd" id="1_qwgs8"]
+[ext_resource type="Script" uid="uid://cncyi3dgdyjhd" path="res://script/Object/SpawnOption.gd" id="2_v0srr"]
+[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="3_fosrp"]
+[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="4_fosrp"]
 [ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="4_o3qtk"]
-[ext_resource type="PackedScene" uid="uid://bi16fa1vf32in" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Sticks.tscn" id="4_v0srr"]
 [ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="5_1qs48"]
+[ext_resource type="PackedScene" uid="uid://dslvb6l86vgqu" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Wood.tscn" id="5_o3qtk"]
 [ext_resource type="Texture2D" uid="uid://3re5rgd86o37" path="res://Resource/Tiny Swords (Update 010)/Factions/Goblins/Buildings/Wood_House/Goblin_House.png" id="6_qwgs8"]
 
-[sub_resource type="Resource" id="Resource_fkm28"]
+[sub_resource type="Resource" id="Resource_o3qtk"]
 script = ExtResource("2_v0srr")
-item_scene = ExtResource("3_fosrp")
-max_quantity = 3
-metadata/_custom_type_script = "uid://bqxi33g2h11le"
+enemy_scene = ExtResource("3_fosrp")
+metadata/_custom_type_script = "uid://cncyi3dgdyjhd"
 
-[sub_resource type="Resource" id="Resource_fosrp"]
-script = ExtResource("2_v0srr")
-item_scene = ExtResource("4_v0srr")
-min_quantity = 3
-max_quantity = 5
+[sub_resource type="Resource" id="Resource_1qs48"]
+script = ExtResource("4_fosrp")
+item_scene = ExtResource("5_o3qtk")
+min_quantity = 4
+max_quantity = 6
 metadata/_custom_type_script = "uid://bqxi33g2h11le"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
@@ -33,7 +33,12 @@ freeze = true
 linear_damp = 5.0
 angular_damp = 3.0
 script = ExtResource("1_qwgs8")
-loot_table = Array[ExtResource("2_v0srr")]([SubResource("Resource_fkm28"), SubResource("Resource_fosrp")])
+spawn_options = Array[ExtResource("2_v0srr")]([SubResource("Resource_o3qtk")])
+spawn_interval = 4.0
+max_total_spawns = 20
+spawn_radius_min = 80.0
+entity_type = 3
+loot_table = Array[ExtResource("4_fosrp")]([SubResource("Resource_1qs48")])
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("4_o3qtk")
