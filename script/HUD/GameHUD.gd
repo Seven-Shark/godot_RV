@@ -9,6 +9,7 @@ signal radius_changed(new_radius: float)
 @onready var slider_radius: HSlider = $VBoxContainer/HSlider_Radius
 @onready var label_radius: Label = $VBoxContainer/Label_Radius
 @onready var gold_label: Label = $GoldLabel
+@onready var day_cycle_ui: HBoxContainer = $DayCyclePanel/Background/HBoxContainer
 
 
 func _ready():
@@ -23,6 +24,18 @@ func _ready():
 	
 	# 初始化文本
 	_update_labels()
+
+# 2. [初始化] 接收配置并生成条
+# 这个函数由 GameDirector 在 _start_gameplay_loop 里调用
+func setup_day_cycle_ui(phases: Array[DayLoopConfig]):
+	if day_cycle_ui:
+		day_cycle_ui.setup_bars(phases)
+
+# 3. [每帧更新] 接收时间并更新 UI
+# 这个函数由 GameDirector 的 time_updated 信号连接触发
+func update_time_display(phase_idx: int, remain: float, total: float):
+	if day_cycle_ui:
+		day_cycle_ui.update_progress(phase_idx, remain, total)
 
 func _on_angle_changed(value: float):
 	label_angle.text = "角度: %d" % value

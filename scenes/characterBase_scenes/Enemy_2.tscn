@@ -114,10 +114,11 @@ y_sort_enabled = true
 collision_layer = 2
 collision_mask = 21
 script = ExtResource("1_0o22s")
+patrol_wander_min = 250.0
+patrol_wander_max = 600.0
 separation_force = 10.0
 push_force = 1.0
 show_patrol_area = true
-show_path_line = true
 attack_width = 80.0
 attack_cooldown = 1.0
 character_type = 2
@@ -130,9 +131,11 @@ sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 30.0
+target_desired_distance = 20.0
 avoidance_enabled = true
 radius = 5.0
-debug_enabled = true
+avoidance_mask = 4
 
 [node name="StatsComponent" type="Node2D" parent="."]
 position = Vector2(-3, 0)

@@ -8,11 +8,19 @@ class_name Enemy
 #region 1. 巡逻模式与 AI 配置
 @export_group("Patrol Settings")
 @export var patrol_mode: PatrolMode = PatrolMode.GLOBAL_RANDOM ## 巡逻模式
-@export var patrol_radius: float = 300.0 ## 巡逻半径
+@export var patrol_radius: float = 300.0 ## 巡逻半径 (固定区域模式下的总活动半径)
+@export var patrol_wander_min: float = 100.0 ## 单次移动最小距离
+@export var patrol_wander_max: float = 300.0 ## 单次移动最大距离
 @export var max_chase_distance: float = 500.0 ## 最大追击距离
 @export var patrol_wait_min: float = 1.0 ## 最小等待时间
 @export var patrol_wait_max: float = 3.0 ## 最大等待时间
 @export_flags_2d_physics var wall_layer_mask: int = 16 ## 空气墙的物理层级 (默认 Layer 5)
+
+# [修改] 防卡死检测配置 - 分级处理
+@export_subgroup("Stuck Detection")
+@export var stuck_check_radius: float = 20.0 ## 防卡死检测半径
+@export var stuck_retry_time: float = 2.0 ## 第一阶段：尝试换个随机点的时间
+@export var stuck_escape_time: float = 1.5 ## 第二阶段：强制反向逃逸的时间 (累加在第一阶段后)
 
 @export_group("AI Settings")
 @export var attack_distance: float = 120.0 ## 攻击触发距离
@@ -48,6 +56,9 @@ var aggro_timer: float = 0.0 ## 仇恨计时器
 var spawn_position: Vector2 ## 初始出生点
 var is_returning: bool = false ## 是否正在强制返航
 var current_patrol_target: Vector2 = Vector2.ZERO ## 当前巡逻目标坐标点
+
+# 分离力开关
+var is_separation_active: bool = true 
 
 # --- 节点与代理 ---
 var attack_pivot: Node2D ## 攻击方向基准点
@@ -179,39 +190,73 @@ func get_next_patrol_point() -> Vector2:
 		
 		# 1. 生成随机点
 		if patrol_mode == PatrolMode.FIXED_AREA:
-			next_point = _get_random_point_in_circle(spawn_position, patrol_radius)
+			# 固定区域模式：依然是在出生点周围随机
+			next_point = _get_random_point_in_range(spawn_position, 0.0, patrol_radius) 
 		else:
-			next_point = _get_random_point_in_circle(global_position, 200.0) 
+			# 全局随机模式：基于当前位置，在 min ~ max 范围内找点
+			next_point = _get_random_point_in_range(global_position, patrol_wander_min, patrol_wander_max)
 		
-		# ---------------------------------------------------------
-		# [验证 1] 点位物理检测：目标点是不是直接生在了墙肚子里？
-		# ---------------------------------------------------------
+		# [验证 1] 点位物理检测
 		if _is_position_inside_wall(next_point):
-			continue # 在墙里，重来
+			continue 
 
-		# ---------------------------------------------------------
-		# [验证 2] 射线路径检测：去目标点的路上有没有墙挡着？
-		# ---------------------------------------------------------
+		# [验证 2] 射线路径检测
 		if not _is_point_safe_by_raycast(global_position, next_point):
-			continue # 会穿墙，重来
+			continue 
 			
-		# ---------------------------------------------------------
-		# [验证 3] 导航吸附检测：目标点是否在有效的导航网格上？
-		# ---------------------------------------------------------
+		# [验证 3] 导航吸附检测
 		var safe_point = NavigationServer2D.map_get_closest_point(map_rid, next_point)
 		
-		# [关键] 严格限制吸附距离。
-		# 如果随机点在地图外，它会被吸附到地图边缘。
-		# 如果原始点和吸附点距离超过 5.0 像素，说明原始点在虚空里，判定为非法。
 		if next_point.distance_to(safe_point) > 5.0:
 			continue 
 			
-		# 三关全过，这就是一个完美的点
 		current_patrol_target = safe_point
 		return safe_point
 
-	# 如果运气太差随不到，就保持原地，不要强行返回 spawn_position (防止 spawn_position 本身就在墙边)
 	return global_position
+
+
+## [新增] 获取一个“反向逃逸”的巡逻点 (专门用于二阶段解卡)
+func get_escape_patrol_point() -> Vector2:
+	# 1. 获取当前意图前进的方向
+	var forward_dir = Vector2.RIGHT # 默认值
+	
+	if not nav_agent.is_navigation_finished():
+		# 如果正在寻路，取下一个路点的方向
+		forward_dir = (nav_agent.get_next_path_position() - global_position).normalized()
+	elif velocity.length_squared() > 1.0:
+		# 如果有速度，取速度方向
+		forward_dir = velocity.normalized()
+	
+	# 2. 计算反方向 (背后的方向)
+	var backward_base_dir = -forward_dir
+	
+	# 3. 尝试寻找合法的反向点 (尝试 10 次)
+	# 我们不完全沿直线后退，而是在背后 120 度扇形范围内随机，避免正后方也被堵死
+	var max_attempts = 10
+	var map_rid = get_world_2d().get_navigation_map()
+	
+	for i in range(max_attempts):
+		# 在反方向基础上左右随机偏移 +/- 60度
+		var random_angle = deg_to_rad(randf_range(-60, 60))
+		var escape_dir = backward_base_dir.rotated(random_angle)
+		
+		# 随机逃逸距离 (使用最大移动距离，确保跑得够远)
+		var dist = randf_range(patrol_wander_min, patrol_wander_max)
+		var next_point = global_position + escape_dir * dist
+		
+		# --- 执行安全性检查 ---
+		if _is_position_inside_wall(next_point): continue 
+		if not _is_point_safe_by_raycast(global_position, next_point): continue 
+		var safe_point = NavigationServer2D.map_get_closest_point(map_rid, next_point)
+		if next_point.distance_to(safe_point) > 5.0: continue
+		
+		# 找到合法逃逸点
+		current_patrol_target = safe_point
+		return safe_point
+
+	# 4. 如果身后全是墙，兜底返回普通随机点
+	return get_next_patrol_point()
 
 ## [新增] 检测某个点坐标是否位于墙体碰撞内
 func _is_position_inside_wall(pos: Vector2) -> bool:
@@ -252,9 +297,9 @@ func _process_return_logic(_delta: float) -> void:
 		if state_machine: state_machine.transition_to("Idle")
 
 ## 辅助函数：在圆范围内获取随机点
-func _get_random_point_in_circle(center: Vector2, radius: float) -> Vector2:
-	var angle = randf() * TAU
-	var dist = sqrt(randf()) * radius 
+func _get_random_point_in_range(center: Vector2, min_dist: float, max_dist: float) -> Vector2:
+	var angle = randf() * TAU 
+	var dist = randf_range(min_dist, max_dist)
 	return center + Vector2(cos(angle), sin(angle)) * dist
 
 #endregion
@@ -276,24 +321,16 @@ func _update_target_logic(_delta: float) -> void:
 		force_stop_aggro(); return
 	Target_Lock_On(current_target)
 	if not is_instance_valid(current_target): current_target = get_closest_target()
+
 ## 辅助：面向目标 (供 Attack State 调用)
 func face_current_target() -> void:
-	# 1. 安全检查
 	if not is_instance_valid(current_target) or not sprite: 
 		return
-	
-	# 2. 计算方向
 	var diff_x = current_target.global_position.x - global_position.x
-	
-	# 3. 防止抽搐 (距离太近时不转向)
 	if abs(diff_x) < 5.0: 
 		return
-	
-	# 4. 执行转向
-	if diff_x > 0:
-		sprite.scale.x = 1  # 面向右
-	else:
-		sprite.scale.x = -1 # 面向左
+	if diff_x > 0: sprite.scale.x = 1 
+	else: sprite.scale.x = -1 
 
 ## 初始化并配置攻击预览与判定节点
 func _setup_attack_nodes() -> void:
@@ -320,22 +357,56 @@ func _update_aggro_system(delta: float) -> void:
 		aggro_timer -= delta
 		if aggro_timer <= 0: is_aggro_active = false; current_target = null 
 
-## 计算并合并环境斥力与同队分离力
+## 计算并合并环境斥力 (升级版：支持动态滑开)
 func _calculate_environment_forces() -> Vector2:
 	if not detection_Area: return Vector2.ZERO
+	
 	var neighbors = detection_Area.get_overlapping_bodies()
-	var total_separation = Vector2.ZERO; var total_push = Vector2.ZERO; var sep_count = 0
+	var total_separation = Vector2.ZERO
+	var total_push = Vector2.ZERO
+	var sep_count = 0
+	var min_separation_dist = 20.0 
+	
+	var is_moving = velocity.length_squared() > 100.0
+	var move_dir = velocity.normalized()
+	
 	for body in neighbors:
 		if body == self: continue
-		var diff = global_position - body.global_position; var dist_sq = diff.length_squared()
-		if body is Enemy and dist_sq < 2500.0 and dist_sq > 0.1:
-			total_separation += (diff / sqrt(dist_sq)); sep_count += 1
+		
+		var diff = global_position - body.global_position
+		var dist_sq = diff.length_squared()
+		var dist = sqrt(dist_sq)
+		
+		# 1. 队友分离
+		if body is Enemy:
+			var force = Vector2.ZERO
+			if dist < min_separation_dist:
+				var effective_dist = max(0.1, dist)
+				var strength = 1.0 - (effective_dist / min_separation_dist)
+				force = (diff / effective_dist) * strength * 5.0
+			elif dist < 35.0:
+				force = (diff / dist) * 0.5
+			
+			if force != Vector2.ZERO:
+				if is_moving:
+					var dot_prod = force.dot(move_dir)
+					if dot_prod < 0:
+						force -= move_dir * dot_prod 
+				total_separation += force
+				sep_count += 1
+				
+		# 2. 玩家推挤
 		elif body is CharacterBase and body.character_type == CharacterType.PLAYER:
 			var threshold_sq = push_threshold * push_threshold
 			if dist_sq < threshold_sq and dist_sq > 0.1:
-				var dist = sqrt(dist_sq); var weight = 1.0 - (dist / push_threshold)
+				var weight = 1.0 - (dist / push_threshold)
 				total_push += (diff / dist) * push_force * weight
-	return (total_separation / max(1, sep_count)) * separation_force + total_push
+
+	var final_force = Vector2.ZERO
+	if sep_count > 0:
+		final_force = total_separation.normalized() * separation_force
+		
+	return final_force + total_push
 
 ## 强制重置敌人整体状态
 func reset_status() -> void:

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DayLoopConfig" load_steps=5 format=3 uid="uid://2u6lhl85cwfo"]
+
+[ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="1_rxpvu"]
+[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="2_d1f2b"]
+[ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="2_e2qha"]
+
+[sub_resource type="Resource" id="Resource_onken"]
+script = ExtResource("1_rxpvu")
+object_prefab = ExtResource("2_e2qha")
+spawn_count = 10
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[resource]
+script = ExtResource("2_d1f2b")
+phase_name = "Dusk"
+phase_type = 1
+duration = 10.0
+hud_color = Color(1, 0.73333335, 0, 1)
+phase_spawn_list = Array[ExtResource("1_rxpvu")]([SubResource("Resource_onken")])
+metadata/_custom_type_script = "uid://dqejo2qob8a4n"

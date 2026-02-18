@@ -78,8 +78,8 @@ animations = [{
 "speed": 12.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
-size = Vector2(42, 72)
+[sub_resource type="CircleShape2D" id="CircleShape2D_fkm28"]
+radius = 30.0
 
 [node name="Object_Tree_1" type="RigidBody2D"]
 y_sort_enabled = true
@@ -91,6 +91,11 @@ linear_damp = 5.0
 angular_damp = 3.0
 script = ExtResource("1_64p25")
 loot_table = Array[ExtResource("2_64p25")]([SubResource("Resource_fkm28")])
+
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
+position = Vector2(0, -30)
+radius = 30.0
+avoidance_layers = 4
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("1_ubghj")
@@ -108,7 +113,7 @@ autoplay = "Idle"
 offset = Vector2(0, -70)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -36)
-shape = SubResource("RectangleShape2D_b3atn")
+position = Vector2(0, -30)
+shape = SubResource("CircleShape2D_fkm28")
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="."]

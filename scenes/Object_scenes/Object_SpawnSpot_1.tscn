@@ -21,8 +21,8 @@ min_quantity = 4
 max_quantity = 6
 metadata/_custom_type_script = "uid://bqxi33g2h11le"
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_b3atn"]
-size = Vector2(118, 53)
+[sub_resource type="CircleShape2D" id="CircleShape2D_fosrp"]
+radius = 40.0
 
 [node name="Object_SpawnSpot_1" type="RigidBody2D"]
 y_sort_enabled = true
@@ -35,15 +35,19 @@ angular_damp = 3.0
 script = ExtResource("1_qwgs8")
 spawn_options = Array[ExtResource("2_v0srr")]([SubResource("Resource_o3qtk")])
 spawn_interval = 4.0
-spawn_count_per_wave = 10
-max_total_spawns = 20
+max_total_spawns = 50
 spawn_radius_min = 80.0
 entity_type = 3
 loot_table = Array[ExtResource("4_fosrp")]([SubResource("Resource_1qs48")])
 
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
+position = Vector2(0, -38)
+radius = 40.0
+avoidance_layers = 4
+
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("4_o3qtk")
-max_health = 20.0
+max_health = 500.0
 
 [node name="VisualController" type="Node2D" parent="."]
 script = ExtResource("5_1qs48")
@@ -52,8 +56,8 @@ script = ExtResource("5_1qs48")
 texture = ExtResource("6_qwgs8")
 offset = Vector2(0, -66)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1, -26.5)
-shape = SubResource("RectangleShape2D_b3atn")
-
 [node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -38)
+shape = SubResource("CircleShape2D_fosrp")

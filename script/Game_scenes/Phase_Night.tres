@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DayLoopConfig" load_steps=5 format=3 uid="uid://c0rjcad1ermqm"]
+
+[ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="1_xdo71"]
+[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="2_as61g"]
+[ext_resource type="PackedScene" uid="uid://bctkycvc4dget" path="res://scenes/Object_scenes/Object_SpawnSpot_1.tscn" id="2_jsqkg"]
+
+[sub_resource type="Resource" id="Resource_h0oqy"]
+script = ExtResource("1_xdo71")
+object_prefab = ExtResource("2_jsqkg")
+spawn_count = 2
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[resource]
+script = ExtResource("2_as61g")
+phase_name = "Night"
+phase_type = 2
+duration = 10.0
+hud_color = Color(0, 0.6745098, 1, 1)
+phase_spawn_list = Array[ExtResource("1_xdo71")]([SubResource("Resource_h0oqy")])
+metadata/_custom_type_script = "uid://dqejo2qob8a4n"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="DayLoopConfig" load_steps=7 format=3 uid="uid://c8bn7fjpirna4"]
+
+[ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="1_y8juc"]
+[ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="2_1bn4i"]
+[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="2_nts4x"]
+[ext_resource type="PackedScene" uid="uid://cn0w8aotdshpt" path="res://scenes/Object_scenes/Object_Rock_1.tscn" id="3_8oh1l"]
+
+[sub_resource type="Resource" id="Resource_3pacj"]
+script = ExtResource("1_y8juc")
+object_prefab = ExtResource("2_1bn4i")
+spawn_count = 10
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[sub_resource type="Resource" id="Resource_6k0fp"]
+script = ExtResource("1_y8juc")
+object_prefab = ExtResource("3_8oh1l")
+metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+
+[resource]
+script = ExtResource("2_nts4x")
+duration = 10.0
+hud_color = Color(1, 1, 0.2901961, 1)
+phase_spawn_list = Array[ExtResource("1_y8juc")]([SubResource("Resource_3pacj"), SubResource("Resource_6k0fp")])
+metadata/_custom_type_script = "uid://dqejo2qob8a4n"

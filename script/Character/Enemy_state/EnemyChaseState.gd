@@ -3,11 +3,17 @@ extends EnemyState
 class_name EnemyChaseState
 
 func enter() -> void:
-	# [修改] 使用 Run 动画，如果没有请确保 AnimationPlayer 里有对应的 key
-	anim.play("Walk")
+	# [修改] 开启斥力计算，允许追逐时挤开队友
+	enemy.is_separation_active = true
+
+	# 动画容错
+	if enemy.sprite.sprite_frames.has_animation("Run"):
+		anim.play("Run")
+	else:
+		anim.play("Walk")
 
 func exit() -> void:
-	# [关键] 退出追逐时，强制将导航代理的目标设为自己脚下，防止惯性
+	# 退出追逐时，强制将导航代理的目标设为自己脚下，防止惯性
 	if enemy.nav_agent:
 		enemy.nav_agent.target_position = enemy.global_position
 	enemy.velocity = Vector2.ZERO
@@ -25,7 +31,6 @@ func _on_physics_process(_delta: float) -> void:
 	if enemy.stats:
 		chase_speed = enemy.stats.base_walk_speed * 1.2
 	
-	# [关键] 保存返回值，用于调试或判断
 	enemy.process_navigation_movement(chase_speed)
 
 func _on_next_transitions() -> void:
@@ -36,6 +41,6 @@ func _on_next_transitions() -> void:
 	if is_instance_valid(enemy.current_target):
 		var dist = enemy.global_position.distance_to(enemy.current_target.global_position)
 		
-		# [关键] 进入攻击范围
+		# 进入攻击范围
 		if dist <= enemy.attack_distance:
 			transition.emit("Attack")
