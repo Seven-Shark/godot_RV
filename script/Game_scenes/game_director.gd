@@ -33,13 +33,22 @@ var is_cycle_active: bool = false ## 昼夜循环是否正在运行
 #region 4. 生命周期
 ## 初始化游戏状态并开始游戏循环
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS # 确保暂停时仍能响应输入和逻辑
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	_initialize_game_state()
 	_connect_signals()
 	
-	# 开局延迟一帧启动游戏循环，确保所有节点已就绪
-	call_deferred("_start_gameplay_loop", [] as Array[PackedScene])
+	# [修改前]
+	# call_deferred("_start_gameplay_loop", [] as Array[PackedScene])
+	
+	# [修改后] 替换为下面这几行：
+	# 强制等待两帧。
+	# 第一帧：让 LevelManager 完成 await get_tree().process_frame
+	# 第二帧：确保信号连接已经生效
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	_start_gameplay_loop([] as Array[PackedScene])
 
 ## 处理昼夜循环计时逻辑
 func _process(delta: float) -> void:
@@ -80,6 +89,11 @@ func _connect_signals() -> void:
 		if not ers_manager.start_next_day_requested.is_connected(_on_ers_finished):
 			ers_manager.start_next_day_requested.connect(_on_ers_finished)
 	
+	# --- [必须新增的代码] 连接时间更新信号到 HUD ---
+	if game_hud and game_hud.has_method("update_time_display"):
+		if not time_updated.is_connected(game_hud.update_time_display):
+			time_updated.connect(game_hud.update_time_display)
+			print(">>> [Director] 成功连接 time_updated 信号到 HUD")
 	# 连接玩家死亡信号 (需确保 Player 节点存在)
 	if level_manager and level_manager.player:
 		var player_node = level_manager.player
