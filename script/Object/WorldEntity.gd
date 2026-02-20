@@ -130,7 +130,7 @@ func enable_pickup_detection():
 	if _is_absorbed: return
 	collision_layer = LAYER_RESOURCE_MASK
 	collision_mask = 0
-	freeze = true
+	freeze = false 
 
 func collect_success():
 	GameDataManager.add_temp_resource(1)

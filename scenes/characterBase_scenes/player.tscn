@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=47 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://diplvx6bqhs6u" path="res://script/Character/Player_state/attack_state.gd" id="9_xl87i"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
 [ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
+[ext_resource type="Script" uid="uid://dw3076aoa83eq" path="res://scenes/characterBase_scenes/ResourceMagnet.gd" id="14_hdrb8"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
 atlas = ExtResource("2_wdqqy")
@@ -209,11 +210,14 @@ animations = [{
 radius = 43.0
 height = 94.0
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_hdrb8"]
+radius = 100.0
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xl87i"]
 size = Vector2(116, 109)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
-radius = 117.00427
+radius = 90.04999
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
 bg_color = Color(0, 0, 0, 1)
@@ -310,6 +314,16 @@ animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 [node name="Arrows" type="Sprite2D" parent="DirectionSign"]
 position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
+
+[node name="ResourceMagnet" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+script = ExtResource("14_hdrb8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ResourceMagnet"]
+shape = SubResource("CircleShape2D_hdrb8")
+debug_color = Color(0.9490501, 2.4065375e-06, 0.57773733, 0.41960785)
 
 [node name="AttackHitbox" type="Area2D" parent="."]
 collision_mask = 6
