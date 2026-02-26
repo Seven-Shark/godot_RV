@@ -151,8 +151,8 @@ func _draw() -> void:
 			elif is_instance_valid(current_target): line_color = Color.ORANGE_RED 
 			draw_line(Vector2.ZERO, target_local, line_color, 2.0)
 			
-	# --- [新增] 弱点圆弧绘制 ---
-	if enable_weakness and is_weakness_active and not is_stunned:
+	# [核心修复 2] 加上 and not is_dead，确保死亡动画期间绝对不画破绽
+	if enable_weakness and is_weakness_active and not is_stunned and not is_dead:
 		if current_weakness_stage < weakness_stages.size():
 			var arc_angle_rad = deg_to_rad(weakness_stages[current_weakness_stage])
 			var start_angle = current_weakness_angle - (arc_angle_rad / 2.0)
@@ -168,7 +168,14 @@ func _draw() -> void:
 
 ## 负责检测玩家距离，控制弱点的显示与隐藏
 func _process_weakness_trigger() -> void:
-	if not enable_weakness or is_stunned or is_dead: return
+	if not enable_weakness: return
+	
+	# --- [核心修复 1] 死亡时强制清理弱点状态 ---
+	if is_dead:
+		is_weakness_active = false
+		return
+		
+	if is_stunned: return
 	
 	# 如果没有目标或者目标死了，关闭弱点
 	if not is_instance_valid(current_target) or current_target.is_dead:
