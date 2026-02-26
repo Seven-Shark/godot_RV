@@ -2,8 +2,8 @@ extends CharacterBase
 class_name Enemy
 
 ## Enemy.gd
-## 职责：处理敌人的数据中心、环境力、攻击判定以及高级巡逻逻辑。
-## 功能：管理 AI 仇恨状态，支持寻路避障系统，并严格处理导航地图同步问题。
+## 职责：处理敌人的数据中心、环境力、攻击判定、高级巡逻逻辑，以及弱点击破系统。
+## 功能：管理 AI 仇恨状态，支持寻路避障系统，严格处理导航地图同步，包含多阶段定向弱点系统。
 
 #region 1. 巡逻模式与 AI 配置
 @export_group("Patrol Settings")
@@ -16,7 +16,6 @@ class_name Enemy
 @export var patrol_wait_max: float = 3.0 ## 最大等待时间
 @export_flags_2d_physics var wall_layer_mask: int = 16 ## 空气墙的物理层级 (默认 Layer 5)
 
-# [修改] 防卡死检测配置 - 分级处理
 @export_subgroup("Stuck Detection")
 @export var stuck_check_radius: float = 20.0 ## 防卡死检测半径
 @export var stuck_retry_time: float = 2.0 ## 第一阶段：尝试换个随机点的时间
@@ -47,20 +46,31 @@ class_name Enemy
 @export_flags_2d_physics var attack_target_mask: int = 1 ## 攻击目标层级
 #endregion
 
-#region 3. 内部共享数据
+#region 3. 弱点击破系统配置 (Weakness System)
+@export_group("Weakness System")
+@export var enable_weakness: bool = true ## 是否开启弱点系统
+@export var weakness_trigger_dist: float = 400.0 ## 玩家靠近多近时显示弱点
+@export var weakness_draw_radius: float = 40.0 ## 弱点圆弧在敌人身上绘制的半径
+@export var weakness_stages: Array[float] = [120.0, 90.0, 60.0] ## 破绽各阶段的弧度大小(度数)。越往后越难打
+@export var weakness_min_angle_diff: float = 90.0 ## 每次刷新弱点时，和上次位置的最小角度差
+@export var weakness_stun_duration: float = 2.5 ## 所有弱点击破后的眩晕时间
+
+var is_weakness_active: bool = false ## 弱点是否正在显示
+var is_stunned: bool = false ## 敌人是否处于破绽击破后的眩晕状态
+var current_weakness_stage: int = 0 ## 当前打到了第几个破绽阶段
+var current_weakness_angle: float = 0.0 ## 当前破绽的朝向角度 (弧度)
+#endregion
+
+#region 4. 内部共享数据
 enum PatrolMode { GLOBAL_RANDOM, FIXED_AREA } ## 巡逻枚举定义
 
-# --- 仇恨与状态 ---
 var is_aggro_active: bool = false ## 是否处于仇恨激活状态
 var aggro_timer: float = 0.0 ## 仇恨计时器
 var spawn_position: Vector2 ## 初始出生点
 var is_returning: bool = false ## 是否正在强制返航
 var current_patrol_target: Vector2 = Vector2.ZERO ## 当前巡逻目标坐标点
-
-# 分离力开关
 var is_separation_active: bool = true 
 
-# --- 节点与代理 ---
 var attack_pivot: Node2D ## 攻击方向基准点
 var attack_visual: ColorRect ## 攻击范围预览
 var attack_area: Area2D ## 攻击判定区域
@@ -68,9 +78,8 @@ var attack_area: Area2D ## 攻击判定区域
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D ## 导航代理组件
 #endregion
 
-#region 生命周期与核心循环
+#region 5. 生命周期与核心循环
 
-## 初始化组件、配置导航并等待地图同步
 func _ready() -> void:
 	super._ready()
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -85,14 +94,22 @@ func _ready() -> void:
 	spawn_position = global_position 
 	current_patrol_target = global_position
 	
-	# 等待两帧，让 NavigationServer 完成第一次同步
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 
-## 处理调试绘图、返航逻辑、环境力及移动更新
 func _physics_process(delta: float) -> void:
-	if show_patrol_area or show_path_line: queue_redraw()
+	# [修改] 始终触发重绘，因为弱点需要实时渲染
+	queue_redraw()
 	
+	# 如果处于破绽眩晕状态，停止一切思考和移动
+	if is_stunned:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+	
+	# [新增] 检测玩家距离以激活弱点
+	_process_weakness_trigger()
+
 	if is_returning:
 		_process_return_logic(delta)
 		move_and_slide()
@@ -113,8 +130,8 @@ func _physics_process(delta: float) -> void:
 			
 	move_and_slide()
 
-## 绘制调试路径、巡逻圆圈及中心点
 func _draw() -> void:
+	# --- 原有的调试绘图 ---
 	if show_patrol_area and patrol_mode == PatrolMode.FIXED_AREA:
 		var center_local = to_local(spawn_position)
 		draw_circle(center_local, 5.0, Color.GREEN)
@@ -133,6 +150,118 @@ func _draw() -> void:
 			if is_returning: line_color = Color.CYAN
 			elif is_instance_valid(current_target): line_color = Color.ORANGE_RED 
 			draw_line(Vector2.ZERO, target_local, line_color, 2.0)
+			
+	# --- [新增] 弱点圆弧绘制 ---
+	if enable_weakness and is_weakness_active and not is_stunned:
+		if current_weakness_stage < weakness_stages.size():
+			var arc_angle_rad = deg_to_rad(weakness_stages[current_weakness_stage])
+			var start_angle = current_weakness_angle - (arc_angle_rad / 2.0)
+			
+			# 绘制破绽底色 (半透明红)
+			draw_arc(Vector2.ZERO, weakness_draw_radius, start_angle, start_angle + arc_angle_rad, 16, Color(1, 0, 0, 0.4), 4.0)
+			# 绘制破绽高亮边缘 (纯黄)
+			draw_arc(Vector2.ZERO, weakness_draw_radius + 2.0, start_angle, start_angle + arc_angle_rad, 16, Color.YELLOW, 2.0)
+
+#endregion
+
+#region 6. 弱点击破系统核心逻辑 (Weakness Core)
+
+## 负责检测玩家距离，控制弱点的显示与隐藏
+func _process_weakness_trigger() -> void:
+	if not enable_weakness or is_stunned or is_dead: return
+	
+	# 如果没有目标或者目标死了，关闭弱点
+	if not is_instance_valid(current_target) or current_target.is_dead:
+		is_weakness_active = false
+		return
+		
+	var dist = global_position.distance_to(current_target.global_position)
+	
+	# 靠近时激活弱点
+	if dist <= weakness_trigger_dist and not is_weakness_active:
+		is_weakness_active = true
+		current_weakness_stage = 0
+		_refresh_weakness_position()
+	
+	# 离太远则取消弱点
+	elif dist > weakness_trigger_dist + 50.0 and is_weakness_active:
+		is_weakness_active = false
+
+## 刷新弱点位置，并确保与上一次位置有足够的角度差
+func _refresh_weakness_position() -> void:
+	var new_angle = current_weakness_angle
+	var min_diff_rad = deg_to_rad(weakness_min_angle_diff)
+	var max_attempts = 10
+	
+	for i in range(max_attempts):
+		new_angle = randf() * TAU
+		# 判断新角度与旧角度的夹角差
+		if abs(angle_difference(current_weakness_angle, new_angle)) >= min_diff_rad:
+			break
+			
+	current_weakness_angle = new_angle
+
+## [核心] 重写受到伤害函数。除了正常扣血外，额外进行破绽方向判定
+func take_damage(amount: int, attacker_type: CharacterType, attacker_node: Node2D = null) -> void:
+	# 先执行父类的正常扣血逻辑 (Godot 4 简写，直接调用同名父类方法)
+	super(amount, attacker_type, attacker_node)
+	
+	# 判定弱点击破
+	if enable_weakness and is_weakness_active and not is_stunned and not is_dead and attacker_node:
+		var dir_to_attacker = (attacker_node.global_position - global_position).normalized()
+		var attack_angle = dir_to_attacker.angle()
+		
+		# 计算攻击角度和弱点角度的差值
+		var angle_diff = abs(angle_difference(current_weakness_angle, attack_angle))
+		var current_arc_rad = deg_to_rad(weakness_stages[current_weakness_stage])
+		
+		# 如果差值小于圆弧的一半，说明打在了弱点圆弧上
+		if angle_diff <= current_arc_rad / 2.0:
+			_on_weakness_hit()
+
+## 处理弱点被击中的逻辑
+func _on_weakness_hit() -> void:
+	print(">>> [弱点系统] 击破破绽！当前阶段: ", current_weakness_stage + 1)
+	
+	# 这里可以播放一个破绽击破的特效或音效
+	# if hit_vfx: hit_vfx.play()
+	
+	current_weakness_stage += 1
+	
+	# 如果所有阶段都被击破了
+	if current_weakness_stage >= weakness_stages.size():
+		_trigger_weakness_stun()
+	else:
+		# 否则刷新到下一个位置
+		_refresh_weakness_position()
+
+## 触发破绽全破的终极眩晕
+func _trigger_weakness_stun() -> void:
+	print(">>> [弱点系统] 破绽全破！敌人陷入眩晕！")
+	is_stunned = true
+	is_weakness_active = false
+	
+	# 1. 强行没收当前的攻击判定 (核心打断逻辑)
+	if attack_area: attack_area.set_deferred("monitoring", false)
+	if attack_visual: attack_visual.visible = false
+	
+	# 2. 强制状态机进入 Stun 状态 (如果没有配置此状态，上面的 is_stunned 也会拦截移动)
+	if state_machine:
+		# 假设你的状态机里有名为 "Stun" 的状态，没有的话也没关系
+		if state_machine.has_node("Stun"): 
+			state_machine.transition_to("Stun")
+		else:
+			state_machine.transition_to("Idle")
+			
+	# 3. 开启眩晕倒计时
+	await get_tree().create_timer(weakness_stun_duration).timeout
+	
+	# 4. 眩晕结束，重置状态
+	if not is_dead:
+		is_stunned = false
+		current_weakness_stage = 0
+		print(">>> [弱点系统] 眩晕结束，恢复正常。")
+		if state_machine: state_machine.transition_to("Idle")
 
 #endregion
 

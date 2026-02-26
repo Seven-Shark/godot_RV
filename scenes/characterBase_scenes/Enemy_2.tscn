@@ -121,6 +121,9 @@ push_force = 1.0
 show_patrol_area = true
 attack_width = 80.0
 attack_cooldown = 1.0
+weakness_trigger_dist = 300.0
+weakness_stages = Array[float]([90.0, 60.0, 45.0])
+weakness_min_angle_diff = 45.0
 character_type = 2
 health = 20
 target_types = Array[int]([1])
@@ -140,12 +143,12 @@ avoidance_mask = 4
 [node name="StatsComponent" type="Node2D" parent="."]
 position = Vector2(-3, 0)
 script = ExtResource("2_uqfet")
+max_health = 500.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_hhs0w")
-animation = &"Idle"
+animation = &"Walk"
 autoplay = "Idle"
-frame_progress = 0.672337
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_j2r2h")
@@ -171,6 +174,10 @@ script = ExtResource("8_c4r8r")
 
 [node name="Cooldown" type="Node" parent="StateMachine"]
 script = ExtResource("9_ysiaw")
+
+[node name="Stun" type="Node" parent="StateMachine" node_paths=PackedStringArray("enemy")]
+script = ExtResource("9_ysiaw")
+enemy = NodePath("../..")
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("10_a5cyx")
