@@ -99,6 +99,8 @@ var _damage_tween: Tween
 #endregion
 
 #region 生命周期
+
+## [生命周期] 节点初始化。配置物理层、信号连接，并智能兼容伤害白名单。
 func _ready() -> void:
 	_initial_layer = collision_layer
 	_initial_mask = collision_mask
@@ -133,13 +135,15 @@ func _ready() -> void:
 		if not attack_hitbox.body_entered.is_connected(_on_hitbox_body_entered):
 			attack_hitbox.body_entered.connect(_on_hitbox_body_entered)
 
+## [生命周期] 物理帧更新。每帧处理角色受到的击退位移衰减。
 func _physics_process(delta: float) -> void:
 	_handle_knockback(delta)
 	# 子类负责 move_and_slide
 #endregion
 
 #region 自动攻击核心逻辑
-## 更新自动攻击进度 (由子类在合适时机调用)
+
+## [自动攻击] 每帧更新攻击进度。如果角色移动或目标丢失则重置进度，静止蓄力满后触发攻击。
 func update_auto_attack_progress(delta: float) -> void:
 	if is_dead: return
  
@@ -173,7 +177,7 @@ func update_auto_attack_progress(delta: float) -> void:
 	if _attack_timer >= current_interval:
 		_trigger_attack()
 
-## 触发攻击 (内部调用)
+## [自动攻击] 触发单次攻击。发射动画信号、重置读条，并异步启动伤害判定序列。
 func _trigger_attack() -> void:
 	if current_target:
 		on_perform_attack.emit(current_target)
@@ -188,7 +192,7 @@ func _trigger_attack() -> void:
 	# 3. 启动伤害判定流程 (异步执行)
 	_perform_attack_sequence()
 
-## 重置进度
+## [自动攻击] 强行重置攻击读条和 UI。可选参数控制是否彻底重置“首发攻击”状态。
 func reset_attack_progress(is_full_reset: bool = false) -> void:
 	if is_full_reset:
 		_is_first_attack = true
@@ -206,6 +210,8 @@ func reset_attack_progress(is_full_reset: bool = false) -> void:
 #endregion
 
 #region 攻击伤害判定逻辑 (Hitbox Sequence)
+
+## [伤害判定] 异步执行攻击序列流程：同步攻击朝向 -> 延迟前摇 -> 激活伤害判定 -> 延迟持续时间 -> 关闭伤害判定。
 func _perform_attack_sequence() -> void:
 	if not attack_hitbox: return
 
@@ -234,16 +240,18 @@ func _perform_attack_sequence() -> void:
 	# 6. 关闭伤害逻辑
 	_is_damage_active = false
 
+## [伤害判定] 瞬间遍历并处理当前处于 Hitbox 范围内的所有碰撞体。
 func _process_hitbox_overlap() -> void:
 	var bodies = attack_hitbox.get_overlapping_bodies()
 	for body in bodies:
 		_apply_damage_to(body)
 
+## [伤害判定] 信号回调：当伤害判定激活期间，如果有新物理体走进了 Hitbox，则尝试对其造成伤害。
 func _on_hitbox_body_entered(body: Node2D) -> void:
 	if not _is_damage_active: return
 	_apply_damage_to(body)
 
-## [核心修改] 统一造成伤害 (普通攻击)
+## [核心修改] 统一造成伤害 (普通攻击)。经过严密的白名单和阵营判定后，真实扣减目标血量并施加击退。
 func _apply_damage_to(body: Node2D) -> void:
 	if body == self: return 
 	if not body.has_method("take_damage"): return
@@ -285,6 +293,8 @@ func _apply_damage_to(body: Node2D) -> void:
 #endregion
 
 #region 战斗逻辑 (受击/死亡/复活)
+
+## [战斗逻辑] 处理角色受到伤害的过程。扣血，触发受击特效，并在血量归零时触发死亡。
 func take_damage(amount: int, attacker_type: CharacterType, _attacker_node: Node2D = null) -> void:
 	if invincible or is_dead: return
 	if attacker_type == character_type: return 
@@ -297,6 +307,7 @@ func take_damage(amount: int, attacker_type: CharacterType, _attacker_node: Node
 	damage_effects()
 	if stats and stats.current_health <= 0: _die()
 
+## [战斗逻辑] 执行死亡流程。切断所有物理计算、屏蔽按键输入、清空碰撞层，并调用死亡动画。
 func _die() -> void:
 	if is_dead: return
 	is_dead = true
@@ -325,6 +336,7 @@ func _die() -> void:
 	
 	_play_mario_death_anim()
 
+## [视觉动画] 播放马里奥式的经典死亡演出动画（往上蹦一下然后掉落屏幕外），如果是敌人则自动销毁节点。
 func _play_mario_death_anim() -> void:
 	if not sprite: return
 	z_index = 100 
@@ -337,6 +349,7 @@ func _play_mario_death_anim() -> void:
 	_death_tween.tween_property(sprite, "position:y", start_y + 1000, 1.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	if character_type == CharacterType.ENEMY: _death_tween.tween_callback(queue_free)
 
+## [状态恢复] 将角色完全重置到存活并满血状态。主要用于玩家重生或敌人池重置。
 func reset_status() -> void:
 	print(">>> [CharacterBase] 重置角色状态: ", name)
 	if character_type == CharacterType.PLAYER: GameInputEvents.input_enabled = true
@@ -393,6 +406,8 @@ func reset_status() -> void:
 #endregion
 
 #region 侦查与索敌逻辑
+
+## [索敌逻辑] 信号回调：当其他物理体进入角色的侦查范围圆圈时，如果符合索敌白名单配置，则加入列表。
 func _on_playerAttack_Area_body_entered(body: Node2D) -> void:
 	if body == self: return
 	var is_valid = false
@@ -412,6 +427,7 @@ func _on_playerAttack_Area_body_entered(body: Node2D) -> void:
 			if body.has_method("set_target_tag"):
 				body.set_target_tag(enter_Character.size())
 
+## [索敌逻辑] 信号回调：当其它物理体离开侦查圈时，将其移出列表，并刷新其余目标的序号标号。
 func _on_playerAttack_Area_body_exited(body: Node2D) -> void:
 	var index = enter_Character.find(body)
 	if index != -1:
@@ -420,13 +436,14 @@ func _on_playerAttack_Area_body_exited(body: Node2D) -> void:
 		if body.has_method("clear_target_tag"):
 			body.clear_target_tag()
 
+## [私有方法] 更新当前索敌列表中所有单位的标号。
 func _update_all_enter_Character() -> void:
 	for i in range(enter_Character.size()):
 		var body = enter_Character[i]
 		if body.has_method("set_target_tag"):
 			body.set_target_tag(i + 1)
 
-## 获取最近目标
+## [公共接口] 遍历当前索敌列表，计算并返回距离自己最近且存活的目标单位。
 func get_closest_target() -> Node2D:
 	var closest_target: Node2D = null
 	var closest_dist_sq: float = INF
@@ -455,6 +472,7 @@ func get_closest_target() -> Node2D:
 			
 	return closest_target
 
+## [视觉辅助] 控制角色脚下的指向标(箭头)。有目标时指向目标，无目标移动时指向位移方向。
 func Target_Lock_On(target: Node2D) -> void:
 	if not is_instance_valid(direction_Sign): return
 	if target:
@@ -469,12 +487,15 @@ func Target_Lock_On(target: Node2D) -> void:
 #endregion
 
 #region 视觉表现与辅助 (保持不变)
+
+## [视觉表现] 根据当前的物理运动方向（velocity.x），自动水平翻转精灵图，实现左右转身。
 func Turn() -> void:
 	if not sprite: return
 	var default_facing = -1 if flipped_horizontal else 1
 	if velocity.x < -0.1: sprite.scale.x = -default_facing
 	elif velocity.x > 0.1: sprite.scale.x = default_facing
 
+## [视觉表现] 播放受击特效。角色进入短暂无敌，爆出粒子，并产生白->红->恢复正常的受击闪烁效果。
 func damage_effects() -> void:
 	invincible = true
 	if hit_particles: hit_particles.emitting = true
@@ -486,10 +507,14 @@ func damage_effects() -> void:
 	await _damage_tween.finished
 	invincible = false
 
+## [预留接口] 死亡特效扩展口。
 func die_effects() -> void: pass
+
+## [UI 更新] 信号回调：响应血量变化，同步刷新头顶的血条。
 func _on_health_changed(current, _max_val) -> void:
 	if healthbar: healthbar.value = current
 
+## [物理计算] 外部调用：对角色施加一次击退力。力的大小会根据 stats 中配置的体重(max_weight)进行衰减。
 func apply_knockback(direction: Vector2, force: float) -> void:
 	var weight = 1.0
 	if stats and "max_weight" in stats: weight = max(1.0, stats.max_weight)
@@ -497,12 +522,16 @@ func apply_knockback(direction: Vector2, force: float) -> void:
 	var final_knockback_speed = force / max(0.1, weight_factor)
 	knockback_velocity = direction * final_knockback_speed
 
+## [物理计算] 内部每帧处理，使击退速度在阻力(knockback_friction)作用下平滑衰减。
 func _handle_knockback(delta: float) -> void:
 	if knockback_velocity.length_squared() > 1.0:
 		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, knockback_friction * delta)
 	else:
 		knockback_velocity = Vector2.ZERO
 
+## [状态同步] 外部调用：标记自己在侦测数组中的标签序号。
 func set_target_tag(tag: int) -> void: current_tag = tag
+
+## [状态同步] 外部调用：清空自己的侦测标签序号。
 func clear_target_tag() -> void: current_tag = 0
 #endregion
