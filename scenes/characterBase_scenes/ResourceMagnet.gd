@@ -9,7 +9,8 @@ func _ready() -> void:
 		target_node = get_parent()
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
+	# [修改] 使用全局输入管理器判断开关指令
+	if GameInputEvents.is_toggle_magnet_event(event):
 		is_active = !is_active
 		print(">>> [Magnet] 自动吸附状态: ", "开启" if is_active else "关闭")
 

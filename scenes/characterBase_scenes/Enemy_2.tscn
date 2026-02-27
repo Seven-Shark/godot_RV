@@ -128,6 +128,7 @@ character_type = 2
 health = 20
 target_types = Array[int]([1])
 attack_bar = NodePath("AttackBar")
+attack_damage = 100
 attack_delay = 0.5
 attack_duration = 0.5
 sprite = NodePath("AnimatedSprite2D")

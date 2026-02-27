@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=48 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://diplvx6bqhs6u" path="res://script/Character/Player_state/attack_state.gd" id="9_xl87i"]
 [ext_resource type="Texture2D" uid="uid://b762yjiowx3qq" path="res://Resource/Tiny Swords (Update 010)/UI/Icons/Pressed_09.png" id="10_w5jik"]
 [ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
+[ext_resource type="Texture2D" uid="uid://cduso3l0ajpsl" path="res://Resource/Tiny Swords (Update 010)/UI/Pointers/02.png" id="13_fmvqv"]
 [ext_resource type="Script" uid="uid://dw3076aoa83eq" path="res://scenes/characterBase_scenes/ResourceMagnet.gd" id="14_hdrb8"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
@@ -217,7 +218,7 @@ radius = 100.0
 size = Vector2(116, 109)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8lvt1"]
-radius = 90.04999
+radius = 90.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5je8t"]
 bg_color = Color(0, 0, 0, 1)
@@ -239,10 +240,12 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0, 0, 0, 1)
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "attack_hitbox", "sprite", "healthbar")]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar")]
 y_sort_enabled = true
 collision_mask = 23
 script = ExtResource("1_yv1sj")
+auto_attack_radius = 90.0
+target_indicator = NodePath("TargetIndicator")
 character_type = 1
 target_types = Array[int]([0, 2])
 target_entity_types = Array[int]([0, 2, 3])
@@ -308,6 +311,12 @@ script = ExtResource("9_2holh")
 player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
+
+[node name="TargetIndicator" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("13_fmvqv")
 
 [node name="DirectionSign" type="Node2D" parent="."]
 

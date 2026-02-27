@@ -1319,7 +1319,6 @@ text = "开始新的一天"
 
 [node name="GameOverLayer" type="CanvasLayer" parent="."]
 layer = 100
-visible = false
 
 [node name="GameOverOverlay" type="ColorRect" parent="GameOverLayer"]
 anchors_preset = 15
