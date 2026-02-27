@@ -89,6 +89,7 @@ func _process(delta: float) -> void:
 	if is_dead or (stats and stats.current_health <= 0):
 		if is_instance_valid(target_indicator): target_indicator.visible = false
 		if is_instance_valid(direction_Sign): direction_Sign.visible = false
+		hard_locked_target = null
 		queue_redraw() # 强制擦除地上的攻击范围圈
 		return
 	# =========================================================
@@ -154,7 +155,11 @@ func _die() -> void:
 	# 2. 调用父类的通用死亡逻辑（执行真正的扣血、动画和 set_process(false)）
 	super._die()
 ## --------------------------------------------------------
-
+## [复活覆盖] 重写父类状态重置，清理玩家独有的变量
+func reset_status() -> void:
+	hard_locked_target = null # 复活时确保锁定目标为空
+	player_current_aim_mode = AimMode_Type.AUTO_NEAREST # 可选：复活时默认切回自动瞄准
+	super.reset_status() # 调用父类的复活加血等逻辑
 
 #endregion
 
