@@ -3,7 +3,7 @@ class_name Player
 
 ## Player.gd
 ## 职责：处理玩家特有的输入交互、瞄准模式、视觉反馈以及响应自动攻击信号。
-## 特性：支持自动锁定最近目标、鼠标辅助扇形瞄准，并提供攻击范围的动态可视化绘制与目标选中框。
+## 特性：支持自动锁定、鼠标辅助瞄准、攻击范围可视化、目标选中框以及【按键 E 硬锁定目标】。
 
 #region 1. 节点引用
 @onready var state_machine: NodeStateMachine = $StateMachine ## 引用玩家状态机节点
@@ -34,7 +34,6 @@ var hard_locked_target: Node2D = null ## 当前被玩家强行锁定的目标
 #endregion
 
 #region 4. 生命周期与输入
-## 初始化玩家基础设置，强制声明角色类型并连接攻击信号
 func _ready() -> void:
 	character_type = CharacterType.PLAYER
 	super._ready() 
@@ -42,21 +41,17 @@ func _ready() -> void:
 	if not on_perform_attack.is_connected(_on_perform_auto_attack):
 		on_perform_attack.connect(_on_perform_auto_attack)
 
-## --- [修改] 监听输入事件，使用全局 InputManager ---
 func _input(event: InputEvent) -> void:
+	# 监听目标锁定指令 (E 键)
 	if GameInputEvents.is_lock_target_event(event):
-		# 如果当前已经有锁定目标，则解除锁定
 		if is_instance_valid(hard_locked_target):
 			hard_locked_target = null
 			print(">>> [Player] 解除目标锁定")
 		else:
-			# 如果没有锁定，且当前选中框存在目标，则将其硬锁定
 			if is_instance_valid(current_target):
 				hard_locked_target = current_target
 				print(">>> [Player] 锁定目标: ", hard_locked_target.name)
-## ------------------------------------------------
 
-## 物理帧更新：处理不同状态下的攻击进度累计与重置
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
@@ -76,20 +71,28 @@ func _physics_process(delta: float) -> void:
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
 			if is_instance_valid(hard_locked_target):
-				# 如果有锁定目标，只有靠近它（在检测区内）才触发攻击，否则挂机
+				# 【硬锁定状态】：只有靠近锁定目标才触发攻击
 				if enter_Character.has(hard_locked_target):
 					update_auto_attack_progress(delta)
 				else:
 					reset_attack_progress(true)
 			else:
-				# 没有锁定目标时，走原有的自动攻击逻辑
+				# 【常规状态】：走原有的自动攻击逻辑
 				update_auto_attack_progress(delta)
 			
 		AimMode_Type.MOUSE_ASSIST:
 			reset_attack_progress(true)
-			
-## 渲染帧更新：实时更新面朝向、目标锁定表现并触发重绘
-func _process(_delta: float) -> void:
+
+func _process(delta: float) -> void:
+	# =========================================================
+	# [终极生死拦截] 只要血量归零或判定死亡，立刻强行关闭一切 UI 和瞄准逻辑
+	if is_dead or (stats and stats.current_health <= 0):
+		if is_instance_valid(target_indicator): target_indicator.visible = false
+		if is_instance_valid(direction_Sign): direction_Sign.visible = false
+		queue_redraw() # 强制擦除地上的攻击范围圈
+		return
+	# =========================================================
+
 	_update_facing_direction()
 	
 	var mouse_pos = get_global_mouse_position()
@@ -97,12 +100,14 @@ func _process(_delta: float) -> void:
 	
 	_update_target_locking(final_target)
 	_update_DirectionSign_Visible(mouse_pos)
-	_update_target_indicator_visual(_delta)
+	_update_target_indicator_visual(delta)
 	
-	queue_redraw() # 每帧触发 _draw() 以更新辅助线段/圆圈
+	queue_redraw()
 
-## 绘制视觉辅助线 (扇形射线 或 100% 准确的动态变色攻击圆圈)
 func _draw() -> void:
+	# 死亡状态下禁止绘图
+	if is_dead or (stats and stats.current_health <= 0): return
+	
 	match player_current_aim_mode:
 		AimMode_Type.MOUSE_ASSIST:
 			var mouse_pos = get_global_mouse_position()
@@ -117,7 +122,7 @@ func _draw() -> void:
 				var current_color = range_color_normal
 				
 				if is_instance_valid(hard_locked_target):
-					# 【硬锁定状态】：只有锁定的目标进入范围，圈才会变黄。无视其他目标。
+					# 【硬锁定状态】：只有锁定的目标进入范围，圈才会变黄
 					if enter_Character.has(hard_locked_target):
 						current_color = range_color_active
 				else:
@@ -136,6 +141,21 @@ func _draw() -> void:
 									break 
 
 				draw_arc(Vector2.ZERO, auto_attack_radius, 0.0, TAU, 64, current_color, 2.0)
+
+## --- [新增] 重写父类的死亡逻辑，处理玩家特有的 UI 清理 ---
+func _die() -> void:
+	# 1. 抢在父类掐断脚本之前，先把玩家的专属瞄准 UI 关掉
+	if is_instance_valid(target_indicator): 
+		target_indicator.visible = false
+	if is_instance_valid(direction_Sign): 
+		direction_Sign.visible = false
+	queue_redraw() # 强制擦除地上的攻击范围圈
+	
+	# 2. 调用父类的通用死亡逻辑（执行真正的扣血、动画和 set_process(false)）
+	super._die()
+## --------------------------------------------------------
+
+
 #endregion
 
 #region 5. 战斗响应 (核心)
@@ -158,7 +178,6 @@ func _get_target_by_mode(mouse_pos: Vector2) -> Node2D:
 		if is_valid:
 			return hard_locked_target
 		else:
-			# 如果目标死亡或销毁，自动解除锁定
 			hard_locked_target = null
 	
 	match player_current_aim_mode:
@@ -208,7 +227,7 @@ func _update_target_locking(new_target: Node2D) -> void:
 
 #region 7. 视觉表现
 ## 控制目标选中框的显示与位置跟随
-func _update_target_indicator_visual(_delta: float) -> void:
+func _update_target_indicator_visual(delta: float) -> void:
 	if not is_instance_valid(target_indicator): return
 	
 	if is_instance_valid(current_target):
@@ -280,10 +299,10 @@ func _look_at_mouse(mouse_position: Vector2) -> void:
 func toggle_aim_mode() -> void:
 	if player_current_aim_mode == AimMode_Type.AUTO_NEAREST:
 		player_current_aim_mode = AimMode_Type.MOUSE_ASSIST
-		direction_Sign.visible = true
+		if direction_Sign: direction_Sign.visible = true
 		print("当前模式：鼠标瞄准")
 	else:
 		player_current_aim_mode = AimMode_Type.AUTO_NEAREST
-		direction_Sign.visible = false
+		if direction_Sign: direction_Sign.visible = false
 		print("当前模式：自动瞄准")
 #endregion
