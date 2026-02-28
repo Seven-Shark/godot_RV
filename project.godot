@@ -18,6 +18,7 @@ config/icon="res://Resource/Icon/icon.svg"
 [autoload]
 
 GameDataManager="*res://script/Game_scenes/GameDataManager.gd"
+GameManager="*res://script/Game_scenes/GameManager.gd"
 
 [display]
 

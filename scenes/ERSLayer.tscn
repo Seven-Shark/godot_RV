@@ -1,0 +1,231 @@
+[gd_scene load_steps=14 format=3 uid="uid://c7d5cipmbvy17"]
+
+[ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://script/HUD/ERS_Manager.gd" id="1_52f4u"]
+[ext_resource type="Script" uid="uid://dam5k0hma5pma" path="res://script/HUD/ERS_carddata.gd" id="2_a04m4"]
+[ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="3_ye7e7"]
+[ext_resource type="PackedScene" uid="uid://cn0w8aotdshpt" path="res://scenes/Object_scenes/Object_Rock_1.tscn" id="4_3rjtp"]
+[ext_resource type="Texture2D" uid="uid://ft16e0isym75" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/seeds.png" id="5_2lwaw"]
+[ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="6_0cfll"]
+[ext_resource type="Texture2D" uid="uid://bjr34thy8ryfk" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png" id="7_3k6rj"]
+[ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="8_einmv"]
+[ext_resource type="Texture2D" uid="uid://cwpd4613todvc" path="res://Resource/Tiny Swords (Update 010)/UI/Banners/Carved_9Slides.png" id="9_ban3c"]
+[ext_resource type="Texture2D" uid="uid://b27uk3vqjwbbm" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock1.png" id="10_6juf1"]
+
+[sub_resource type="Resource" id="Resource_vpe3t"]
+script = ExtResource("2_a04m4")
+card_name = "石头"
+icon = ExtResource("3_ye7e7")
+object_prefab = ExtResource("4_3rjtp")
+price = 50
+spawn_weight = 2
+metadata/_custom_type_script = "uid://dam5k0hma5pma"
+
+[sub_resource type="Resource" id="Resource_tssj2"]
+script = ExtResource("2_a04m4")
+card_name = "灌木丛"
+icon = ExtResource("5_2lwaw")
+object_prefab = ExtResource("6_0cfll")
+price = 60
+spawn_weight = 3
+metadata/_custom_type_script = "uid://dam5k0hma5pma"
+
+[sub_resource type="Resource" id="Resource_temub"]
+script = ExtResource("2_a04m4")
+card_name = "树木"
+icon = ExtResource("7_3k6rj")
+object_prefab = ExtResource("8_einmv")
+price = 70
+spawn_weight = 4
+metadata/_custom_type_script = "uid://dam5k0hma5pma"
+
+[node name="ErsLayer" type="Node2D"]
+
+[node name="ERSLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "next_day_button", "wallet_label")]
+visible = false
+script = ExtResource("1_52f4u")
+available_cards = Array[ExtResource("2_a04m4")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
+card_container = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer")
+next_day_button = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/NextDayButton")
+wallet_label = NodePath("")
+
+[node name="Control" type="Control" parent="ERSLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ERSLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5254902)
+
+[node name="CenterContainer" type="CenterContainer" parent="ERSLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="NinePatchRect" parent="ERSLayer/Control/CenterContainer"]
+custom_minimum_size = Vector2(600, 400)
+layout_mode = 2
+texture = ExtResource("9_ban3c")
+patch_margin_left = 21
+patch_margin_top = 23
+patch_margin_right = 24
+patch_margin_bottom = 21
+
+[node name="MarginContainer" type="MarginContainer" parent="ERSLayer/Control/CenterContainer/Background"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_top = 26.0
+offset_right = 180.0
+offset_bottom = 362.0
+grow_horizontal = 2
+
+[node name="MainLayout" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TitleLabel" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "商店"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WalletInfo" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "购买资源"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardsContainer" type="HBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="Card_1" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
+process_mode = 3
+custom_minimum_size = Vector2(100, 200)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1"]
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 200.0
+
+[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("10_6juf1")
+
+[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "石头"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "击碎后可获得石块"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "价格：60"
+horizontal_alignment = 1
+
+[node name="Card_2" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
+custom_minimum_size = Vector2(100, 200)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2"]
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 200.0
+
+[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("10_6juf1")
+
+[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "石头"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "击碎后可获得石块"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "价格：60"
+horizontal_alignment = 1
+
+[node name="Card_3" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
+custom_minimum_size = Vector2(100, 200)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3"]
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 200.0
+
+[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("10_6juf1")
+
+[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "石头"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "击碎后可获得石块"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "价格：60"
+horizontal_alignment = 1
+
+[node name="NextDayButton" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
+process_mode = 3
+custom_minimum_size = Vector2(120, 30)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 16
+text = "开始新的一天"

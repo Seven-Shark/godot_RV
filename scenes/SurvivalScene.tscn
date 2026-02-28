@@ -1,49 +1,19 @@
-[gd_scene load_steps=47 format=4 uid="uid://xk5htmcg3umc"]
+[gd_scene load_steps=29 format=4 uid="uid://xk5htmcg3umc"]
 
-[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="1_8jv7c"]
-[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_dqgb5"]
-[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="1_fcq0b"]
-[ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="1_uu3f8"]
-[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="2_cf73f"]
-[ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="2_h8imf"]
-[ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="2_yfs36"]
-[ext_resource type="Resource" uid="uid://c8bn7fjpirna4" path="res://script/Game_scenes/Phase_Day.tres" id="3_1tdu7"]
-[ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_xj6wy"]
-[ext_resource type="Resource" uid="uid://2u6lhl85cwfo" path="res://script/Game_scenes/Phase_Dusk.tres" id="4_x01tm"]
-[ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="5_cxslg"]
-[ext_resource type="Resource" uid="uid://c0rjcad1ermqm" path="res://script/Game_scenes/Phase_Night.tres" id="5_w12hg"]
-[ext_resource type="PackedScene" uid="uid://bctkycvc4dget" path="res://scenes/Object_scenes/Object_SpawnSpot_1.tscn" id="6_d7qbs"]
-[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="7_ai1qu"]
-[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="8_6x3ce"]
-[ext_resource type="Script" uid="uid://dkv42xhymyrok" path="res://script/HUD/ERS_Manager.gd" id="10_1uchc"]
-[ext_resource type="Script" uid="uid://dam5k0hma5pma" path="res://script/HUD/ERS_carddata.gd" id="11_ghij0"]
-[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/DayCycleUI.gd" id="12_o8ac1"]
-[ext_resource type="Texture2D" uid="uid://cwpd4613todvc" path="res://Resource/Tiny Swords (Update 010)/UI/Banners/Carved_9Slides.png" id="12_vietx"]
-[ext_resource type="Texture2D" uid="uid://b27uk3vqjwbbm" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock1.png" id="13_fcq0b"]
-[ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="13_j17jc"]
-[ext_resource type="PackedScene" uid="uid://cn0w8aotdshpt" path="res://scenes/Object_scenes/Object_Rock_1.tscn" id="14_d7qbs"]
-[ext_resource type="Texture2D" uid="uid://ft16e0isym75" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/seeds.png" id="15_4byrr"]
-[ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="16_o8ac1"]
-[ext_resource type="Texture2D" uid="uid://bjr34thy8ryfk" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png" id="17_ddb2m"]
-[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="21_4byrr"]
-
-[sub_resource type="Resource" id="Resource_6x3ce"]
-script = ExtResource("2_yfs36")
-object_prefab = ExtResource("5_cxslg")
-spawn_count = 50
-metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
-
-[sub_resource type="Resource" id="Resource_j17jc"]
-script = ExtResource("2_yfs36")
-object_prefab = ExtResource("14_d7qbs")
-spawn_count = 0
-metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
-
-[sub_resource type="Resource" id="Resource_4byrr"]
-script = ExtResource("2_yfs36")
-object_prefab = ExtResource("6_d7qbs")
-spawn_count = 1
-metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
+[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_835nb"]
+[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="6_s4ycf"]
+[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="7_fko2h"]
+[ext_resource type="Resource" uid="uid://c8bn7fjpirna4" path="res://script/Game_scenes/Phase_Day.tres" id="8_u5856"]
+[ext_resource type="Resource" uid="uid://2u6lhl85cwfo" path="res://script/Game_scenes/Phase_Dusk.tres" id="9_abtmh"]
+[ext_resource type="Resource" uid="uid://c0rjcad1ermqm" path="res://script/Game_scenes/Phase_Night.tres" id="10_kp3r3"]
+[ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="11_5yxaa"]
+[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="12_w0say"]
+[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="13_ukurr"]
+[ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="14_4pgct"]
+[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="15_t1l0o"]
+[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/DayCycleUI.gd" id="16_p8n32"]
+[ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="25_anyol"]
+[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="26_kcgcd"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o8ac1"]
 parsed_geometry_type = 1
@@ -71,7 +41,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cxslg"]
-texture = ExtResource("1_uu3f8")
+texture = ExtResource("11_5yxaa")
 0:0/0 = 0
 0:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_ddb2m")
 1:0/0 = 0
@@ -932,45 +902,16 @@ colors = PackedColorArray(0, 0, 0, 0.49803922, 1, 1, 1, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_opqiu"]
 gradient = SubResource("Gradient_ddb2m")
 
-[sub_resource type="Resource" id="Resource_vpe3t"]
-script = ExtResource("11_ghij0")
-card_name = "石头"
-icon = ExtResource("13_j17jc")
-object_prefab = ExtResource("14_d7qbs")
-price = 50
-spawn_weight = 2
-metadata/_custom_type_script = "uid://dam5k0hma5pma"
-
-[sub_resource type="Resource" id="Resource_tssj2"]
-script = ExtResource("11_ghij0")
-card_name = "灌木丛"
-icon = ExtResource("15_4byrr")
-object_prefab = ExtResource("16_o8ac1")
-price = 60
-spawn_weight = 3
-metadata/_custom_type_script = "uid://dam5k0hma5pma"
-
-[sub_resource type="Resource" id="Resource_temub"]
-script = ExtResource("11_ghij0")
-card_name = "树木"
-icon = ExtResource("17_ddb2m")
-object_prefab = ExtResource("5_cxslg")
-price = 70
-spawn_weight = 4
-metadata/_custom_type_script = "uid://dam5k0hma5pma"
-
 [node name="SurvivalScene" type="Node2D"]
 y_sort_enabled = true
 
-[node name="LevelManager" type="Node2D" parent="." node_paths=PackedStringArray("game_director", "tile_map", "player", "object_container", "ers_manager")]
-script = ExtResource("1_dqgb5")
+[node name="LevelGenerator" type="Node2D" parent="." node_paths=PackedStringArray("game_director", "tile_map", "player", "object_container")]
+script = ExtResource("1_835nb")
 game_director = NodePath("../GameDirector")
 tile_map = NodePath("../NavigationRegion2D/TileMapLayer")
 player = NodePath("../Player")
 object_container = NodePath("../NavigationRegion2D/ObjectContainer")
-ers_manager = NodePath("../ERSLayer")
 safe_zone_radius = 10
-spawn_config_list = Array[ExtResource("2_yfs36")]([SubResource("Resource_6x3ce"), SubResource("Resource_j17jc"), SubResource("Resource_4byrr")])
 tile_size = Vector2i(16, 16)
 default_map_width = 80
 default_map_height = 80
@@ -983,14 +924,12 @@ atlas_left_list = Array[Vector2i]([Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3
 atlas_right_list = Array[Vector2i]([Vector2i(11, 1), Vector2i(11, 2), Vector2i(11, 3), Vector2i(11, 4), Vector2i(11, 5), Vector2i(11, 6), Vector2i(11, 7), Vector2i(11, 8), Vector2i(11, 9), Vector2i(11, 10)])
 atlas_center_fallback = Vector2i(2, 2)
 
-[node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "ers_manager", "game_hud", "new_day_button", "game_over_overlay", "game_over_label")]
+[node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "game_hud", "game_over_overlay", "game_over_label")]
 process_mode = 3
-script = ExtResource("1_fcq0b")
-level_manager = NodePath("../LevelManager")
-ers_manager = NodePath("../ERSLayer")
+script = ExtResource("6_s4ycf")
+level_manager = NodePath("../LevelGenerator")
 game_hud = NodePath("../GameHUD")
-day_phases = Array[ExtResource("2_cf73f")]([ExtResource("3_1tdu7"), ExtResource("4_x01tm"), ExtResource("5_w12hg")])
-new_day_button = NodePath("../GameHUD/NewDayButton")
+day_phases = Array[ExtResource("7_fko2h")]([ExtResource("8_u5856"), ExtResource("9_abtmh"), ExtResource("10_kp3r3")])
 game_over_overlay = NodePath("../GameOverLayer/GameOverOverlay")
 game_over_label = NodePath("../GameOverLayer/GameOverOverlay/CountDownLabel")
 
@@ -1005,10 +944,10 @@ tile_set = SubResource("TileSet_dqgb5")
 [node name="ObjectContainer" type="Node2D" parent="NavigationRegion2D"]
 y_sort_enabled = true
 
-[node name="Player" parent="." instance=ExtResource("1_8jv7c")]
+[node name="Player" parent="." instance=ExtResource("12_w0say")]
 
 [node name="GameHUD" type="CanvasLayer" parent="."]
-script = ExtResource("7_ai1qu")
+script = ExtResource("13_ukurr")
 
 [node name="NewDayButton" type="Button" parent="GameHUD"]
 offset_left = 921.0
@@ -1047,7 +986,7 @@ offset_bottom = 634.0
 scale = Vector2(1.6399902, 1.6399902)
 focus_mode = 0
 theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
-script = ExtResource("3_xj6wy")
+script = ExtResource("14_4pgct")
 
 [node name="Label" type="Label" parent="GameHUD/AimSwitchButton"]
 layout_mode = 1
@@ -1064,25 +1003,6 @@ scale = Vector2(0.34859496, 0.35398254)
 theme_override_font_sizes/font_size = 32
 text = "自动瞄准"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GameHUD"]
-offset_top = 555.0
-offset_right = 76.0
-offset_bottom = 645.0
-
-[node name="HSlider_Angle" type="HSlider" parent="GameHUD/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label_Angle" type="Label" parent="GameHUD/VBoxContainer"]
-layout_mode = 2
-text = "角度：90"
-
-[node name="HSlider_Radius" type="HSlider" parent="GameHUD/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label_Radius" type="Label" parent="GameHUD/VBoxContainer"]
-layout_mode = 2
-text = "半径：300"
-
 [node name="GoldLabel" type="Label" parent="GameHUD"]
 offset_left = 1028.0
 offset_top = 7.0
@@ -1093,7 +1013,7 @@ text = "金币数："
 [node name="DebugStats" type="Label" parent="GameHUD"]
 offset_right = 40.0
 offset_bottom = 23.0
-script = ExtResource("8_6x3ce")
+script = ExtResource("15_t1l0o")
 
 [node name="DayCyclePanel" type="Control" parent="GameHUD"]
 layout_mode = 3
@@ -1125,197 +1045,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
-script = ExtResource("12_o8ac1")
-
-[node name="ERSLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "next_day_button", "wallet_label")]
-visible = false
-script = ExtResource("10_1uchc")
-available_cards = Array[ExtResource("11_ghij0")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
-card_container = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer")
-next_day_button = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/NextDayButton")
-wallet_label = NodePath("../GameHUD/GoldLabel")
-
-[node name="Control" type="Control" parent="ERSLayer"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="ColorRect" type="ColorRect" parent="ERSLayer/Control"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.5254902)
-
-[node name="CenterContainer" type="CenterContainer" parent="ERSLayer/Control"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Background" type="NinePatchRect" parent="ERSLayer/Control/CenterContainer"]
-custom_minimum_size = Vector2(600, 400)
-layout_mode = 2
-texture = ExtResource("12_vietx")
-patch_margin_left = 21
-patch_margin_top = 23
-patch_margin_right = 24
-patch_margin_bottom = 21
-
-[node name="MarginContainer" type="MarginContainer" parent="ERSLayer/Control/CenterContainer/Background"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -180.0
-offset_top = 26.0
-offset_right = 180.0
-offset_bottom = 362.0
-grow_horizontal = 2
-
-[node name="MainLayout" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="TitleLabel" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "商店"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="WalletInfo" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "购买资源"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CardsContainer" type="HBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
-layout_mode = 2
-theme_override_constants/separation = 30
-alignment = 1
-
-[node name="Card_1" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
-process_mode = 3
-custom_minimum_size = Vector2(100, 200)
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1"]
-layout_mode = 0
-offset_right = 100.0
-offset_bottom = 200.0
-
-[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("13_fcq0b")
-
-[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 1, 1)
-text = "石头"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "击碎后可获得石块"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_1/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-text = "价格：60"
-horizontal_alignment = 1
-
-[node name="Card_2" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
-custom_minimum_size = Vector2(100, 200)
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2"]
-layout_mode = 0
-offset_right = 100.0
-offset_bottom = 200.0
-
-[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("13_fcq0b")
-
-[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 1, 1)
-text = "石头"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "击碎后可获得石块"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_2/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-text = "价格：60"
-horizontal_alignment = 1
-
-[node name="Card_3" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer"]
-custom_minimum_size = Vector2(100, 200)
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3"]
-layout_mode = 0
-offset_right = 100.0
-offset_bottom = 200.0
-
-[node name="TextureRect" type="TextureRect" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-size_flags_horizontal = 4
-texture = ExtResource("13_fcq0b")
-
-[node name="Label" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 1, 1)
-text = "石头"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label2" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "击碎后可获得石块"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label3" type="Label" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer/Card_3/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-text = "价格：60"
-horizontal_alignment = 1
-
-[node name="NextDayButton" type="Button" parent="ERSLayer/Control/CenterContainer/Background/MarginContainer/MainLayout"]
-process_mode = 3
-custom_minimum_size = Vector2(120, 30)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 16
-text = "开始新的一天"
+script = ExtResource("16_p8n32")
 
 [node name="GameOverLayer" type="CanvasLayer" parent="."]
 layer = 100
@@ -1346,10 +1076,10 @@ text = "你挂了：5"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Enemy" parent="." instance=ExtResource("2_h8imf")]
+[node name="Enemy" parent="." instance=ExtResource("25_anyol")]
 position = Vector2(981, 149)
 
-[node name="Enemy2" parent="." instance=ExtResource("21_4byrr")]
+[node name="Enemy2" parent="." instance=ExtResource("26_kcgcd")]
 position = Vector2(134, 158)
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
