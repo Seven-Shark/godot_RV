@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=4 uid="uid://do3f2oap0omos"]
+[gd_scene load_steps=41 format=4 uid="uid://b80m4layyusf5"]
 
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_21dmo"]
 [ext_resource type="PackedScene" uid="uid://dsgxntkdfgi3r" path="res://scenes/Object_scenes/Object_Tree_1.tscn" id="3_iwssv"]
@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://ft16e0isym75" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/seeds.png" id="20_bpg7u"]
 [ext_resource type="PackedScene" uid="uid://o6h10rcgo27b" path="res://scenes/Object_scenes/Object_Bush_1.tscn" id="21_7mahi"]
 [ext_resource type="Texture2D" uid="uid://bjr34thy8ryfk" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png" id="22_g4nea"]
+[ext_resource type="PackedScene" uid="uid://b7c7bmy5f2xt4" path="res://scenes/Object_scenes/HomePortal.tscn" id="23_3l3bx"]
 [ext_resource type="Texture2D" uid="uid://cwpd4613todvc" path="res://Resource/Tiny Swords (Update 010)/UI/Banners/Carved_9Slides.png" id="23_rs6j1"]
 [ext_resource type="Texture2D" uid="uid://b27uk3vqjwbbm" path="res://Resource/Tiny Swords (Free Pack)/Decorations/Rocks/Rock1.png" id="24_eku13"]
 
@@ -959,14 +960,12 @@ atlas_left_list = Array[Vector2i]([Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3
 atlas_right_list = Array[Vector2i]([Vector2i(11, 1), Vector2i(11, 2), Vector2i(11, 3), Vector2i(11, 4), Vector2i(11, 5), Vector2i(11, 6), Vector2i(11, 7), Vector2i(11, 8), Vector2i(11, 9), Vector2i(11, 10)])
 atlas_center_fallback = Vector2i(2, 2)
 
-[node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "game_hud", "game_over_overlay", "game_over_label")]
+[node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "game_hud")]
 process_mode = 3
 script = ExtResource("6_10ov5")
 level_manager = NodePath("../LevelManager")
 game_hud = NodePath("../GameHUD")
 day_phases = Array[ExtResource("7_bbnc2")]([ExtResource("8_fd7rr"), ExtResource("9_o5snt"), ExtResource("10_jqm6p")])
-game_over_overlay = NodePath("")
-game_over_label = NodePath("")
 
 [node name="Player" parent="." instance=ExtResource("12_7ayhc")]
 
@@ -1082,13 +1081,12 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 script = ExtResource("16_b7ary")
 
-[node name="ERSLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "next_day_button", "wallet_label")]
+[node name="ERSLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("card_container", "wallet_label")]
 visible = false
 script = ExtResource("17_4hul8")
-available_cards = Array[ExtResource("18_fe2ka")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
 card_container = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer")
-next_day_button = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/NextDayButton")
 wallet_label = NodePath("../GameHUD/GoldLabel")
+available_cards = Array[ExtResource("18_fe2ka")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
 
 [node name="Control" type="Control" parent="ERSLayer"]
 layout_mode = 3
@@ -1271,6 +1269,9 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 16
 text = "开始新的一天"
+
+[node name="HomePortal" parent="." instance=ExtResource("23_3l3bx")]
+position = Vector2(0, 328)
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]

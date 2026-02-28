@@ -1,111 +1,134 @@
 extends CanvasLayer
 class_name ERS_Manager
 
-#region 信号定义
-signal start_next_day_requested(purchased_objects: Array[PackedScene]) ## 请求进入下一天，并携带购买的物件列表
+## 环境重构管理器 (ERS_Manager)
+## 职责：通用的卡牌抽取与购买界面。
+## 场景兼容：支持在家园（作为出发前的整备）和探险中（作为中途奖励/商店）调用。
+
+#region 1. 信号定义
+## 当玩家按下确认/出发按钮时发出，携带本次选择/购买的所有物件列表
+signal items_confirmed(purchased_objects: Array[PackedScene]) 
 #endregion
 
-#region 配置引用
-@export var available_cards: Array[ERS_CardData] = [] ## 卡池：所有可能出现的卡牌
-@export var card_container: HBoxContainer ## UI容器：用来放三张卡牌的父节点
-@export var next_day_button: Button ## UI按钮：进入下一天
-@export var wallet_label: Label ## [新增] 显示持有金币的 Label，请在编辑器里拖进来
-# @export var player_wallet: StatsComponent <--- 已删除，改用全局 GameDataManager
+#region 2. 配置引用
+@export_group("UI Nodes")
+@export var card_container: HBoxContainer ## 存放卡牌按钮的容器
+@export var confirm_button: Button ## 确认/进入下一天按钮
+@export var wallet_label: Label ## 显示金币的文本
+
+@export_group("Data Asset")
+@export var available_cards: Array[ERS_CardData] = [] ## 全体卡池配置
 #endregion
 
-#region 内部状态
-var current_purchased_objects: Array[PackedScene] = [] ## 玩家本轮已购买的物件预制体
-var selected_cards_data: Array[ERS_CardData] = [] ## 当前展示的三张卡数据
+#region 3. 内部状态
+var current_purchased_objects: Array[PackedScene] = [] ## 本次打开界面期间购买的物件
+var is_from_home: bool = true ## 内部标记：记录是从哪里打开的，用于改变按钮文字
 #endregion
 
+#region 4. 生命周期
+## [初始化] 设置 UI 初始状态
 func _ready() -> void:
 	visible = false # 默认隐藏
-	next_day_button.pressed.connect(_on_next_day_button_pressed)
 	
-	# [新增] 连接全局金币变化信号，实时刷新界面
-	# 确保你已经创建了 GameDataManager 这个 Autoload 脚本
-	if GameDataManager:
-		GameDataManager.gold_changed.connect(_update_wallet_ui)
-		# 初始化显示一次当前金币
-		_update_wallet_ui(GameDataManager.current_gold)
+	# 连接确认按钮
+	if confirm_button:
+		confirm_button.pressed.connect(_on_confirm_pressed)
+	
+	# 连接全局金币数据单例（假设你已创建 GameDataManager Autoload）
+	if Engine.has_singleton("GameDataManager") or get_node_or_null("/root/GameDataManager"):
+		var gdm = get_node("/root/GameDataManager")
+		gdm.gold_changed.connect(_update_wallet_ui)
+		_update_wallet_ui(gdm.current_gold)
+#endregion
 
-# --- 核心功能 1：打开 ERS 界面 ---
-func open_ers_shop():
-	print(">>> 打开 ERS 商店")
+#region 5. 核心交互逻辑
+
+## [公共方法] 开启 ERS 界面
+## 参数 from_home: 是否从家园开启。如果是，按钮文字显示“开启探险”；否则显示“继续探险”。
+func open_ers_shop(from_home: bool = true) -> void:
+	self.is_from_home = from_home
+	self.visible = true
 	
-	visible = true
+	# 1. 根据来源更新按钮文字
+	if confirm_button:
+		confirm_button.text = "开启探险" if is_from_home else "继续探险"
 	
-	current_purchased_objects.clear() # 清空上一轮的购买记录
+	# 2. 清空本次缓存并生成新卡牌
+	current_purchased_objects.clear()
 	_generate_random_cards()
+	
+	# 3. 暂停游戏（如果是探险中途打开）
+	get_tree().paused = true
 
-# [新增] 更新金币 UI 显示
-func _update_wallet_ui(amount: int):
-	if wallet_label:
-		wallet_label.text = "持有金币: $%d" % amount
-
-# --- 核心功能 2：随机抽取卡牌 ---
-func _generate_random_cards():
-	# 清空旧的 UI 卡牌
+## [私有方法] 随机抽取并创建卡牌 UI
+func _generate_random_cards() -> void:
+	# 清理旧卡牌
 	for child in card_container.get_children():
 		child.queue_free()
 	
-	selected_cards_data.clear()
+	# 随机抽取 3 张（逻辑简单处理，可后续优化为不重复抽取）
+	var temp_pool = available_cards.duplicate()
+	temp_pool.shuffle()
 	
-	# 简单的随机抽取 3 张
-	for i in range(3):
-		if available_cards.is_empty(): break
-		var random_card = available_cards.pick_random()
-		selected_cards_data.append(random_card)
-		
-		_create_card_ui(random_card, i)
+	for i in range(min(3, temp_pool.size())):
+		_create_card_ui(temp_pool[i])
 
-# --- 核心功能 3：创建卡牌 UI ---
-func _create_card_ui(data: ERS_CardData, index: int):
+## [私有方法] 实例化单张卡牌按钮
+func _create_card_ui(data: ERS_CardData) -> void:
 	var btn = Button.new()
+	# 确保按钮在暂停模式下也能点击
 	btn.process_mode = Node.PROCESS_MODE_ALWAYS
-	# 设置按钮文本和图标
-	btn.text = "%s\n$%d" % [data.card_name, data.price]
+	
+	btn.text = "%s\n价格: %d" % [data.card_name, data.price]
 	btn.icon = data.icon
-	# 设置固定大小，确保布局整齐
-	btn.custom_minimum_size = Vector2(150, 200)
+	btn.custom_minimum_size = Vector2(180, 240)
 	btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	
-	# 连接购买信号
-	btn.pressed.connect(func(): _on_card_purchased(data, btn))
+	# 绑定购买匿名函数
+	btn.pressed.connect(func(): _on_card_clicked(data, btn))
 	
 	card_container.add_child(btn)
 
-# --- 核心功能 4：购买逻辑 (修改版) ---
-func _on_card_purchased(data: ERS_CardData, btn_node: Button):
-	# 1. 调用全局管理器尝试扣款
-	var is_success = false
-	if GameDataManager:
-		is_success = GameDataManager.try_spend_gold(data.price)
+## [私有方法] 处理点击卡牌后的购买逻辑
+func _on_card_clicked(data: ERS_CardData, btn_node: Button) -> void:
+	var gdm = get_node_or_null("/root/GameDataManager")
+	if not gdm: return
 	
-	if is_success:
-		print("购买成功: ", data.card_name)
-		
-		# 2. 记录购买物品
+	if gdm.try_spend_gold(data.price):
+		# 购买成功
+		print(">>> ERS: 购买成功 - ", data.card_name)
 		current_purchased_objects.append(data.object_prefab)
 		
-		# 3. [关键修改] 让卡牌“消失”但保留占位
-		# 禁用按钮，防止再次点击
+		# 禁用并隐藏，保持布局
 		btn_node.disabled = true
-		# 将透明度设为 0 (完全隐形)
-		# 我们不使用 visible = false，因为那会导致右边的卡牌挤过来，破坏布局
-		btn_node.modulate.a = 0.0 
-		
+		btn_node.modulate.a = 0.3 # 变淡表示已买
 	else:
-		# 4. 购买失败反馈 (闪烁红色)
-		print("金币不足！")
-		var original_modulate = btn_node.modulate
-		var tween = create_tween()
-		tween.tween_property(btn_node, "modulate", Color.RED, 0.1)
-		tween.tween_property(btn_node, "modulate", original_modulate, 0.1)
+		# 购买失败反馈
+		_play_fail_effect(btn_node)
 
-# --- 核心功能 5：进入下一天 ---
-func _on_next_day_button_pressed():
-	print(">>> ERS 结束，进入下一天")	
-	# 发送信号给 LevelManager，把买到的东西传过去
-	start_next_day_requested.emit(current_purchased_objects)
+## [私有方法] 确认并关闭界面
+func _on_confirm_pressed() -> void:
+	self.visible = false
+	get_tree().paused = false # 恢复游戏运行
+	
+	# 发出信号：我选完了，这些是我的战利品
+	items_confirmed.emit(current_purchased_objects)
+	
+	# 如果是独立弹窗，确认后可以自我销毁，或者留给 GameManager 处理
+	# queue_free() 
+#endregion
+
+#region 6. 辅助功能
+## [辅助] 刷新金币显示
+func _update_wallet_ui(amount: int) -> void:
+	if wallet_label:
+		wallet_label.text = "持有金币: %d" % amount
+
+## [辅助] 购买失败的抖动或变色效果
+func _play_fail_effect(node: Control) -> void:
+	var tween = create_tween()
+	tween.tween_property(node, "modulate", Color.RED, 0.05)
+	tween.tween_property(node, "modulate", Color.WHITE, 0.05)
+	print(">>> ERS: 金币不足！")
+#endregion
