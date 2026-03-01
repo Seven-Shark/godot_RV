@@ -67,14 +67,16 @@ static func switch_weapons() -> int:
 #endregion
 
 #region 4. 交互与功能按键 (Interaction & Toggles)
-## [新增] 检测是否触发了【目标锁定】 (默认 E 键)
+## [新增] 检测是否触发了【目标锁定】 (默认 shift 键)
 static func is_lock_target_event(event: InputEvent) -> bool:
 	if not input_enabled: return false
-	# 兼容 1：如果你在 Input Map 里配置了 "lock_target"，优先用它
 	if event.is_action_pressed("lock_target"): return true
-	# 兼容 2：直接读取物理按键 E，防止因未配置映射而报错 (not event.echo 防止长按连续触发)
-	if event is InputEventKey and event.pressed and event.keycode == KEY_E and not event.echo:
-		return true
+	return false
+
+## [新增] 检测是否触发了【目标锁定】 (默认 E 键)
+static func is_interact_event(event: InputEvent) -> bool:
+	if not input_enabled: return false
+	if event.is_action_pressed("interact"): return true
 	return false
 
 ## [新增] 检测是否触发了【自动吸附开关】 (默认 Q 键)

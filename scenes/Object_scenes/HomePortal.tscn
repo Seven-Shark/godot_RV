@@ -1,16 +1,43 @@
-[gd_scene load_steps=4 format=3 uid="uid://b7c7bmy5f2xt4"]
+[gd_scene load_steps=6 format=3 uid="uid://b7c7bmy5f2xt4"]
 
-[ext_resource type="Script" uid="uid://c6oc0xgwtpqtj" path="res://HomePortal.gd" id="1_vh28i"]
+[ext_resource type="Script" uid="uid://c6oc0xgwtpqtj" path="res://script/Object/HomePortal.gd" id="1_vh28i"]
 [ext_resource type="Texture2D" uid="uid://crslqmd62sap7" path="res://Resource/Tiny Swords (Update 010)/Deco/17.png" id="2_fie3i"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vh28i"]
 radius = 100.0
 
-[node name="HomePortal" type="Area2D"]
-script = ExtResource("1_vh28i")
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fie3i"]
+radius = 28.0
+height = 90.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[sub_resource type="SystemFont" id="SystemFont_fie3i"]
+
+[node name="HomePortal" type="Area2D" node_paths=PackedStringArray("interaction_label")]
+collision_layer = 256
+script = ExtResource("1_vh28i")
+interaction_label = NodePath("InteractionLabel")
+
+[node name="DetectionShape" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_vh28i")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(-1, 1)
 texture = ExtResource("2_fie3i")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 128
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CapsuleShape2D_fie3i")
+
+[node name="InteractionLabel" type="Label" parent="."]
+offset_left = -87.0
+offset_top = -127.0
+offset_right = 91.0
+offset_bottom = -82.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("SystemFont_fie3i")
+theme_override_font_sizes/font_size = 32
+text = "按E进入探险"
+horizontal_alignment = 1
+vertical_alignment = 1

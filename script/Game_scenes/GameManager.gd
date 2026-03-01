@@ -7,8 +7,8 @@ extends Node
 
 #region 1. 场景路径配置
 # ⚠️ 请根据你项目的实际文件结构，修改这两个字符串的路径
-const HOME_SCENE_PATH = "res://Scenes/HomeScene.tscn" 
-const SURVIVAL_SCENE_PATH = "res://Scenes/SurvivalScene.tscn"
+const HOME_SCENE_PATH = "res://scenes/HomeScene.tscn" 
+const SURVIVAL_SCENE_PATH = "res://scenes/SurvivalScene.tscn"
 #endregion
 
 #region 2. 全局游戏数据

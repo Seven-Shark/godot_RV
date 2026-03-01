@@ -38,10 +38,11 @@ price = 70
 spawn_weight = 4
 metadata/_custom_type_script = "uid://dam5k0hma5pma"
 
-[node name="ERSLayer" type="CanvasLayer" node_paths=PackedStringArray("card_container")]
-visible = false
+[node name="ERSLayer" type="CanvasLayer" node_paths=PackedStringArray("card_container", "confirm_button", "wallet_label")]
 script = ExtResource("1_52f4u")
 card_container = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/CardsContainer")
+confirm_button = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/NextDayButton")
+wallet_label = NodePath("Control/CenterContainer/Background/MarginContainer/MainLayout/WalletInfo")
 available_cards = Array[ExtResource("2_a04m4")]([SubResource("Resource_vpe3t"), SubResource("Resource_tssj2"), SubResource("Resource_temub")])
 
 [node name="Control" type="Control" parent="."]
@@ -224,4 +225,4 @@ custom_minimum_size = Vector2(120, 30)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 16
-text = "开始新的一天"
+text = "开始探险"

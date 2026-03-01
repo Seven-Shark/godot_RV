@@ -242,7 +242,7 @@ border_color = Color(0, 0, 0, 1)
 
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar")]
 y_sort_enabled = true
-collision_mask = 23
+collision_mask = 407
 script = ExtResource("1_yv1sj")
 auto_attack_radius = 90.0
 target_indicator = NodePath("TargetIndicator")

@@ -12,7 +12,7 @@ signal time_updated(phase_index: int, time_remaining: float, phase_duration: flo
 
 #region 2. 引用配置
 @export_group("Systems")
-@export var level_manager: LevelGenerator ## 关卡管理器 (用于获取玩家实例绑定死亡信号)
+@export var level_manager: LevelManager ## 关卡管理器 (用于获取玩家实例绑定死亡信号)
 @export var game_hud: CanvasLayer ## 游戏 HUD 界面 (用于更新时间显示)
 # [删除] ERS_Manager 被移除了，这里不再引用
 

@@ -1,7 +1,7 @@
 extends Node2D
-class_name LevelGenerator
+class_name LevelManager
 
-## 关卡生成器 (LevelGenerator)
+## 关卡生成器 (LevelManager)
 ## 职责：纯粹的“场景建造包工头”。
 ## 特性：场景加载时，自动从全局大管家 (GameManager) 获取要带入的物品，生成地图块、空气墙边界，重置玩家位置，并响应导演的刷怪指令。
 
@@ -62,9 +62,9 @@ func _ready() -> void:
 	if director:
 		if not director.phase_changed.is_connected(_on_phase_changed):
 			director.phase_changed.connect(_on_phase_changed)
-			print(">>> [LevelGenerator] 成功连接到 GameDirector 信号")
+			print(">>> [LevelManager] 成功连接到 GameDirector 信号")
 	else:
-		push_error(">>> [LevelGenerator] 找不到 GameDirector 节点！刷怪功能将失效。")
+		push_error(">>> [LevelManager] 找不到 GameDirector 节点！刷怪功能将失效。")
 
 	# 3. 兼容旧有的武器 UI 调整逻辑 (如果有的话)
 	if player and hud:
@@ -81,7 +81,7 @@ func _ready() -> void:
 #region 4. 关卡建造流程
 ## [核心建造] 根据参数构建整个地图和初始物件
 func _build_level(extra_objects: Array[PackedScene] = []) -> void:
-	print(">>> [LevelGenerator] 开始构建关卡...")
+	print(">>> [LevelManager] 开始构建关卡...")
 	
 	var map_w = default_map_width
 	var map_h = default_map_height
@@ -103,11 +103,11 @@ func _build_level(extra_objects: Array[PackedScene] = []) -> void:
 	
 	# 5. 生成从 ERS 带来的强化物件 (放在安全区外)
 	_spawn_batch_objects(extra_objects, center_cell, map_w, map_h)
-	print(">>> [LevelGenerator] 关卡构建完成！")
+	print(">>> [LevelManager] 关卡构建完成！")
 
 ## [响应导演] 当昼夜系统切换阶段时触发，负责刷当前波次的怪物
 func _on_phase_changed(config: DayLoopConfig) -> void:
-	print(">>> [LevelGenerator] 响应导演指令，开始生成波次: ", config.phase_name)
+	print(">>> [LevelManager] 响应导演指令，开始生成波次: ", config.phase_name)
 	
 	var map_rect = tile_map.get_used_rect()
 	var center_cell = map_rect.get_center()
