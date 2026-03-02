@@ -303,9 +303,10 @@ func take_damage(amount: int, attacker_type: CharacterType, _attacker_node: Node
 		stats.take_damage(float(amount))
 		print("%s 受到伤害: %d | 剩余: %d" % [name, amount, stats.current_health])
 
-	if healthbar and stats: healthbar.value = stats.current_health
 	damage_effects()
-	if stats and stats.current_health <= 0: _die()
+	
+	# 原来这里有更新血条和 if current_health <= 0: _die()，现在都可以删掉了！
+	# 因为 stats.take_damage() 内部一定会发出 health_changed 信号，上面的新方法会自动接管 UI 更新和死亡判定。d
 
 ## [战斗逻辑] 执行死亡流程。切断所有物理计算、屏蔽按键输入、清空碰撞层，并调用死亡动画。
 func _die() -> void:
@@ -510,9 +511,16 @@ func damage_effects() -> void:
 ## [预留接口] 死亡特效扩展口。
 func die_effects() -> void: pass
 
-## [UI 更新] 信号回调：响应血量变化，同步刷新头顶的血条。
-func _on_health_changed(current, _max_val) -> void:
-	if healthbar: healthbar.value = current
+## [UI 更新与全局死亡监控] 信号回调：响应任何途径的血量变化，刷新血条，并在归零时触发死亡。
+func _on_health_changed(current: float, _max_val: float) -> void:
+	# 1. 更新血条 UI
+	if healthbar: 
+		healthbar.value = current
+	
+	# 2. [核心新增] 全局生命体征监控
+	if current <= 0 and not is_dead:
+		print(">>> [%s] 监控到血量归零，触发全局死亡！" % name)
+		_die()
 
 ## [物理计算] 外部调用：对角色施加一次击退力。力的大小会根据 stats 中配置的体重(max_weight)进行衰减。
 func apply_knockback(direction: Vector2, force: float) -> void:

@@ -930,6 +930,7 @@ script = ExtResource("6_s4ycf")
 level_manager = NodePath("../LevelGenerator")
 game_hud = NodePath("../GameHUD")
 day_phases = Array[ExtResource("7_fko2h")]([ExtResource("8_u5856"), ExtResource("9_abtmh"), ExtResource("10_kp3r3")])
+env_hp_decay_per_sec = 10.0
 game_over_overlay = NodePath("../GameOverLayer/GameOverOverlay")
 game_over_label = NodePath("../GameOverLayer/GameOverOverlay/CountDownLabel")
 
@@ -945,6 +946,12 @@ tile_set = SubResource("TileSet_dqgb5")
 y_sort_enabled = true
 
 [node name="Player" parent="." instance=ExtResource("12_w0say")]
+
+[node name="Enemy" parent="." instance=ExtResource("25_anyol")]
+position = Vector2(981, 149)
+
+[node name="Enemy2" parent="." instance=ExtResource("26_kcgcd")]
+position = Vector2(134, 158)
 
 [node name="GameHUD" type="CanvasLayer" parent="."]
 script = ExtResource("13_ukurr")
@@ -1075,12 +1082,6 @@ theme_override_font_sizes/font_size = 64
 text = "你挂了：5"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="Enemy" parent="." instance=ExtResource("25_anyol")]
-position = Vector2(981, 149)
-
-[node name="Enemy2" parent="." instance=ExtResource("26_kcgcd")]
-position = Vector2(134, 158)
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]

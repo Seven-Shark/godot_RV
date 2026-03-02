@@ -76,6 +76,9 @@ func _ready() -> void:
 	# 4. [核心架构接入] 从全局大管家获取带入副本的物品，并直接开始生成关卡
 	var ers_items_to_spawn = GameManager.pending_ers_objects
 	_build_level(ers_items_to_spawn)
+	
+	# 【新增】迷宫建完了，怪物刷好了，通知大管家拉开黑幕！
+	GameManager.scene_ready_to_reveal.emit()
 #endregion
 
 #region 4. 关卡建造流程

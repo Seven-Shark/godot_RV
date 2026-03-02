@@ -154,4 +154,7 @@ func _layout_home_elements() -> void:
 func _bake_navigation_mesh() -> void:
 	if nav_region:
 		nav_region.bake_navigation_polygon()
+		
+	# 【新增】一切就绪，通知大管家拉开黑幕！
+	GameManager.scene_ready_to_reveal.emit()
 #endregion

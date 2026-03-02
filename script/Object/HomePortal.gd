@@ -5,7 +5,10 @@ extends Area2D
 
 #region 1. 引用配置
 @export var ers_manager: Node ## ERS 商店實例
-@export var interaction_label: Label ## [新增] 引用懸浮提示文字節點
+@export var interaction_label: Label ## 引用懸浮提示文字節點
+
+@export_group("Portal Settings")
+@export var target_map_decay_rate: float = 2.0 ## [新增] 傳給探險地圖的環境掉血速率 (可在編輯器中設定)
 #endregion
 
 #region 2. 狀態變數
@@ -31,8 +34,11 @@ func _input(event: InputEvent) -> void:
 			_toggle_interaction_ui(false)
 			ers_manager.open_ers_shop(true)
 
+## [信號回調] ERS 確認後，將物品和地圖規則一起交給 GameManager
 func _on_ers_items_confirmed(items: Array[PackedScene]) -> void:
-	GameManager.goto_survival_scene(items)
+	print(">>> [Portal] 收到確認，準備帶上物品前往探險... 掉血率: ", target_map_decay_rate)
+	# 呼叫大管家，傳遞購買的物品以及當前傳送門設定的掉血率
+	GameManager.goto_survival_scene(items, target_map_decay_rate)
 #endregion
 
 #region 4. 範圍檢測與視覺控制

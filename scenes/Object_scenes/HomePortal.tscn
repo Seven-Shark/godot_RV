@@ -11,11 +11,13 @@ radius = 28.0
 height = 90.0
 
 [sub_resource type="SystemFont" id="SystemFont_fie3i"]
+subpixel_positioning = 0
 
 [node name="HomePortal" type="Area2D" node_paths=PackedStringArray("interaction_label")]
 collision_layer = 256
 script = ExtResource("1_vh28i")
 interaction_label = NodePath("InteractionLabel")
+target_map_decay_rate = 15.0
 
 [node name="DetectionShape" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_vh28i")

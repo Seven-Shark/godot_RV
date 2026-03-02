@@ -823,9 +823,7 @@ tile_set = SubResource("TileSet_s3t2c")
 
 [node name="Player" parent="." instance=ExtResource("12_7ayhc")]
 
-[node name="HomePortal" parent="." node_paths=PackedStringArray("ers_manager") instance=ExtResource("23_3l3bx")]
-position = Vector2(0, 328)
-ers_manager = NodePath("../ERSLayer")
+[node name="ERSLayer" parent="." instance=ExtResource("9_v031a")]
 
 [node name="GameHUD" type="CanvasLayer" parent="."]
 script = ExtResource("13_0yqwg")
@@ -928,7 +926,9 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 script = ExtResource("16_b7ary")
 
-[node name="ERSLayer" parent="." instance=ExtResource("9_v031a")]
+[node name="HomePortal" parent="." node_paths=PackedStringArray("ers_manager") instance=ExtResource("23_3l3bx")]
+ers_manager = NodePath("../ERSLayer")
+target_map_decay_rate = 2.0
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]
