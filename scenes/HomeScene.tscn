@@ -928,7 +928,6 @@ script = ExtResource("16_b7ary")
 
 [node name="HomePortal" parent="." node_paths=PackedStringArray("ers_manager") instance=ExtResource("23_3l3bx")]
 ers_manager = NodePath("../ERSLayer")
-target_map_decay_rate = 2.0
 
 [connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
 [connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]

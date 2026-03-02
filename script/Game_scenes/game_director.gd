@@ -33,8 +33,6 @@ var is_victory: bool = false ## 记录本次探险是否为胜利结算
 var current_phase_index: int = 0 ## 当前所处的阶段索引
 var current_phase_timer: float = 0.0 ## 当前阶段剩余时间计时器
 var is_cycle_active: bool = false ## 昼夜循环是否正在运行
-
-var _decay_timer: float = 0.0 ## 用于计算每秒掉血的内部计时器
 #endregion
 
 #region 4. 生命周期
@@ -99,7 +97,6 @@ func _connect_signals() -> void:
 func _start_gameplay_loop() -> void:
 	is_cycle_active = true
 	current_phase_index = 0
-	_decay_timer = 0.0
 	
 	if game_hud and game_hud.has_method("setup_day_cycle_ui"):
 		game_hud.setup_day_cycle_ui(day_phases)
@@ -143,7 +140,7 @@ func _start_phase(index: int) -> void:
 	print(">>> [Director] 进入阶段: ", config.phase_name)
 	phase_changed.emit(config) 
 
-## [私有方法] 处理环境侵蚀持续掉血
+## [私有方法] 處理環境侵蝕持續掉血 (平滑過渡版)
 func _process_environment_decay(delta: float) -> void:
 	if env_hp_decay_per_sec <= 0.0: return
 	
@@ -153,24 +150,22 @@ func _process_environment_decay(delta: float) -> void:
 	
 	if player.is_dead or player.stats.current_health <= 0: return
 	
-	_decay_timer += delta
-	if _decay_timer >= 1.0:
-		_decay_timer -= 1.0
+	# [核心修改] 將 1 秒扣一次，改為每幀扣除對應的微小比例
+	var decay_amount = env_hp_decay_per_sec * delta
+	var stats = player.stats
+	
+	stats.current_health -= decay_amount
+	
+	if stats.current_health <= 0:
+		stats.current_health = 0
 		
-		var stats = player.stats
-		stats.current_health -= env_hp_decay_per_sec
-		
-		if stats.current_health <= 0:
-			stats.current_health = 0
-			
-		stats.health_changed.emit(stats.current_health, stats.max_health)
-		
-		if stats.current_health <= 0 and not player.is_dead:
-			player.is_dead = true
-			if player.has_method("_die"):
-				player._die()
-			elif player.has_method("die"):
-				player.die()
+	# 實時發送信號，因為每幀都在扣極小的值，血條 UI 會呈現出完美的絲滑滑落感
+	stats.health_changed.emit(stats.current_health, stats.max_health)
+	
+	if stats.current_health <= 0 and not player.is_dead:
+		player.is_dead = true
+		if player.has_method("_die"):
+			player._die()
 #endregion
 
 #region 7. 结算与结束流程 (胜利/阵亡)
