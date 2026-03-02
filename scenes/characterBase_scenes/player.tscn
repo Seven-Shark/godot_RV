@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene load_steps=49 format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://yq555uiwy4at" path="res://scenes/weapon_scenes/weaponAdmin.tscn" id="11_5je8t"]
 [ext_resource type="Texture2D" uid="uid://cduso3l0ajpsl" path="res://Resource/Tiny Swords (Update 010)/UI/Pointers/02.png" id="13_fmvqv"]
 [ext_resource type="Script" uid="uid://dw3076aoa83eq" path="res://scenes/characterBase_scenes/ResourceMagnet.gd" id="14_hdrb8"]
+[ext_resource type="Script" uid="uid://d4cav76t2i6tk" path="res://scenes/characterBase_scenes/BuildComponent.gd" id="16_6f08j"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uxpp1"]
 atlas = ExtResource("2_wdqqy")
@@ -369,5 +370,8 @@ offset_bottom = -55.0
 theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
 theme_override_styles/fill = SubResource("StyleBoxFlat_xl87i")
 show_percentage = false
+
+[node name="BuildComponent" type="Node2D" parent="."]
+script = ExtResource("16_6f08j")
 
 [connection signal="on_dead" from="." to="." method="_on_on_dead"]

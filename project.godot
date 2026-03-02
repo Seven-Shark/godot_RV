@@ -24,6 +24,10 @@ GameManager="*res://script/Game_scenes/GameManager.gd"
 
 window/stretch/mode="canvas_items"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot-mcp-enhanced-main/addons/godot_mcp_enhanced/plugin.cfg")
+
 [file_customization]
 
 folder_colors={

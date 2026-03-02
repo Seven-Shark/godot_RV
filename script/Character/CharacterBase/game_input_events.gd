@@ -75,6 +75,10 @@ static func is_lock_target_event(event: InputEvent) -> bool:
 
 ## [新增] 检测是否触发了【目标锁定】 (默认 E 键)
 static func is_interact_event(event: InputEvent) -> bool:
+	# 【拦截】如果正在建造模式，Player 停止处理 E 键硬锁定和攻击逻辑
+	if build_component and build_component.is_building_mode:
+		return
+	
 	if not input_enabled: return false
 	if event.is_action_pressed("interact"): return true
 	return false
