@@ -1,13 +1,9 @@
-[gd_scene load_steps=17 format=4 uid="uid://do3f2oap0omos"]
+[gd_scene load_steps=10 format=4 uid="uid://do3f2oap0omos"]
 
 [ext_resource type="Script" uid="uid://xy8gs3mpjbk2" path="res://scenes/HomeManager.gd" id="1_igmnq"]
 [ext_resource type="Texture2D" uid="uid://bgq17khujex8" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color3.png" id="1_ut5qg"]
-[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/ERSLayer.tscn" id="9_v031a"]
+[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/Game_Hud.tscn" id="5_va7cf"]
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="12_7ayhc"]
-[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="13_0yqwg"]
-[ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="14_ku0wf"]
-[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="15_4xfcf"]
-[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/DayCycleUI.gd" id="16_b7ary"]
 [ext_resource type="PackedScene" uid="uid://b7c7bmy5f2xt4" path="res://scenes/Object_scenes/HomePortal.tscn" id="23_3l3bx"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_8vfl5"]
@@ -782,15 +778,6 @@ texture = ExtResource("1_ut5qg")
 navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_8vfl5")
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
-
-[sub_resource type="Gradient" id="Gradient_ddb2m"]
-offsets = PackedFloat32Array(0.9969325, 1)
-colors = PackedColorArray(0, 0, 0, 0.49803922, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_opqiu"]
-gradient = SubResource("Gradient_ddb2m")
-
 [node name="HomeScene" type="Node2D" node_paths=PackedStringArray("player", "spawn_point", "home_portal", "nav_region", "tile_map")]
 y_sort_enabled = true
 script = ExtResource("1_igmnq")
@@ -811,6 +798,8 @@ atlas_left_list = Array[Vector2i]([Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3
 atlas_right_list = Array[Vector2i]([Vector2i(11, 1), Vector2i(11, 2), Vector2i(11, 3), Vector2i(11, 4), Vector2i(11, 5), Vector2i(11, 6), Vector2i(11, 7), Vector2i(11, 8), Vector2i(11, 9), Vector2i(11, 10)])
 atlas_center_fallback = Vector2i(2, 2)
 
+[node name="GameHUD" parent="." instance=ExtResource("5_va7cf")]
+
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_8vfl5")
 
@@ -823,112 +812,6 @@ tile_set = SubResource("TileSet_s3t2c")
 
 [node name="Player" parent="." instance=ExtResource("12_7ayhc")]
 
-[node name="ERSLayer" parent="." instance=ExtResource("9_v031a")]
-
-[node name="GameHUD" type="CanvasLayer" parent="."]
-script = ExtResource("13_0yqwg")
-
-[node name="NewDayButton" type="Button" parent="GameHUD"]
-offset_left = 921.0
-offset_top = 4.0
-offset_right = 1057.0
-offset_bottom = 57.0
-scale = Vector2(0.582989, 0.582989)
-focus_behavior_recursive = 1
-theme_override_font_sizes/font_size = 32
-text = "新的一天"
-
-[node name="HeightInput" type="SpinBox" parent="GameHUD/NewDayButton"]
-layout_mode = 0
-offset_left = -331.0526
-offset_right = -244.49011
-offset_bottom = 31.000004
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="WidthInput" type="SpinBox" parent="GameHUD/NewDayButton"]
-layout_mode = 0
-offset_left = -168.09917
-offset_top = 1.7152982
-offset_right = -81.53667
-offset_bottom = 32.715298
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="AimSwitchButton" type="CheckButton" parent="GameHUD"]
-offset_left = 1079.0
-offset_top = 610.0
-offset_right = 1123.0
-offset_bottom = 634.0
-scale = Vector2(1.6399902, 1.6399902)
-focus_mode = 0
-theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
-script = ExtResource("14_ku0wf")
-
-[node name="Label" type="Label" parent="GameHUD/AimSwitchButton"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 1.1040001
-anchor_right = 0.5
-anchor_bottom = 1.1040001
-offset_left = -64.0
-offset_top = -22.496002
-offset_right = -20.0
-offset_bottom = -6.496002
-scale = Vector2(0.34859496, 0.35398254)
-theme_override_font_sizes/font_size = 32
-text = "自动瞄准"
-
-[node name="GoldLabel" type="Label" parent="GameHUD"]
-offset_left = 1028.0
-offset_top = 7.0
-offset_right = 1092.0
-offset_bottom = 30.0
-text = "金币数："
-
-[node name="DebugStats" type="Label" parent="GameHUD"]
-offset_right = 40.0
-offset_bottom = 23.0
-script = ExtResource("15_4xfcf")
-
-[node name="DayCyclePanel" type="Control" parent="GameHUD"]
-layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -20.0
-offset_right = 20.0
-offset_bottom = 40.0
-grow_horizontal = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="Background" type="TextureRect" parent="GameHUD/DayCyclePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_opqiu")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="GameHUD/DayCyclePanel/Background"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/separation = 0
-script = ExtResource("16_b7ary")
-
 [node name="HomePortal" parent="." node_paths=PackedStringArray("ers_manager") instance=ExtResource("23_3l3bx")]
-ers_manager = NodePath("../ERSLayer")
+ers_manager = NodePath("../GameHUD/SharedUI/ERSLayer")
 target_map_decay_rate = 2.0
-
-[connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
-[connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]
