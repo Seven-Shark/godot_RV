@@ -1,6 +1,6 @@
 extends CheckButton
 
-@onready var player: Player = $"../../Player"
+@onready var player: Player = $"../../../Player"
 @onready var label: Label = $Label
 
 
