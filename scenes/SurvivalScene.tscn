@@ -1,6 +1,7 @@
-[gd_scene load_steps=29 format=4 uid="uid://jpvsf2xi82bq"]
+[gd_scene load_steps=23 format=4 uid="uid://jpvsf2xi82bq"]
 
 [ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_835nb"]
+[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/Game_Hud.tscn" id="1_aky2i"]
 [ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="6_s4ycf"]
 [ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="7_fko2h"]
 [ext_resource type="Resource" uid="uid://c8bn7fjpirna4" path="res://script/Game_scenes/Phase_Day.tres" id="8_u5856"]
@@ -8,10 +9,6 @@
 [ext_resource type="Resource" uid="uid://c0rjcad1ermqm" path="res://script/Game_scenes/Phase_Night.tres" id="10_kp3r3"]
 [ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="11_5yxaa"]
 [ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="12_w0say"]
-[ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="13_ukurr"]
-[ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="14_4pgct"]
-[ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="15_t1l0o"]
-[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/DayCycleUI.gd" id="16_p8n32"]
 [ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="25_anyol"]
 [ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="26_kcgcd"]
 
@@ -893,17 +890,10 @@ texture = ExtResource("11_5yxaa")
 navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_cxslg")
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
-
-[sub_resource type="Gradient" id="Gradient_ddb2m"]
-offsets = PackedFloat32Array(0.9969325, 1)
-colors = PackedColorArray(0, 0, 0, 0.49803922, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_opqiu"]
-gradient = SubResource("Gradient_ddb2m")
-
 [node name="SurvivalScene" type="Node2D"]
 y_sort_enabled = true
+
+[node name="GameHUD" parent="." instance=ExtResource("1_aky2i")]
 
 [node name="LevelGenerator" type="Node2D" parent="." node_paths=PackedStringArray("game_director", "tile_map", "player", "object_container")]
 script = ExtResource("1_835nb")
@@ -931,8 +921,8 @@ level_manager = NodePath("../LevelGenerator")
 game_hud = NodePath("../GameHUD")
 day_phases = Array[ExtResource("7_fko2h")]([ExtResource("8_u5856"), ExtResource("9_abtmh"), ExtResource("10_kp3r3")])
 env_hp_decay_per_sec = 10.0
-game_over_overlay = NodePath("../GameOverLayer/GameOverOverlay")
-game_over_label = NodePath("../GameOverLayer/GameOverOverlay/CountDownLabel")
+game_over_overlay = NodePath("../GameHUD/SurvivalUI/GameOverLayer/GameOverOverlay")
+game_over_label = NodePath("../GameHUD/SurvivalUI/GameOverLayer/GameOverOverlay/CountDownLabel")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_o8ac1")
@@ -952,136 +942,3 @@ position = Vector2(981, 149)
 
 [node name="Enemy2" parent="." instance=ExtResource("26_kcgcd")]
 position = Vector2(134, 158)
-
-[node name="GameHUD" type="CanvasLayer" parent="."]
-script = ExtResource("13_ukurr")
-
-[node name="NewDayButton" type="Button" parent="GameHUD"]
-offset_left = 921.0
-offset_top = 4.0
-offset_right = 1057.0
-offset_bottom = 57.0
-scale = Vector2(0.582989, 0.582989)
-focus_behavior_recursive = 1
-theme_override_font_sizes/font_size = 32
-text = "新的一天"
-
-[node name="HeightInput" type="SpinBox" parent="GameHUD/NewDayButton"]
-layout_mode = 0
-offset_left = -331.0526
-offset_right = -244.49011
-offset_bottom = 31.000004
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="WidthInput" type="SpinBox" parent="GameHUD/NewDayButton"]
-layout_mode = 0
-offset_left = -168.09917
-offset_top = 1.7152982
-offset_right = -81.53667
-offset_bottom = 32.715298
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="AimSwitchButton" type="CheckButton" parent="GameHUD"]
-offset_left = 1079.0
-offset_top = 610.0
-offset_right = 1123.0
-offset_bottom = 634.0
-scale = Vector2(1.6399902, 1.6399902)
-focus_mode = 0
-theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
-script = ExtResource("14_4pgct")
-
-[node name="Label" type="Label" parent="GameHUD/AimSwitchButton"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 1.1040001
-anchor_right = 0.5
-anchor_bottom = 1.1040001
-offset_left = -64.0
-offset_top = -22.496002
-offset_right = -20.0
-offset_bottom = -6.496002
-scale = Vector2(0.34859496, 0.35398254)
-theme_override_font_sizes/font_size = 32
-text = "自动瞄准"
-
-[node name="GoldLabel" type="Label" parent="GameHUD"]
-offset_left = 1028.0
-offset_top = 7.0
-offset_right = 1092.0
-offset_bottom = 30.0
-text = "金币数："
-
-[node name="DebugStats" type="Label" parent="GameHUD"]
-offset_right = 40.0
-offset_bottom = 23.0
-script = ExtResource("15_t1l0o")
-
-[node name="DayCyclePanel" type="Control" parent="GameHUD"]
-layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -20.0
-offset_right = 20.0
-offset_bottom = 40.0
-grow_horizontal = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="Background" type="TextureRect" parent="GameHUD/DayCyclePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture1D_opqiu")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="GameHUD/DayCyclePanel/Background"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/separation = 0
-script = ExtResource("16_p8n32")
-
-[node name="GameOverLayer" type="CanvasLayer" parent="."]
-layer = 100
-
-[node name="GameOverOverlay" type="ColorRect" parent="GameOverLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.7372549)
-
-[node name="CountDownLabel" type="Label" parent="GameOverLayer/GameOverOverlay"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 64
-text = "你挂了：5"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[connection signal="pressed" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_pressed"]
-[connection signal="toggled" from="GameHUD/AimSwitchButton" to="GameHUD/AimSwitchButton" method="_on_toggled"]
