@@ -6,8 +6,8 @@ class_name GameHUD
 ## 交互：被 GameDirector 调用以更新时间，监听 GameDataManager 更新金币。
 
 #region 1. 节点引用
-@onready var gold_label: Label = $GoldLabel
-@onready var day_cycle_ui: HBoxContainer = $DayCyclePanel/Background/HBoxContainer
+@onready var gold_label: Label = $SharedUI/GoldLabel
+@onready var day_cycle_ui: HBoxContainer = $SurvivalUI/DayCyclePanel/Background/HBoxContainer
 #endregion
 
 #region 2. 生命周期
