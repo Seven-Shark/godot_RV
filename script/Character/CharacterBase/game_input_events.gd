@@ -73,6 +73,12 @@ static func is_lock_target_event(event: InputEvent) -> bool:
 	if event.is_action_pressed("lock_target"): return true
 	return false
 
+## [新增] 检测是否触发了【打开背包】 (默认 Tab 键)
+static func is_open_bag(event: InputEvent) -> bool:
+	if not input_enabled: return false
+	if event.is_action_pressed("openbag"): return true
+	return false
+
 ## [新增] 检测是否触发了【目标锁定】 (默认 E 键)
 static func is_interact_event(event: InputEvent) -> bool:
 	# 【拦截】如果正在建造模式，Player 停止处理 E 键硬锁定和攻击逻辑
@@ -90,4 +96,21 @@ static func is_toggle_magnet_event(event: InputEvent) -> bool:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_Q and not event.echo:
 		return true
 	return false
+#endregion
+
+#region 5. UI 导航与长按检测 (UI Navigation & Holds)
+## [新增] 检测 UI 向上 (默认 W 或 上方向键)
+static func is_ui_up(event: InputEvent) -> bool:
+	if not input_enabled: return false
+	return event.is_action_pressed("ui_up") or (event is InputEventKey and event.keycode == KEY_W and event.pressed)
+
+## [新增] 检测 UI 向下 (默认 S 或 下方向键)
+static func is_ui_down(event: InputEvent) -> bool:
+	if not input_enabled: return false
+	return event.is_action_pressed("ui_down") or (event is InputEventKey and event.keycode == KEY_S and event.pressed)
+
+## [新增] 检测交互键(E)松开 (用于 UI 中的长按建造取消)
+static func is_interact_released(event: InputEvent) -> bool:
+	if not input_enabled: return false
+	return event.is_action_released("interact")
 #endregion

@@ -36,6 +36,7 @@ enum ObjectMaterial {
 @export_group("Loot")
 @export var loot_table: Array[LootData] = []
 @export var drop_radius: float = 60.0
+@export var item_data: ItemData ## [资源类型专用] 拾取该物体后获得的物品数据
 
 # 物理层级常量
 const LAYER_PROP_MASK = 1 << 2  # Layer 3
@@ -133,7 +134,13 @@ func enable_pickup_detection():
 	freeze = false 
 
 func collect_success():
-	GameDataManager.add_temp_resource(1)
+	if item_data:
+		GameDataManager.add_item(item_data, 1)
+	else:
+		push_warning("警告：捡到了一个没有配置 ItemData 的资源！(Entity: %s)" % name)
+		# 临时保留旧逻辑以防报错，或者你可以直接删除
+		# GameDataManager.add_temp_resource(1) 
+	
 	queue_free()
 #endregion
 

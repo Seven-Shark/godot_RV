@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3 uid="uid://ckhm2q2ur1g3k"]
+
+[ext_resource type="Script" uid="uid://clqewyuc2snuf" path="res://script/HUD/CraftingRecipeRow.gd" id="1_script"]
+
+[node name="CraftingRecipeRow" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 100)
+offset_right = 600.0
+offset_bottom = 100.0
+script = ExtResource("1_script")
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+layout_mode = 2
+size_flags_vertical = 1
+show_percentage = false
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0.1, 0.1, 0.1, 0.6)
+
+[node name="Content" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ResultIcon" type="TextureRect" parent="Content"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoBox" type="VBoxContainer" parent="Content"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="Content/InfoBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Item Name"
+
+[node name="QualityLabel" type="Label" parent="Content/InfoBox"]
+layout_mode = 2
+text = "Quality"
+
+[node name="Arrow" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "<"
+
+[node name="IngredientsContainer" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1

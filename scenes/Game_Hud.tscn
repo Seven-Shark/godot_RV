@@ -6,6 +6,9 @@
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_d5vxq"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="4_5qxkk"]
 [ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/Game_Over_Layer.tscn" id="6_5qxkk"]
+[ext_resource type="Script" path="res://script/HUD/InventoryDisplay.gd" id="7_inv"]
+[ext_resource type="PackedScene" path="res://scenes/HUD/InventorySlot.tscn" id="8_slot"]
+[ext_resource type="PackedScene" path="res://scenes/inventory_ui.tscn" id="9_inv_ui"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 
@@ -98,13 +101,26 @@ offset_left = 1028.0
 offset_top = 7.0
 offset_right = 1092.0
 offset_bottom = 30.0
-text = "金币数："
+
+[node name="InventoryDisplay" type="HBoxContainer" parent="SharedUI"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 600.0
+offset_right = 420.0
+offset_bottom = 640.0
+script = ExtResource("7_inv")
+slot_prefab = ExtResource("8_slot")
 
 [node name="SurvivalUI" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InventoryUI" parent="SurvivalUI" instance=ExtResource("9_inv_ui")]
+visible = false
 
 [node name="GameOverLayer" parent="SurvivalUI" instance=ExtResource("6_5qxkk")]
 

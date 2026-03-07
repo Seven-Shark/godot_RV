@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://wywkyfs0twft" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stick.png" id="2_hqhs6"]
 [ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="2_leam3"]
 [ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="3_ywv10"]
+[ext_resource type="Resource" path="res://script/Data/Items/Stick.tres" id="3_stick"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
 radius = 23.021729
@@ -16,6 +17,8 @@ gravity_scale = -8.0
 lock_rotation = true
 linear_damp = 10.0
 script = ExtResource("1_sngd2")
+entity_type = 1
+item_data = ExtResource("3_stick")
 
 [node name="StatsComponent" type="Node2D" parent="."]
 script = ExtResource("2_leam3")
