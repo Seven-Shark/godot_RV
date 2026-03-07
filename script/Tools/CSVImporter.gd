@@ -1,0 +1,251 @@
+@tool
+extends EditorScript
+
+## 自动化数据导入工具 (Data Importer)
+## 职责：同步 Excel 数据到 CSV，并生成/更新 Godot 的 Item 和 Recipe 资源文件。
+## 优化：引入 item_cache 内存缓存，消除重复的磁盘 I/O 扫描，极大提升导入速度。
+
+#region 1. 路径与常量配置
+const ITEMS_CSV_PATH = "res://script/Data/CSVs/Items.txt"
+const RECIPES_CSV_PATH = "res://script/Data/CSVs/Recipes.txt"
+const ITEMS_DIR = "res://script/Data/Items/"
+const RECIPES_DIR = "res://script/Data/Recipes/"
+const EXCEL_MANAGER_SCRIPT = "res://script/Tools/excel_manager.py"
+#endregion
+
+#region 2. 内部状态
+var item_cache: Dictionary = {} ## 物品缓存池，格式：{ "item_id": ItemData }
+#endregion
+
+#region 3. 主流程入口
+func _run() -> void:
+	print(">>> [Importer] 开始数据导入流程...")
+	
+	_sync_excel_to_csv()
+	_ensure_directories([ITEMS_DIR, RECIPES_DIR])
+	
+	item_cache.clear() # 清空旧缓存
+	import_items()
+	import_recipes()
+	
+	print(">>> [Importer] 数据导入完成！")
+	
+	var interface = get_editor_interface()
+	if interface:
+		interface.get_resource_filesystem().scan()
+#endregion
+
+#region 4. 外部同步逻辑 (Excel -> CSV)
+func _sync_excel_to_csv() -> void:
+	if not FileAccess.file_exists(EXCEL_MANAGER_SCRIPT): 
+		return
+
+	print(">>> [Importer] 检测到 Python 脚本，尝试从 Excel 导出 CSV...")
+	var global_script_path = ProjectSettings.globalize_path(EXCEL_MANAGER_SCRIPT)
+	var output = []
+	var exit_code = -1
+	
+	for cmd in ["python", "python3", "py"]:
+		exit_code = OS.execute(cmd, [global_script_path, "export"], output, true)
+		if exit_code == 0: break
+		
+	if exit_code == 0:
+		print(">>> [Importer] Excel 导出成功。")
+		for line in output:
+			if not line.strip_edges().is_empty():
+				print("    " + line.strip_edges())
+	else:
+		push_warning(">>> [Importer] Excel 导出失败，将使用现有 CSV。输出: " + str(output))
+#endregion
+
+#region 5. 核心导入逻辑 (Items)
+func import_items() -> void:
+	if not FileAccess.file_exists(ITEMS_CSV_PATH):
+		push_error("未找到 Items CSV: " + ITEMS_CSV_PATH)
+		return
+
+	var file = FileAccess.open(ITEMS_CSV_PATH, FileAccess.READ)
+	var header = file.get_csv_line()
+	var col = _map_csv_headers(header)
+	
+	if not col.has("id") or not col.has("name"):
+		push_error("Items CSV 缺少必要的 'id' 或 'name' 列")
+		return
+	
+	while not file.eof_reached():
+		var line = file.get_csv_line()
+		if line.size() < header.size(): continue
+			
+		var id = line[col["id"]]
+		if id.is_empty(): continue
+			
+		var item_name = line[col["name"]]
+		var file_path = ITEMS_DIR + item_name.validate_filename() + ".tres"
+		var item: ItemData = load(file_path) if FileAccess.file_exists(file_path) else ItemData.new()
+		
+		item.id = id
+		item.item_name = item_name
+		
+		if col.has("description"): item.description = line[col["description"]]
+		if col.has("max_stack"): item.max_stack = line[col["max_stack"]].to_int()
+		
+		# 枚举解析
+		if col.has("type"): _parse_item_type(item, line[col["type"]])
+		if col.has("quality"): _parse_item_quality(item, line[col["quality"]])
+				
+		# 资源引用解析
+		if col.has("icon_path"): 
+			var icon_path = _normalize_res_path(line[col["icon_path"]])
+			if ResourceLoader.exists(icon_path): item.icon = load(icon_path)
+			elif not icon_path.is_empty(): push_warning("未找到图标: " + icon_path)
+					
+		if col.has("build_prefab_path"):
+			var prefab_path = _normalize_res_path(line[col["build_prefab_path"]])
+			if ResourceLoader.exists(prefab_path): item.build_prefab = load(prefab_path)
+			elif not prefab_path.is_empty(): push_warning("未找到预制体: " + prefab_path)
+					
+		ResourceSaver.save(item, file_path)
+		item_cache[id] = item # [核心优化] 将生成的物品加入内存缓存！
+		print("导入物品: " + item_name)
+#endregion
+
+#region 6. 核心导入逻辑 (Recipes)
+func import_recipes() -> void:
+	if not FileAccess.file_exists(RECIPES_CSV_PATH):
+		push_error("未找到 Recipes CSV: " + RECIPES_CSV_PATH)
+		return
+
+	var file = FileAccess.open(RECIPES_CSV_PATH, FileAccess.READ)
+	var header = file.get_csv_line()
+	var col = _map_csv_headers(header)
+		
+	if not col.has("id") or not col.has("result_item_id"):
+		push_error("Recipes CSV 缺少必要的列")
+		return
+	
+	while not file.eof_reached():
+		var line = file.get_csv_line()
+		if line.size() < header.size(): continue
+			
+		var id = line[col["id"]]
+		if id.is_empty(): continue
+			
+		var file_path = RECIPES_DIR + id + ".tres"
+		var recipe: CraftingRecipe
+		
+		# [修复] 始终创建新实例以避免 "Array is in read-only state" 错误。
+		# 这是一个破坏性更改：它会覆盖 .tres 文件中的所有现有数据。
+		# 但鉴于 CSV/Excel 是唯一的数据源，这是预期的行为。
+		# 使用 new() 确保我们拥有一个完全干净、可写的实例，没有任何缓存或只读数组的包袱。
+		recipe = CraftingRecipe.new()
+		recipe.ingredients = [] # 显式初始化为空数组
+
+
+
+			
+		if col.has("result_count"):
+			var count_str = line[col["result_count"]]
+			if not count_str.is_empty():
+				recipe.result_count = count_str.to_int()
+				
+		if col.has("craft_time"):
+			var time_str = line[col["craft_time"]]
+			if not time_str.is_empty():
+				recipe.craft_time = time_str.to_float()
+			
+		# [核心优化] 从内存缓存中快速获取结果物品
+		var result_item_id = line[col["result_item_id"]]
+		if not result_item_id.is_empty():
+			var result_item = _get_item_from_cache(result_item_id)
+			if result_item:
+				recipe.result_item = result_item
+			else:
+				push_error("配方 [%s] 未找到产出物品: %s" % [id, result_item_id])
+			
+		# 解析合成材料
+		if col.has("ingredients"):
+			recipe.ingredients.clear()
+			var ingredients_str = line[col["ingredients"]]
+			if not ingredients_str.is_empty():
+				var ingredients_list = ingredients_str.split(";")
+				for ing_str in ingredients_list:
+					if ing_str.is_empty(): continue
+					var parts = ing_str.split(":")
+					if parts.size() >= 2: # 兼容可能多余的分隔符
+						var item_id = parts[0].strip_edges()
+						var count = parts[1].to_int()
+						
+						var ing_item = _get_item_from_cache(item_id)
+						if ing_item:
+							var stack = IngredientStack.new()
+							stack.item = ing_item
+							stack.count = count
+							recipe.ingredients.append(stack)
+						else:
+							push_error("配方 [%s] 未找到材料: %s" % [id, item_id])
+		
+		ResourceSaver.save(recipe, file_path)
+		print("导入配方: " + id)
+#endregion
+
+#region 7. 辅助方法与数据转换
+## 映射 CSV 表头到字典索引
+func _map_csv_headers(header: PackedStringArray) -> Dictionary:
+	var col_indices = {}
+	for i in header.size(): col_indices[header[i]] = i
+	return col_indices
+
+## 从缓存中获取物品，若缺失则尝试从磁盘加载一次并补全缓存
+func _get_item_from_cache(target_id: String) -> ItemData:
+	if item_cache.has(target_id): return item_cache[target_id]
+	
+	# 后备方案：万一没在缓存里，去文件夹里搜刮一次 (优化了原有的 find_item_by_id)
+	var dir = DirAccess.open(ITEMS_DIR)
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if not dir.current_is_dir() and file_name.ends_with(".tres"):
+				var item = load(ITEMS_DIR + file_name) as ItemData
+				if item and item.id == target_id:
+					item_cache[target_id] = item # 补全缓存
+					return item
+			file_name = dir.get_next()
+	return null
+
+## 修正可能来自 Excel 的绝对路径为 Godot 可读的 res:// 路径
+func _normalize_res_path(path: String) -> String:
+	if path.is_empty() or path.begins_with("res://"): return path
+	
+	var project_path = ProjectSettings.globalize_path("res://").replace("\\", "/")
+	var clean_path = path.replace("\\", "/")
+	
+	if clean_path.to_lower().contains(project_path.to_lower()):
+		var relative = clean_path.substr(project_path.length())
+		# 处理可能多出的斜杠
+		if relative.begins_with("/"): relative = relative.substr(1)
+		return "res://" + relative
+		
+	return path # 无法修正则原样返回
+
+func _ensure_directories(paths: Array) -> void:
+	var dir = DirAccess.open("res://")
+	for p in paths:
+		if not dir.dir_exists(p): dir.make_dir_recursive(p)
+
+func _parse_item_type(item: ItemData, type_str: String) -> void:
+	match type_str.to_upper():
+		"RESOURCE": item.item_type = ItemData.ItemType.RESOURCE
+		"BUILDABLE": item.item_type = ItemData.ItemType.BUILDABLE
+		"CONSUMABLE": item.item_type = ItemData.ItemType.CONSUMABLE
+		"EQUIPMENT": item.item_type = ItemData.ItemType.EQUIPMENT
+		_: push_warning("未知的物品类型: " + type_str)
+
+func _parse_item_quality(item: ItemData, qual_str: String) -> void:
+	match qual_str.to_upper():
+		"COMMON": item.quality = ItemData.ItemQuality.COMMON
+		"RARE": item.quality = ItemData.ItemQuality.RARE
+		"EPIC": item.quality = ItemData.ItemQuality.EPIC
+		"LEGENDARY": item.quality = ItemData.ItemQuality.LEGENDARY
+		_: push_warning("未知的物品品质: " + qual_str)
+#endregion

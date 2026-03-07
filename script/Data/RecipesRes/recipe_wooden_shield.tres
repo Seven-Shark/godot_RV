@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" load_steps=6 format=3 uid="uid://bdnnpicx2qe4t"]
+
+[ext_resource type="Script" uid="uid://beo8vg7o46jmp" path="res://script/Data/IngredientStack.gd" id="1_wpk44"]
+[ext_resource type="Resource" uid="uid://ixbo6ul46t7q" path="res://script/Data/ItemsRes/木头.tres" id="2_foth4"]
+[ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="2_maua2"]
+[ext_resource type="Resource" uid="uid://ndss33tk1uih" path="res://script/Data/ItemsRes/木盾.tres" id="3_foth4"]
+
+[sub_resource type="Resource" id="Resource_foth4"]
+script = ExtResource("1_wpk44")
+item = ExtResource("2_foth4")
+count = 4
+
+[resource]
+script = ExtResource("2_maua2")
+result_item = ExtResource("3_foth4")
+ingredients = Array[ExtResource("1_wpk44")]([SubResource("Resource_foth4")])
+craft_time = 3.0

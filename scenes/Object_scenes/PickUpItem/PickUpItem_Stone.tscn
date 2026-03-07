@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="2_7885p"]
 [ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="2_cl88n"]
 [ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="2_o1yen"]
-[ext_resource type="Resource" path="res://script/Data/Items/Stone.tres" id="3_stone"]
+[ext_resource type="Resource" uid="uid://bvl6qkaonntul" path="res://script/Data/ItemsRes/Stone.tres" id="3_stone"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_matb1"]
 radius = 19.266685

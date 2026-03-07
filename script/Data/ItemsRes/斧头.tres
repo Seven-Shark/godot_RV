@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://h3jty00lycvm"]
+
+[ext_resource type="Texture2D" uid="uid://bmo1hn06fgfux" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/double_axe.png" id="1_hffx7"]
+[ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="2_eu4gw"]
+
+[resource]
+script = ExtResource("2_eu4gw")
+id = "axe"
+item_name = "斧头"
+description = "一把基础的斧头。"
+icon = ExtResource("1_hffx7")
+item_type = 3

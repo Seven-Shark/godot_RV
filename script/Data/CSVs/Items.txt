@@ -1,0 +1,7 @@
+id,name,type,quality,description,icon_path,max_stack,build_prefab_path
+wood,木头,RESOURCE,COMMON,一根木头，用于建造。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png,99,
+stone,石头,RESOURCE,COMMON,一块石头。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png,99,
+stick,木棍,RESOURCE,COMMON,一根普通的木棍。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stick.png,99,
+axe,斧头,EQUIPMENT,COMMON,一把基础的斧头。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/double_axe.png,99,
+wooden_shield,木盾,EQUIPMENT,COMMON,简易的木制盾牌。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/wooden_shield.png,99,
+wooden_sword,木剑,EQUIPMENT,COMMON,一把基础的木剑。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/sword.png,99,

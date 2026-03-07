@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://ixbo6ul46t7q"]
+
+[ext_resource type="Texture2D" uid="uid://bm8ksw5yxt257" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png" id="1_52mdv"]
+[ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="2_n0ava"]
+
+[resource]
+script = ExtResource("2_n0ava")
+id = "wood"
+item_name = "木头"
+description = "一根木头，用于建造。"
+icon = ExtResource("1_52mdv")

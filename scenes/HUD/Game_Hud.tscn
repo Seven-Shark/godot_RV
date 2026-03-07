@@ -1,14 +1,14 @@
-[gd_scene load_steps=10 format=3 uid="uid://do86tbomd2rgn"]
+[gd_scene load_steps=13 format=3 uid="uid://do86tbomd2rgn"]
 
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="1_m2dim"]
-[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/DayCycleUI.gd" id="2_01cbt"]
-[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/ERSLayer.tscn" id="2_d5vxq"]
+[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/HUD/DayCycleUI.gd" id="2_01cbt"]
+[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/HUD/ERSLayer.tscn" id="2_d5vxq"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_d5vxq"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="4_5qxkk"]
-[ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/Game_Over_Layer.tscn" id="6_5qxkk"]
-[ext_resource type="Script" path="res://script/HUD/InventoryDisplay.gd" id="7_inv"]
+[ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/HUD/Game_Over_Layer.tscn" id="6_5qxkk"]
+[ext_resource type="Script" uid="uid://bx2wm3t3qa21s" path="res://script/HUD/InventoryDisplay.gd" id="7_inv"]
 [ext_resource type="PackedScene" path="res://scenes/HUD/InventorySlot.tscn" id="8_slot"]
-[ext_resource type="PackedScene" path="res://scenes/inventory_ui.tscn" id="9_inv_ui"]
+[ext_resource type="PackedScene" uid="uid://b1ay2oft7ae0" path="res://scenes/HUD/inventory_ui.tscn" id="9_inv_ui"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 
@@ -27,9 +27,14 @@ survival_ui = NodePath("SurvivalUI")
 
 [node name="SharedUI" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InventoryUI" parent="SharedUI" instance=ExtResource("9_inv_ui")]
+layout_mode = 1
 
 [node name="ERSLayer" parent="SharedUI" instance=ExtResource("2_d5vxq")]
 
@@ -119,9 +124,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="InventoryUI" parent="SurvivalUI" instance=ExtResource("9_inv_ui")]
-visible = false
-
 [node name="GameOverLayer" parent="SurvivalUI" instance=ExtResource("6_5qxkk")]
 
 [node name="DayCyclePanel" type="Control" parent="SurvivalUI"]
@@ -129,8 +131,8 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = 536.0
-offset_right = 576.0
+offset_left = -20.0
+offset_right = 20.0
 offset_bottom = 40.0
 grow_horizontal = 2
 size_flags_horizontal = 3

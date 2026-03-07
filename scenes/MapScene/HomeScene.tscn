@@ -1,10 +1,10 @@
 [gd_scene load_steps=10 format=4 uid="uid://do3f2oap0omos"]
 
-[ext_resource type="Script" uid="uid://xy8gs3mpjbk2" path="res://scenes/HomeManager.gd" id="1_igmnq"]
-[ext_resource type="Texture2D" uid="uid://bgq17khujex8" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color3.png" id="1_ut5qg"]
-[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/Game_Hud.tscn" id="5_va7cf"]
-[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="12_7ayhc"]
-[ext_resource type="PackedScene" uid="uid://b7c7bmy5f2xt4" path="res://scenes/Object_scenes/HomePortal.tscn" id="23_3l3bx"]
+[ext_resource type="Script" uid="uid://xy8gs3mpjbk2" path="res://script/Game_scenes/HomeManager.gd" id="1_lpj8r"]
+[ext_resource type="Texture2D" uid="uid://bgq17khujex8" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color3.png" id="2_tt2qo"]
+[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="3_rdby8"]
+[ext_resource type="PackedScene" uid="uid://b7c7bmy5f2xt4" path="res://scenes/Object_scenes/HomePortal.tscn" id="4_j8x01"]
+[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/HUD/Game_Hud.tscn" id="5_inxnx"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_8vfl5"]
 
@@ -15,7 +15,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8vfl5"]
-texture = ExtResource("1_ut5qg")
+texture = ExtResource("2_tt2qo")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -780,7 +780,7 @@ sources/0 = SubResource("TileSetAtlasSource_8vfl5")
 
 [node name="HomeScene" type="Node2D" node_paths=PackedStringArray("player", "spawn_point", "home_portal", "nav_region", "tile_map")]
 y_sort_enabled = true
-script = ExtResource("1_igmnq")
+script = ExtResource("1_lpj8r")
 player = NodePath("Player")
 spawn_point = NodePath("NavigationRegion2D/spawn_point")
 home_portal = NodePath("HomePortal")
@@ -798,7 +798,7 @@ atlas_left_list = Array[Vector2i]([Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3
 atlas_right_list = Array[Vector2i]([Vector2i(11, 1), Vector2i(11, 2), Vector2i(11, 3), Vector2i(11, 4), Vector2i(11, 5), Vector2i(11, 6), Vector2i(11, 7), Vector2i(11, 8), Vector2i(11, 9), Vector2i(11, 10)])
 atlas_center_fallback = Vector2i(2, 2)
 
-[node name="GameHUD" parent="." instance=ExtResource("5_va7cf")]
+[node name="GameHUD" parent="." instance=ExtResource("5_inxnx")]
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_8vfl5")
@@ -810,7 +810,7 @@ tile_set = SubResource("TileSet_s3t2c")
 
 [node name="spawn_point" type="Marker2D" parent="NavigationRegion2D"]
 
-[node name="Player" parent="." instance=ExtResource("12_7ayhc")]
+[node name="Player" parent="." instance=ExtResource("3_rdby8")]
 
-[node name="HomePortal" parent="." instance=ExtResource("23_3l3bx")]
+[node name="HomePortal" parent="." instance=ExtResource("4_j8x01")]
 target_map_decay_rate = 2.0

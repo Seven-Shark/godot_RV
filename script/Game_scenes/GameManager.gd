@@ -7,8 +7,8 @@ signal scene_ready_to_reveal ## 新场景布置完毕，请求大管家撤掉黑
 
 #region 1. 场景路径配置
 # ⚠️ 请确认这里的路径与你项目实际路径大小写完全一致
-const HOME_SCENE_PATH = "res://Scenes/HomeScene.tscn" 
-const SURVIVAL_SCENE_PATH = "res://Scenes/SurvivalScene.tscn"
+const HOME_SCENE_PATH = "uid://do3f2oap0omos" 
+const SURVIVAL_SCENE_PATH = "uid://jpvsf2xi82bq"
 #endregion
 
 #region 2. 全局游戏数据与节点

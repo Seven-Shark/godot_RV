@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://cacy5nso4d65d"]
+
+[ext_resource type="Texture2D" uid="uid://84ssd21jwgdr" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png" id="1_8rj8k"]
+[ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="2_vq613"]
+
+[resource]
+script = ExtResource("2_vq613")
+id = "stone"
+item_name = "石头"
+description = "一块石头。"
+icon = ExtResource("1_8rj8k")

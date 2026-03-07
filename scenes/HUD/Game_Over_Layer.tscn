@@ -1,4 +1,4 @@
-[gd_scene load_steps=0 format=3 uid="uid://dgj08vxh4yo14"]
+[gd_scene format=3 uid="uid://dgj08vxh4yo14"]
 
 [node name="GameOverLayer" type="CanvasLayer"]
 layer = 100

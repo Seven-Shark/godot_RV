@@ -26,7 +26,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot-mcp-enhanced-main/addons/godot_mcp_enhanced/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_mcp_enhanced/plugin.cfg")
 
 [file_customization]
 

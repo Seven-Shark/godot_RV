@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://b1ay2oft7ae0"]
+[gd_scene load_steps=7 format=3 uid="uid://b1ay2oft7ae0"]
 
 [ext_resource type="Script" uid="uid://haaelstw6h8w" path="res://script/HUD/InventoryUI.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/HUD/CraftingRecipeRow.tscn" id="2_row"]
+[ext_resource type="PackedScene" uid="uid://ckhm2q2ur1g3k" path="res://scenes/HUD/CraftingRecipeRow.tscn" id="2_row"]
+[ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="3_eifbp"]
+[ext_resource type="Resource" uid="uid://usmrn0b6lgvb" path="res://script/Data/RecipesRes/recipe_stick.tres" id="4_2lmnb"]
+[ext_resource type="Resource" uid="uid://lfe74krth3n0" path="res://script/Data/RecipesRes/recipe_axe.tres" id="5_eicjl"]
+[ext_resource type="Resource" uid="uid://bdnnpicx2qe4t" path="res://script/Data/RecipesRes/recipe_wooden_shield.tres" id="6_uwj4j"]
 
 [node name="InventoryUI" type="Control"]
 layout_mode = 3
@@ -12,6 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 recipe_row_prefab = ExtResource("2_row")
+recipes = Array[ExtResource("3_eifbp")]([ExtResource("4_2lmnb"), ExtResource("5_eicjl"), ExtResource("6_uwj4j")])
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

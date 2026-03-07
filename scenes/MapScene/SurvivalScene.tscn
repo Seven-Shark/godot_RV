@@ -1,16 +1,16 @@
 [gd_scene load_steps=23 format=4 uid="uid://jpvsf2xi82bq"]
 
-[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="1_835nb"]
-[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/Game_Hud.tscn" id="1_aky2i"]
-[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="6_s4ycf"]
-[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="7_fko2h"]
-[ext_resource type="Resource" uid="uid://c8bn7fjpirna4" path="res://script/Game_scenes/Phase_Day.tres" id="8_u5856"]
-[ext_resource type="Resource" uid="uid://2u6lhl85cwfo" path="res://script/Game_scenes/Phase_Dusk.tres" id="9_abtmh"]
-[ext_resource type="Resource" uid="uid://c0rjcad1ermqm" path="res://script/Game_scenes/Phase_Night.tres" id="10_kp3r3"]
-[ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="11_5yxaa"]
-[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="12_w0say"]
-[ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="25_anyol"]
-[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="26_kcgcd"]
+[ext_resource type="PackedScene" uid="uid://do86tbomd2rgn" path="res://scenes/HUD/Game_Hud.tscn" id="1_oyg7h"]
+[ext_resource type="Script" uid="uid://clkf0uv2neg4j" path="res://script/Game_scenes/level_manager.gd" id="2_lrly7"]
+[ext_resource type="Script" uid="uid://huf57bi0id3b" path="res://script/Game_scenes/game_director.gd" id="3_rf0nv"]
+[ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="4_17rrw"]
+[ext_resource type="Resource" uid="uid://c8bn7fjpirna4" path="res://script/Game_scenes/DayRes/Phase_Day.tres" id="5_ssm6r"]
+[ext_resource type="Resource" uid="uid://2u6lhl85cwfo" path="res://script/Game_scenes/DayRes/Phase_Dusk.tres" id="6_3wcln"]
+[ext_resource type="Resource" uid="uid://c0rjcad1ermqm" path="res://script/Game_scenes/DayRes/Phase_Night.tres" id="7_tk4ne"]
+[ext_resource type="Texture2D" uid="uid://dlybtd5p3msjq" path="res://Resource/Tiny Swords (Free Pack)/Terrain/Tilemap_color1.png" id="8_bh21r"]
+[ext_resource type="PackedScene" uid="uid://b4b3ol4gbcxsq" path="res://scenes/characterBase_scenes/player.tscn" id="9_inigg"]
+[ext_resource type="PackedScene" uid="uid://dp7yile35s8s7" path="res://scenes/characterBase_scenes/Enemy_1.tscn" id="10_ao416"]
+[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="11_8kfse"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o8ac1"]
 parsed_geometry_type = 1
@@ -38,7 +38,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cxslg"]
-texture = ExtResource("11_5yxaa")
+texture = ExtResource("8_bh21r")
 0:0/0 = 0
 0:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_ddb2m")
 1:0/0 = 0
@@ -893,11 +893,11 @@ sources/0 = SubResource("TileSetAtlasSource_cxslg")
 [node name="SurvivalScene" type="Node2D"]
 y_sort_enabled = true
 
-[node name="GameHUD" parent="." instance=ExtResource("1_aky2i")]
+[node name="GameHUD" parent="." instance=ExtResource("1_oyg7h")]
 current_mode = 1
 
 [node name="LevelGenerator" type="Node2D" parent="." node_paths=PackedStringArray("game_director", "tile_map", "player", "object_container")]
-script = ExtResource("1_835nb")
+script = ExtResource("2_lrly7")
 game_director = NodePath("../GameDirector")
 tile_map = NodePath("../NavigationRegion2D/TileMapLayer")
 player = NodePath("../Player")
@@ -917,10 +917,10 @@ atlas_center_fallback = Vector2i(2, 2)
 
 [node name="GameDirector" type="Node2D" parent="." node_paths=PackedStringArray("level_manager", "game_hud", "game_over_overlay", "game_over_label")]
 process_mode = 3
-script = ExtResource("6_s4ycf")
+script = ExtResource("3_rf0nv")
 level_manager = NodePath("../LevelGenerator")
 game_hud = NodePath("../GameHUD")
-day_phases = Array[ExtResource("7_fko2h")]([ExtResource("8_u5856"), ExtResource("9_abtmh"), ExtResource("10_kp3r3")])
+day_phases = Array[ExtResource("4_17rrw")]([ExtResource("5_ssm6r"), ExtResource("6_3wcln"), ExtResource("7_tk4ne")])
 env_hp_decay_per_sec = 10.0
 game_over_overlay = NodePath("../GameHUD/SurvivalUI/GameOverLayer/GameOverOverlay")
 game_over_label = NodePath("../GameHUD/SurvivalUI/GameOverLayer/GameOverOverlay/CountDownLabel")
@@ -936,10 +936,10 @@ tile_set = SubResource("TileSet_dqgb5")
 [node name="ObjectContainer" type="Node2D" parent="NavigationRegion2D"]
 y_sort_enabled = true
 
-[node name="Player" parent="." instance=ExtResource("12_w0say")]
+[node name="Player" parent="." instance=ExtResource("9_inigg")]
 
-[node name="Enemy" parent="." instance=ExtResource("25_anyol")]
+[node name="Enemy" parent="." instance=ExtResource("10_ao416")]
 position = Vector2(981, 149)
 
-[node name="Enemy2" parent="." instance=ExtResource("26_kcgcd")]
+[node name="Enemy2" parent="." instance=ExtResource("11_8kfse")]
 position = Vector2(134, 158)

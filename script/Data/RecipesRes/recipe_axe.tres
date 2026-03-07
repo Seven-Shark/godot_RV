@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" load_steps=8 format=3 uid="uid://lfe74krth3n0"]
+
+[ext_resource type="Script" uid="uid://beo8vg7o46jmp" path="res://script/Data/IngredientStack.gd" id="1_f0382"]
+[ext_resource type="Resource" uid="uid://c8pnj4nvcgegw" path="res://script/Data/ItemsRes/木棍.tres" id="2_f0382"]
+[ext_resource type="Resource" uid="uid://cacy5nso4d65d" path="res://script/Data/ItemsRes/石头.tres" id="3_7hwxo"]
+[ext_resource type="Resource" uid="uid://h3jty00lycvm" path="res://script/Data/ItemsRes/斧头.tres" id="4_7cq6b"]
+[ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="5_tojag"]
+
+[sub_resource type="Resource" id="Resource_f0382"]
+script = ExtResource("1_f0382")
+item = ExtResource("2_f0382")
+count = 2
+
+[sub_resource type="Resource" id="Resource_7hwxo"]
+script = ExtResource("1_f0382")
+item = ExtResource("3_7hwxo")
+
+[resource]
+script = ExtResource("5_tojag")
+result_item = ExtResource("4_7cq6b")
+ingredients = Array[ExtResource("1_f0382")]([SubResource("Resource_f0382"), SubResource("Resource_7hwxo")])
+craft_time = 2.0
