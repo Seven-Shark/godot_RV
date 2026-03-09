@@ -9,4 +9,4 @@ id = "wooden_shield"
 item_name = "木盾"
 description = "简易的木制盾牌。"
 icon = ExtResource("1_eflp5")
-item_type = 3
+item_type = 1

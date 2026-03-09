@@ -241,7 +241,7 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0, 0, 0, 1)
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar")]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar") groups=["Player"]]
 y_sort_enabled = true
 collision_mask = 407
 script = ExtResource("1_yv1sj")

@@ -60,3 +60,36 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
+
+[node name="Tabs" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="HBoxContainer" parent="Tabs"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -76.0
+offset_top = 72.0
+offset_right = 77.0
+offset_bottom = 132.0
+grow_horizontal = 2
+
+[node name="CraftingLabel" type="Label" parent="Tabs/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "建筑"
+
+[node name="Control" type="Control" parent="Tabs/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="BuildingLabel" type="Label" parent="Tabs/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "合成"
