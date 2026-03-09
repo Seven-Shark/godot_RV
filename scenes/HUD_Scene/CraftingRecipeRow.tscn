@@ -1,12 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://ckhm2q2ur1g3k"]
 
-[ext_resource type="Script" uid="uid://clqewyuc2snuf" path="res://script/HUD/CraftingRecipeRow.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://clqewyuc2snuf" path="res://script/HUD/CraftingRecipeRow.gd" id="1_rwgqw"]
 
 [node name="CraftingRecipeRow" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 100)
 offset_right = 600.0
 offset_bottom = 100.0
-script = ExtResource("1_script")
+script = ExtResource("1_rwgqw")
 
 [node name="ProgressBar" type="ProgressBar" parent="."]
 layout_mode = 2

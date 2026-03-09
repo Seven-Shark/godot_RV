@@ -1,14 +1,14 @@
 [gd_scene load_steps=13 format=3 uid="uid://do86tbomd2rgn"]
 
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="1_m2dim"]
-[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://scenes/HUD/DayCycleUI.gd" id="2_01cbt"]
-[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/HUD/ERSLayer.tscn" id="2_d5vxq"]
+[ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://script/HUD/DayCycleUI.gd" id="2_01cbt"]
+[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/HUD_Scene/ERSLayer.tscn" id="2_d5vxq"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_d5vxq"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="4_5qxkk"]
-[ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/HUD/Game_Over_Layer.tscn" id="6_5qxkk"]
+[ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/HUD_Scene/Game_Over_Layer.tscn" id="6_5qxkk"]
 [ext_resource type="Script" uid="uid://bx2wm3t3qa21s" path="res://script/HUD/InventoryDisplay.gd" id="7_inv"]
-[ext_resource type="PackedScene" path="res://scenes/HUD/InventorySlot.tscn" id="8_slot"]
-[ext_resource type="PackedScene" uid="uid://b1ay2oft7ae0" path="res://scenes/HUD/inventory_ui.tscn" id="9_inv_ui"]
+[ext_resource type="PackedScene" uid="uid://b3ayt4emokx3l" path="res://scenes/HUD_Scene/InventorySlot.tscn" id="8_slot"]
+[ext_resource type="PackedScene" uid="uid://b1ay2oft7ae0" path="res://scenes/HUD_Scene/inventory_ui.tscn" id="9_inv_ui"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mgbde"]
 

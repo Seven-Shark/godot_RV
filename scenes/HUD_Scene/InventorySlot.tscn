@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://b3ayt4emokx3l"]
 
-[ext_resource type="Script" path="res://script/HUD/InventorySlot.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bjs52a30fa4lp" path="res://script/HUD/InventorySlot.gd" id="1_b735p"]
 
 [node name="InventorySlot" type="HBoxContainer"]
 offset_right = 60.0
 offset_bottom = 32.0
-script = ExtResource("1_script")
+script = ExtResource("1_b735p")
 
 [node name="Icon" type="TextureRect" parent="."]
 layout_mode = 2

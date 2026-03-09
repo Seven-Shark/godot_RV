@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://b1ay2oft7ae0"]
 
 [ext_resource type="Script" uid="uid://haaelstw6h8w" path="res://script/HUD/InventoryUI.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://ckhm2q2ur1g3k" path="res://scenes/HUD/CraftingRecipeRow.tscn" id="2_row"]
+[ext_resource type="PackedScene" uid="uid://ckhm2q2ur1g3k" path="res://scenes/HUD_Scene/CraftingRecipeRow.tscn" id="2_row"]
 [ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="3_eifbp"]
 [ext_resource type="Resource" uid="uid://usmrn0b6lgvb" path="res://script/Data/RecipesRes/recipe_stick.tres" id="4_2lmnb"]
 [ext_resource type="Resource" uid="uid://lfe74krth3n0" path="res://script/Data/RecipesRes/recipe_axe.tres" id="5_eicjl"]
