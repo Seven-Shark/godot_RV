@@ -7,7 +7,7 @@ signal scene_ready_to_reveal ## 新场景布置完毕，请求大管家撤掉黑
 
 #region 1. 场景路径配置
 # ⚠️ 请确认这里的路径与你项目实际路径大小写完全一致
-const HOME_SCENE_PATH = "uid://do3f2oap0omos" 
+const HOME_SCENE_PATH = "uid://do3f2oap0omos"
 const SURVIVAL_SCENE_PATH = "uid://jpvsf2xi82bq"
 #endregion
 
@@ -70,7 +70,7 @@ func goto_home_scene(is_victory: bool = false) -> void:
 	_fade_and_change_scene(HOME_SCENE_PATH)
 
 ## [私有协程] 完美的异步加载与黑屏过渡
-func _fade_and_change_scene(scene_path: String) -> void:
+func _fade_and_change_scene(scene_uid: String) -> void:
 	is_transitioning = true
 	transition_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 	
@@ -81,9 +81,13 @@ func _fade_and_change_scene(scene_path: String) -> void:
 	tween_in.tween_property(transition_rect, "modulate:a", 1.0, 0.4)
 	await tween_in.finished
 	
-	var err = get_tree().change_scene_to_file(scene_path)
-	if err != OK:
-		push_error(">>> [GameManager] 无法加载场景: " + scene_path)
+	var scene = load(scene_uid)
+	if scene:
+		var err = get_tree().change_scene_to_packed(scene)
+		if err != OK:
+			push_error(">>> [GameManager] 无法加载场景: " + scene_uid)
+	else:
+		push_error(">>> [GameManager] 无法加载场景资源: " + scene_uid)
 	
 	await self.scene_ready_to_reveal
 	

@@ -23,8 +23,8 @@ class_name ObjectFactory
 @export var drop_chance: float = 1.0
 
 @export_group("3. 输出设置")
-@export_dir var save_path: String = "res://scenes/objects/generated/" ## 生成文件的保存路径
-@export var base_scene_path: String = "res://scenes/object_scenes/Object_Base.tscn" ## 你的基础物件模板路径
+@export_dir var save_path: String = "res://scenes/Object_scenes/generated/" ## 生成文件的保存路径
+@export var base_scene_path: String = "res://scenes/Object_scenes/Object_Template.tscn" ## 你的基础物件模板路径
 
 @export_group("4. 操作")
 @export var _generate_button: bool = false: ## 点击此勾选框开始生成！

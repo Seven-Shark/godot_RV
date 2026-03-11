@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://ndss33tk1uih"]
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://ndss33tk1uih"]
 
 [ext_resource type="Texture2D" uid="uid://dt4xc7g3b17rb" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/wooden_shield.png" id="1_eflp5"]
 [ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="1_sh3sx"]
+
+[sub_resource type="PackedScene" id="PackedScene_4g4bb"]
 
 [resource]
 script = ExtResource("1_sh3sx")
@@ -10,3 +12,4 @@ item_name = "木盾"
 description = "简易的木制盾牌。"
 icon = ExtResource("1_eflp5")
 item_type = 1
+build_prefab = SubResource("PackedScene_4g4bb")
