@@ -2,3 +2,4 @@ id,result_item_id,result_count,craft_time,ingredients
 recipe_stick,stick,2,1,wood:1
 recipe_axe,axe,1,2,stick:2;stone:1
 recipe_wooden_shield,wooden_shield,1,3,wood:4
+recipe_tower,tower,1,1,wood:4;stone:1

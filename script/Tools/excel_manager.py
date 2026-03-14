@@ -2,161 +2,166 @@ import pandas as pd
 import os
 import sys
 
-# Paths
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 DATA_DIR = os.path.join(PROJECT_ROOT, "script", "Data")
 CSV_DIR = os.path.join(DATA_DIR, "CSVs")
-EXCEL_PATH = os.path.join(DATA_DIR, "GameData.xlsx")
+
+EXCEL_CANDIDATES = [
+    os.path.join(PROJECT_ROOT, "SoData", "GameData.xlsx"),
+    os.path.join(DATA_DIR, "GameData.xlsx"),
+]
 
 ITEMS_CSV = os.path.join(CSV_DIR, "Items.txt")
 RECIPES_CSV = os.path.join(CSV_DIR, "Recipes.txt")
 
+
+def resolve_excel_path_for_export():
+    for path in EXCEL_CANDIDATES:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def resolve_excel_path_for_init():
+    existing = resolve_excel_path_for_export()
+    if existing:
+        return existing
+    return EXCEL_CANDIDATES[0]
+
+
 def create_excel_from_csv():
-    """Reads existing CSVs and creates a new Excel file if it doesn't exist."""
-    if os.path.exists(EXCEL_PATH):
-        print(f"Excel file already exists at: {EXCEL_PATH}")
+    excel_path = resolve_excel_path_for_init()
+    if os.path.exists(excel_path):
+        print(f"Excel file already exists at: {excel_path}")
         return
 
-    print("Creating Excel file from CSVs...")
-    
-    with pd.ExcelWriter(EXCEL_PATH, engine='openpyxl') as writer:
-        # Items
+    os.makedirs(os.path.dirname(excel_path), exist_ok=True)
+    print(f"Creating Excel file from text files... ({excel_path})")
+
+    with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
         if os.path.exists(ITEMS_CSV):
             df_items = pd.read_csv(ITEMS_CSV)
-            df_items.to_excel(writer, sheet_name='Items', index=False)
+            df_items.to_excel(writer, sheet_name="Items", index=False)
             print("  - Added Items sheet")
         else:
             print(f"  - Warning: {ITEMS_CSV} not found")
 
-        # Recipes
         if os.path.exists(RECIPES_CSV):
             df_recipes = pd.read_csv(RECIPES_CSV)
-            
-            # Split 'ingredients' column into multiple columns for easier editing in Excel
-            if 'ingredients' in df_recipes.columns:
-                # Assuming max 4 ingredients for template, can be more
-                max_ingredients = 4
+            if "ingredients" in df_recipes.columns:
+                max_ingredients = 8
                 for i in range(1, max_ingredients + 1):
-                    df_recipes[f'mat_{i}_id'] = ''
-                    df_recipes[f'mat_{i}_count'] = ''
-                
-                # Parse existing ingredients
+                    df_recipes[f"mat_{i}_id"] = ""
+                    df_recipes[f"mat_{i}_count"] = ""
+
                 for idx, row in df_recipes.iterrows():
-                    ing_str = str(row['ingredients'])
-                    if pd.isna(ing_str) or ing_str == 'nan':
+                    ing_str = str(row["ingredients"])
+                    if pd.isna(ing_str) or ing_str == "nan":
                         continue
-                        
-                    parts = ing_str.split(';')
+
+                    parts = ing_str.split(";")
                     for i, part in enumerate(parts):
-                        if i >= max_ingredients: break
-                        if ':' in part:
-                            item_id, count = part.split(':')
-                            df_recipes.at[idx, f'mat_{i+1}_id'] = item_id
-                            df_recipes.at[idx, f'mat_{i+1}_count'] = count
+                        if i >= max_ingredients:
+                            break
+                        if ":" in part:
+                            item_id, count = part.split(":", 1)
+                            df_recipes.at[idx, f"mat_{i+1}_id"] = item_id
+                            df_recipes.at[idx, f"mat_{i+1}_count"] = count
 
-                # Drop original ingredients column for Excel view
-                df_recipes = df_recipes.drop(columns=['ingredients'])
+                df_recipes = df_recipes.drop(columns=["ingredients"])
 
-            df_recipes.to_excel(writer, sheet_name='Recipes', index=False)
-            print("  - Added Recipes sheet (with split ingredient columns)")
+            df_recipes.to_excel(writer, sheet_name="Recipes", index=False)
+            print("  - Added Recipes sheet")
         else:
             print(f"  - Warning: {RECIPES_CSV} not found")
-            
-    print(f"Excel file created successfully: {EXCEL_PATH}")
+
+    print(f"Excel file created successfully: {excel_path}")
+
 
 def update_csv_from_excel():
-    """Reads the Excel file and updates the CSV files."""
-    if not os.path.exists(EXCEL_PATH):
-        print(f"Error: Excel file not found at {EXCEL_PATH}")
-        return
+    excel_path = resolve_excel_path_for_export()
+    if not excel_path:
+        print("Error: Excel file not found. Checked paths:")
+        for p in EXCEL_CANDIDATES:
+            print(f"  - {p}")
+        return 1
 
-    print("Updating CSVs from Excel...")
-    
+    print(f"Updating text files from Excel... ({excel_path})")
+
     try:
-        # Read Excel file
-        xls = pd.ExcelFile(EXCEL_PATH)
-        
-        # Items
-        if 'Items' in xls.sheet_names:
-            df_items = pd.read_excel(xls, 'Items')
-            # Ensure directory exists
-            os.makedirs(CSV_DIR, exist_ok=True)
+        xls = pd.ExcelFile(excel_path)
+        os.makedirs(CSV_DIR, exist_ok=True)
+
+        if "Items" in xls.sheet_names:
+            df_items = pd.read_excel(xls, "Items")
             df_items.to_csv(ITEMS_CSV, index=False)
             print(f"  - Updated {ITEMS_CSV}")
         else:
             print("  - Warning: 'Items' sheet not found in Excel")
 
-        # Recipes
-        if 'Recipes' in xls.sheet_names:
-            df_recipes = pd.read_excel(xls, 'Recipes')
-            
-            # Reconstruct 'ingredients' column from mat_X_id/count columns
-            ingredients_list = []
-            
-            # Check if we have split columns
-            has_split_cols = any(col.startswith('mat_') for col in df_recipes.columns)
-            
+        if "Recipes" in xls.sheet_names:
+            df_recipes = pd.read_excel(xls, "Recipes")
+
+            has_split_cols = any(str(col).startswith("mat_") for col in df_recipes.columns)
             if has_split_cols:
+                ingredients_list = []
                 for _, row in df_recipes.iterrows():
                     parts = []
-                    # Check up to 10 potential slots
-                    for i in range(1, 11):
-                        id_col = f'mat_{i}_id'
-                        count_col = f'mat_{i}_count'
-                        
-                        if id_col in df_recipes.columns and count_col in df_recipes.columns:
-                            item_id = row[id_col]
-                            count = row[count_col]
-                            
-                            # Skip empty entries
-                            if pd.isna(item_id) or str(item_id).strip() == '':
-                                continue
-                                
-                            # Default count to 1 if missing but ID exists
-                            if pd.isna(count) or str(count).strip() == '':
+                    for i in range(1, 21):
+                        id_col = f"mat_{i}_id"
+                        count_col = f"mat_{i}_count"
+                        if id_col not in df_recipes.columns or count_col not in df_recipes.columns:
+                            continue
+
+                        item_id = row[id_col]
+                        count = row[count_col]
+                        if pd.isna(item_id) or str(item_id).strip() == "":
+                            continue
+
+                        if pd.isna(count) or str(count).strip() == "":
+                            count = 1
+                        else:
+                            try:
+                                count = int(float(count))
+                            except Exception:
                                 count = 1
-                            else:
-                                try:
-                                    count = int(float(count)) # Handle 1.0 from Excel
-                                except:
-                                    count = 1
-                                    
-                            parts.append(f"{str(item_id).strip()}:{count}")
-                            
+
+                        parts.append(f"{str(item_id).strip()}:{count}")
+
                     ingredients_list.append(";".join(parts))
-                
-                # Add/Overwrite ingredients column
-                df_recipes['ingredients'] = ingredients_list
-                
-                # Drop the split columns from CSV output to keep it clean
-                cols_to_drop = [c for c in df_recipes.columns if c.startswith('mat_')]
+
+                df_recipes["ingredients"] = ingredients_list
+                cols_to_drop = [c for c in df_recipes.columns if str(c).startswith("mat_")]
                 df_recipes = df_recipes.drop(columns=cols_to_drop)
-            
-            os.makedirs(CSV_DIR, exist_ok=True)
+
             df_recipes.to_csv(RECIPES_CSV, index=False)
             print(f"  - Updated {RECIPES_CSV}")
         else:
             print("  - Warning: 'Recipes' sheet not found in Excel")
-            
+
+        return 0
     except Exception as e:
         print(f"Error processing Excel file: {e}")
         import traceback
         traceback.print_exc()
+        return 1
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         command = sys.argv[1]
         if command == "init":
             create_excel_from_csv()
+            sys.exit(0)
         elif command == "export":
-            update_csv_from_excel()
+            sys.exit(update_csv_from_excel())
         else:
             print(f"Unknown command: {command}")
             print("Usage: python excel_manager.py [init|export]")
+            sys.exit(1)
     else:
-        # Default behavior: if Excel exists, export to CSV. If not, create from CSV.
-        if os.path.exists(EXCEL_PATH):
-            update_csv_from_excel()
-        else:
-            create_excel_from_csv()
+        if resolve_excel_path_for_export():
+            sys.exit(update_csv_from_excel())
+        create_excel_from_csv()
+        sys.exit(0)

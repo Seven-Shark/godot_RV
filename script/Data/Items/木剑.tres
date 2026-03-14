@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://bwqlvqv2g2q8g"]
+
+[ext_resource type="Texture2D" uid="uid://c6hedj3pssadm" path="res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/sword.png" id="1_lypgj"]
+[ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="2_uoc7f"]
+
+[resource]
+script = ExtResource("2_uoc7f")
+id = "wooden_sword"
+item_name = "木剑"
+description = "一把基础的木剑。"
+icon = ExtResource("1_lypgj")
+item_type = 3

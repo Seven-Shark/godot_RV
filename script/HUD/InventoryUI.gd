@@ -16,6 +16,7 @@ class_name InventoryUI
 @export_group("Prefabs & Data")
 @export var recipe_row_prefab: PackedScene
 @export var recipes: Array[CraftingRecipe] = [] ## 实际游戏中应由数据管家或数据库传入
+const RECIPES_DIR := "res://script/Data/Recipes/"
 #endregion
 
 #region 2. 内部状态
@@ -29,6 +30,7 @@ var current_tab: int = 0
 var is_holding_craft: bool = false
 var craft_timer: float = 0.0
 const CRAFT_TIME: float = 1.0 ## 默认合成所需时间 (秒)
+const ITEMS_DIR := "res://script/Data/Items/"
 #endregion
 
 #region 3. 生命周期与初始化
@@ -37,13 +39,7 @@ func _ready() -> void:
 	# [关键] 必须设置为 ALWAYS，否则暂停时无法接收输入和更新进度条
 	process_mode = Node.PROCESS_MODE_ALWAYS 
 
-	# 测试用：加载默认配方
-	if recipes.is_empty():
-		var test_recipes = ["Recipe_Stick", "Recipe_Wooden_Shield"]
-		for r_name in test_recipes:
-			var path = "res://script/Data/Recipes/" + r_name + ".tres"
-			if FileAccess.file_exists(path):
-				recipes.append(load(path))
+	_load_all_recipes_from_resources()
 	
 	# 监听背包变化，以便实时更新配方状态（材料是否足够）
 	if Engine.has_singleton("GameDataManager") or get_node_or_null("/root/GameDataManager"):
@@ -149,6 +145,7 @@ func _select_building() -> void:
 	
 	var row = rows[current_index]
 	var recipe = row.recipe
+	_bind_latest_item_to_recipe(recipe)
 	
 	# 你可以选择在这里验证材料是否足够，或者留给 BuildComponent 验证
 	if not row.can_craft():
@@ -173,6 +170,25 @@ func _select_building() -> void:
 	build_comp.enter_build_mode(recipe)
 	print(">>> [Inventory] 已传递建筑配方: ", recipe.result_item.item_name)
 #endregion
+
+func _bind_latest_item_to_recipe(recipe: CraftingRecipe) -> void:
+	if not recipe or not recipe.result_item:
+		return
+	var target_id = recipe.result_item.id
+	if target_id.is_empty():
+		return
+	var dir = DirAccess.open(ITEMS_DIR)
+	if not dir:
+		return
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var item = load(ITEMS_DIR + file_name) as ItemData
+			if item and item.id == target_id:
+				recipe.result_item = item
+				return
+		file_name = dir.get_next()
 
 #region 7. UI 渲染与视图控制
 ## [内部逻辑] 切换顶部标签页
@@ -225,6 +241,22 @@ func _populate_list() -> void:
 		row.setup(r)
 		rows.append(row)
 
+func _load_all_recipes_from_resources() -> void:
+	recipes.clear()
+	var dir = DirAccess.open(RECIPES_DIR)
+	if not dir:
+		push_warning(">>> [Inventory] 未找到配方目录: " + RECIPES_DIR)
+		return
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var path = RECIPES_DIR + file_name
+			var recipe = load(path)
+			if recipe is CraftingRecipe:
+				recipes.append(recipe)
+		file_name = dir.get_next()
+
 func _refresh_all_rows() -> void:
 	for row in rows:
 		if row.has_method("refresh_ingredients"):
@@ -262,6 +294,7 @@ func toggle_visibility() -> void:
 	visible = not visible
 	get_tree().paused = visible 
 	if visible:
+		_load_all_recipes_from_resources()
 		# 每次打开时，重新加载数据以确保材料准确
 		_populate_list() 
 		_update_selection()

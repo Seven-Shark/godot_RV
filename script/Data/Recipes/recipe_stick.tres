@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" load_steps=6 format=3 uid="uid://hgq5ajtr22yj"]
+
+[ext_resource type="Script" uid="uid://beo8vg7o46jmp" path="res://script/Data/IngredientStack.gd" id="1_po5lq"]
+[ext_resource type="Resource" uid="uid://4sooeamcl1fs" path="res://script/Data/Items/木头.tres" id="2_kfxt6"]
+[ext_resource type="Resource" uid="uid://dkntjquow6np1" path="res://script/Data/Items/木棍.tres" id="3_po5lq"]
+[ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="5_3f5i6"]
+
+[sub_resource type="Resource" id="Resource_kfxt6"]
+script = ExtResource("1_po5lq")
+item = ExtResource("2_kfxt6")
+
+[resource]
+script = ExtResource("5_3f5i6")
+result_item = ExtResource("3_po5lq")
+result_count = 2
+ingredients = Array[ExtResource("1_po5lq")]([SubResource("Resource_kfxt6")])

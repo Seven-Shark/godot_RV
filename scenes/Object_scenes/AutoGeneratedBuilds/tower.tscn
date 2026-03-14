@@ -1,0 +1,63 @@
+[gd_scene load_steps=12 format=3 uid="uid://cge6xp2tm3igc"]
+
+[ext_resource type="Script" uid="uid://hs0duvgmwnpg" path="res://script/Object/NestEntity.gd" id="1_j2nbq"]
+[ext_resource type="Script" uid="uid://cncyi3dgdyjhd" path="res://script/Object/SpawnOption.gd" id="2_q6q42"]
+[ext_resource type="PackedScene" uid="uid://cvkggb8wmur8h" path="res://scenes/characterBase_scenes/Enemy_2.tscn" id="3_0dasy"]
+[ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="4_4lccp"]
+[ext_resource type="PackedScene" uid="uid://dslvb6l86vgqu" path="res://scenes/Object_scenes/PickUpItem/PickUpItem_Wood.tscn" id="5_rpkap"]
+[ext_resource type="Script" uid="uid://b1c18kah1l5tt" path="res://script/Character/CharacterBase/stats_component.gd" id="6_y1tmk"]
+[ext_resource type="Script" uid="uid://cec8f8jph7svf" path="res://scenes/Object_scenes/PickUpItem/visual_controller.gd" id="7_5kh1p"]
+[ext_resource type="Texture2D" uid="uid://bsk07unpof45e" path="res://Resource/Tiny Swords (Free Pack)/Buildings/Black Buildings/Tower.png" id="8_k0h0k"]
+
+[sub_resource type="Resource" id="Resource_o3qtk"]
+script = ExtResource("2_q6q42")
+enemy_scene = ExtResource("3_0dasy")
+metadata/_custom_type_script = "uid://cncyi3dgdyjhd"
+
+[sub_resource type="Resource" id="Resource_1qs48"]
+script = ExtResource("4_4lccp")
+item_scene = ExtResource("5_rpkap")
+min_quantity = 4
+max_quantity = 6
+metadata/_custom_type_script = "uid://bqxi33g2h11le"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fosrp"]
+radius = 40.0
+
+[node name="tower" type="RigidBody2D"]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 23
+gravity_scale = 0.0
+freeze = true
+linear_damp = 5.0
+angular_damp = 3.0
+script = ExtResource("1_j2nbq")
+spawn_options = Array[ExtResource("2_q6q42")]([SubResource("Resource_o3qtk")])
+spawn_interval = 4.0
+max_total_spawns = 50
+spawn_radius_min = 80.0
+entity_type = 3
+loot_table = Array[ExtResource("4_4lccp")]([SubResource("Resource_1qs48")])
+
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
+position = Vector2(0, -38)
+radius = 40.0
+avoidance_layers = 4
+
+[node name="StatsComponent" type="Node2D" parent="."]
+script = ExtResource("6_y1tmk")
+max_health = 500.0
+
+[node name="VisualController" type="Node2D" parent="."]
+script = ExtResource("7_5kh1p")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("8_k0h0k")
+offset = Vector2(0, -66)
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -38)
+shape = SubResource("CircleShape2D_fosrp")

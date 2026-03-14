@@ -127,6 +127,7 @@ func enter_build_mode(recipe: CraftingRecipe) -> void:
 	current_recipe = recipe
 	is_building_mode = true
 	
+	
 	ghost_sprite.texture = recipe.result_item.icon
 	# 暂时使用固定碰撞大小，或者从 ItemData/Prefab 中获取
 	(ghost_collider.shape as RectangleShape2D).size = Vector2(32, 32) 

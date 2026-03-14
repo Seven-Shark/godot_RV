@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" load_steps=10 format=3 uid="uid://5ew1k211mrqw"]
+
+[ext_resource type="Script" uid="uid://beo8vg7o46jmp" path="res://script/Data/IngredientStack.gd" id="1_bvp1v"]
+[ext_resource type="Resource" uid="uid://4sooeamcl1fs" path="res://script/Data/Items/木头.tres" id="2_xcjap"]
+[ext_resource type="Resource" uid="uid://cni1y6hvvb8px" path="res://script/Data/Items/石头.tres" id="3_yxyfq"]
+[ext_resource type="Texture2D" uid="uid://bsk07unpof45e" path="res://Resource/Tiny Swords (Free Pack)/Buildings/Black Buildings/Tower.png" id="4_l2fwj"]
+[ext_resource type="Script" uid="uid://c6cv0ahxi10x8" path="res://script/Data/ItemData.gd" id="5_cw1na"]
+[ext_resource type="Script" uid="uid://cylmbnk3mnnr4" path="res://script/Data/CraftingRecipe.gd" id="6_jdw0k"]
+
+[sub_resource type="Resource" id="Resource_w42f3"]
+script = ExtResource("1_bvp1v")
+item = ExtResource("2_xcjap")
+count = 4
+
+[sub_resource type="Resource" id="Resource_q5yok"]
+script = ExtResource("1_bvp1v")
+item = ExtResource("3_yxyfq")
+
+[sub_resource type="Resource" id="Resource_nutpg"]
+script = ExtResource("5_cw1na")
+id = "tower"
+item_name = "哨塔"
+description = "一座有攻击能力的哨塔"
+icon = ExtResource("4_l2fwj")
+quality = 1
+item_type = 1
+
+[resource]
+script = ExtResource("6_jdw0k")
+result_item = SubResource("Resource_nutpg")
+ingredients = Array[ExtResource("1_bvp1v")]([SubResource("Resource_w42f3"), SubResource("Resource_q5yok")])

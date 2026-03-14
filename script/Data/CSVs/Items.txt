@@ -5,3 +5,4 @@ stick,木棍,RESOURCE,COMMON,一根普通的木棍。,res://Resource/4216_rpg_ic
 axe,斧头,EQUIPMENT,COMMON,一把基础的斧头。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/double_axe.png,99,
 wooden_shield,木盾,EQUIPMENT,COMMON,简易的木制盾牌。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/wooden_shield.png,99,
 wooden_sword,木剑,EQUIPMENT,COMMON,一把基础的木剑。,res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/weapons_and_clothing/sword.png,99,
+tower,哨塔,BUILDABLE,RARE,一座有攻击能力的哨塔,res://Resource/Tiny Swords (Free Pack)/Buildings/Black Buildings/Tower.png,99,
