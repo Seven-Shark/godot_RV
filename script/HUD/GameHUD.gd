@@ -22,7 +22,12 @@ enum MapMode {
 @onready var gold_label: Label = $SharedUI/GoldLabel
 @onready var day_cycle_ui: HBoxContainer = $SurvivalUI/DayCyclePanel/Background/HBoxContainer
 @onready var ers_manager: ERS_Manager = $SharedUI/ERSLayer ## [核心引用] 供传送门或其他脚本调用
+@onready var hunger_panel: Control = $SharedUI/HungerPanel
+@onready var hunger_label: Label = $SharedUI/HungerPanel/HungerLabel
+@onready var hunger_bar: ProgressBar = $SharedUI/HungerPanel/HungerBar
 #endregion
+
+var _player_stats: CharacterStatsComponent = null
 
 #region 2. 生命周期
 ## [初始化] 配置模式显示并连接全局信号
@@ -34,6 +39,13 @@ func _ready() -> void:
 		if not GameDataManager.gold_changed.is_connected(_on_gold_changed):
 			GameDataManager.gold_changed.connect(_on_gold_changed)
 		_on_gold_changed(GameDataManager.current_gold)
+	_try_bind_hunger_source()
+	if hunger_panel:
+		hunger_panel.visible = false
+
+func _process(_delta: float) -> void:
+	if _player_stats == null:
+		_try_bind_hunger_source()
 
 ## [内部逻辑] 根据当前地图模式切换 UI 的可见性
 func _apply_ui_mode() -> void:
@@ -71,4 +83,26 @@ func open_ers(is_free: bool = false) -> void:
 func _on_gold_changed(new_amount: int) -> void:
 	if gold_label:
 		gold_label.text = "Gold: %d" % new_amount
+
+func _try_bind_hunger_source() -> void:
+	var player = get_tree().get_first_node_in_group("Player")
+	if not player:
+		return
+	if not player.has_node("StatsComponent"):
+		return
+	var stats = player.get_node("StatsComponent") as CharacterStatsComponent
+	if not stats:
+		return
+	_player_stats = stats
+	if not _player_stats.hunger_changed.is_connected(_on_hunger_changed):
+		_player_stats.hunger_changed.connect(_on_hunger_changed)
+	_on_hunger_changed(_player_stats.current_hunger, _player_stats.max_hunger)
+
+func _on_hunger_changed(current: float, max_value: float) -> void:
+	if not hunger_panel or not hunger_label or not hunger_bar:
+		return
+	hunger_panel.visible = true
+	hunger_bar.max_value = max_value
+	hunger_bar.value = current
+	hunger_label.text = "饥饿 %.0f / %.0f" % [current, max_value]
 #endregion

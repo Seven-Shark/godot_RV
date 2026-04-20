@@ -263,6 +263,8 @@ healthbar = NodePath("HpBar")
 
 [node name="StatsComponent" type="Node2D" parent="." node_paths=PackedStringArray("healthbar")]
 script = ExtResource("2_kxg0l")
+enable_hunger = true
+max_hunger = 500.0
 base_walk_speed = 300.0
 sprint_speed = 150.0
 weight_slowdown_factor = 0.1

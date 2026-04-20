@@ -353,6 +353,7 @@ func _play_mario_death_anim() -> void:
 ## [状态恢复] 将角色完全重置到存活并满血状态。主要用于玩家重生或敌人池重置。
 func reset_status() -> void:
 	print(">>> [CharacterBase] 重置角色状态: ", name)
+	var was_dead_before_reset = is_dead or (stats and stats.current_health <= 0.0)
 	if character_type == CharacterType.PLAYER: GameInputEvents.input_enabled = true
 	if _death_tween: _death_tween.kill()
 	if _damage_tween: _damage_tween.kill()
@@ -402,7 +403,7 @@ func reset_status() -> void:
 	if healthbar: healthbar.visible = true
 	if direction_Sign: direction_Sign.visible = false
 	if stats:
-		stats.reset_stats()
+		stats.reset_stats(was_dead_before_reset)
 		if healthbar: healthbar.value = stats.current_health
 #endregion
 

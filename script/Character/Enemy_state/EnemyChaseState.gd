@@ -29,7 +29,7 @@ func _on_physics_process(_delta: float) -> void:
 	# 2. 执行移动 (追逐速度快一点)
 	var chase_speed = 100.0
 	if enemy.stats:
-		chase_speed = enemy.stats.base_walk_speed * 1.2
+		chase_speed = enemy.get_runtime_base_speed() * 1.2
 	
 	enemy.process_navigation_movement(chase_speed)
 

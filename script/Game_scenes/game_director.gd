@@ -58,7 +58,6 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if is_cycle_active and not get_tree().paused:
 		_update_day_cycle(delta)
-		_process_environment_decay(delta)
 
 ## [按键监听] 仅用于探险结束(胜利/死亡)后的返回家园操作
 func _input(event: InputEvent) -> void:
@@ -140,32 +139,7 @@ func _start_phase(index: int) -> void:
 	print(">>> [Director] 进入阶段: ", config.phase_name)
 	phase_changed.emit(config) 
 
-## [私有方法] 處理環境侵蝕持續掉血 (平滑過渡版)
-func _process_environment_decay(delta: float) -> void:
-	if env_hp_decay_per_sec <= 0.0: return
-	
-	if not level_manager or not is_instance_valid(level_manager.player): return
-	var player = level_manager.player
-	if not player.stats: return
-	
-	if player.is_dead or player.stats.current_health <= 0: return
-	
-	# [核心修改] 將 1 秒扣一次，改為每幀扣除對應的微小比例
-	var decay_amount = env_hp_decay_per_sec * delta
-	var stats = player.stats
-	
-	stats.current_health -= decay_amount
-	
-	if stats.current_health <= 0:
-		stats.current_health = 0
-		
-	# 實時發送信號，因為每幀都在扣極小的值，血條 UI 會呈現出完美的絲滑滑落感
-	stats.health_changed.emit(stats.current_health, stats.max_health)
-	
-	if stats.current_health <= 0 and not player.is_dead:
-		player.is_dead = true
-		if player.has_method("_die"):
-			player._die()
+
 #endregion
 
 #region 7. 结算与结束流程 (胜利/阵亡)

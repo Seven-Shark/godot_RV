@@ -18,7 +18,7 @@ metadata/_custom_type_script = "uid://d0cw7kgo61sbo"
 
 [resource]
 script = ExtResource("2_nts4x")
-duration = 10.0
+duration = 5.0
 hud_color = Color(1, 1, 0.2901961, 1)
 phase_spawn_list = Array[ExtResource("1_y8juc")]([SubResource("Resource_3pacj"), SubResource("Resource_6k0fp")])
 metadata/_custom_type_script = "uid://dqejo2qob8a4n"

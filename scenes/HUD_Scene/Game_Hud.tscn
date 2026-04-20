@@ -116,6 +116,23 @@ offset_bottom = 640.0
 script = ExtResource("7_inv")
 slot_prefab = ExtResource("8_slot")
 
+[node name="HungerPanel" type="VBoxContainer" parent="SharedUI"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 555.0
+offset_right = 300.0
+offset_bottom = 595.0
+theme_override_constants/separation = 4
+
+[node name="HungerLabel" type="Label" parent="SharedUI/HungerPanel"]
+layout_mode = 2
+text = "饥饿 100 / 100"
+
+[node name="HungerBar" type="ProgressBar" parent="SharedUI/HungerPanel"]
+layout_mode = 2
+max_value = 100.0
+value = 100.0
+
 [node name="SurvivalUI" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
