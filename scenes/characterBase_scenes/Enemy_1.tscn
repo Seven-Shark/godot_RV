@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://dp7yile35s8s7"]
+[gd_scene load_steps=30 format=3 uid="uid://dp7yile35s8s7"]
 
 [ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_gj3g1"]
 [ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://bnsffwpuo5wln" path="res://script/Character/Enemy_state/EnemyAttackState.gd" id="8_j2r2h"]
 [ext_resource type="Script" uid="uid://cba057rcblou1" path="res://script/Character/Enemy_state/EnemyCooldownState.gd" id="9_siouf"]
 [ext_resource type="Script" uid="uid://88d7i65cfsth" path="res://script/Character/Enemy_state/EnemyDeadState.gd" id="9_v8frg"]
+[ext_resource type="PackedScene" uid="uid://ctb2w3dfh15ld" path="res://scenes/characterBase_scenes/EnemyEar.tscn" id="13_7wpf5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqkjm"]
 atlas = ExtResource("2_b37dv")
@@ -169,6 +170,8 @@ script = ExtResource("9_siouf")
 
 [node name="Dead" type="Node" parent="StateMachine"]
 script = ExtResource("9_v8frg")
+
+[node name="EnemyEar" parent="." instance=ExtResource("13_7wpf5")]
 
 [node name="DetectionArea" type="Area2D" parent="."]
 collision_layer = 2

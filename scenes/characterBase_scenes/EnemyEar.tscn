@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://ctb2w3dfh15ld"]
+
+[ext_resource type="Script" uid="uid://nvg6p58v4mho" path="res://script/Character/Enemy_state/enemy_ear.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="1"]
+radius = 420.0
+
+[node name="EnemyEar" type="Area2D"]
+monitoring = false
+monitorable = false
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1")

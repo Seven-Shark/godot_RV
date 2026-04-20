@@ -18,6 +18,16 @@ class_name Player
 
 @export var target_indicator: Sprite2D ## 目标选中框贴图节点
 
+@export_group("Noise Settings")
+@export var noise_idle_value: float = 10.0
+@export var noise_idle_radius: float = 120.0
+@export var noise_walk_value: float = 35.0
+@export var noise_walk_radius: float = 260.0
+@export var noise_attack_value: float = 60.0
+@export var noise_attack_radius: float = 360.0
+@export var noise_dash_value: float = 80.0
+@export var noise_dash_radius: float = 450.0
+
 const ASSIST_ANGLE = 90.0   ## 鼠标辅助瞄准的扇形夹角 (度)
 const ASSIST_RANGE = 250.0  ## 鼠标辅助瞄准的有效距离
 const ASSIST_RANGE_SQ = ASSIST_RANGE * ASSIST_RANGE ## 预计算的距离平方 (用于性能优化)
@@ -58,6 +68,7 @@ func _physics_process(delta: float) -> void:
 	var current_state = ""
 	if state_machine:
 		current_state = state_machine.current_node_state_name.to_lower()
+	_update_noise_profile(current_state)
 
 	# 冲刺或攻击状态下不累加自动攻击的进度
 	if current_state == "dash":
@@ -298,6 +309,22 @@ func _look_at_mouse(mouse_position: Vector2) -> void:
 		var direction_vector = mouse_position - global_position
 		direction_Sign.rotation = direction_vector.angle()
 		direction_Sign.visible = true
+
+func _update_noise_profile(current_state: String) -> void:
+	if not (stats is CharacterStatsComponent):
+		return
+	var cstats := stats as CharacterStatsComponent
+	match current_state:
+		"idle":
+			cstats.set_noise_profile(noise_idle_value, noise_idle_radius)
+		"walk", "run", "patrol":
+			cstats.set_noise_profile(noise_walk_value, noise_walk_radius)
+		"attack":
+			cstats.set_noise_profile(noise_attack_value, noise_attack_radius)
+		"dash":
+			cstats.set_noise_profile(noise_dash_value, noise_dash_radius)
+		_:
+			cstats.set_noise_profile(noise_walk_value, noise_walk_radius)
 #endregion
 
 #region 8. 接口
