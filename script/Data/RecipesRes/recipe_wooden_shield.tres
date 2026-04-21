@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CraftingRecipe" load_steps=6 format=3 uid="uid://bdnnpicx2qe4t"]
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3 uid="uid://bdnnpicx2qe4t"]
 
 [ext_resource type="Script" uid="uid://beo8vg7o46jmp" path="res://script/Data/IngredientStack.gd" id="1_wpk44"]
 [ext_resource type="Resource" uid="uid://ixbo6ul46t7q" path="res://script/Data/ItemsRes/木头.tres" id="2_foth4"]

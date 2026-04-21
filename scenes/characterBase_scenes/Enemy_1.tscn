@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://dp7yile35s8s7"]
+[gd_scene format=3 uid="uid://dp7yile35s8s7"]
 
 [ext_resource type="Script" uid="uid://stmgu8crodht" path="res://script/Character/Enemy_state/enemy.gd" id="1_gj3g1"]
 [ext_resource type="Texture2D" uid="uid://cv36ysyf1or05" path="res://Resource/Tiny Swords (Free Pack)/Units/Red Units/Archer/Archer_Idle.png" id="2_b37dv"]
@@ -110,7 +110,7 @@ bg_color = Color(0, 0, 0, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nr6f4"]
 bg_color = Color(1, 0, 0, 1)
 
-[node name="Enemy" type="CharacterBody2D" node_paths=PackedStringArray("attack_bar", "sprite", "healthbar")]
+[node name="Enemy" type="CharacterBody2D" unique_id=1870125697 node_paths=PackedStringArray("attack_bar", "sprite", "healthbar")]
 y_sort_enabled = true
 collision_layer = 2
 collision_mask = 21
@@ -129,64 +129,76 @@ attack_duration = 0.5
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
 
-[node name="StatsComponent" type="Node2D" parent="."]
+[node name="StatsComponent" type="Node2D" parent="." unique_id=1768721669]
 position = Vector2(-3, 0)
 script = ExtResource("2_nr6f4")
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=596514530]
 avoidance_enabled = true
 radius = 5.0
 debug_enabled = true
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1557548103]
 sprite_frames = SubResource("SpriteFrames_hhs0w")
 animation = &"Walk"
 autoplay = "Idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=414750376]
 shape = SubResource("CircleShape2D_j2r2h")
 
-[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
+[node name="StateMachine" type="Node" parent="." unique_id=2022710500 node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("5_j2r2h")
 initial_node_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="StateMachine"]
+[node name="Idle" type="Node" parent="StateMachine" unique_id=1354664168]
 script = ExtResource("7_jerxs")
 
-[node name="Patrol" type="Node" parent="StateMachine"]
+[node name="Patrol" type="Node" parent="StateMachine" unique_id=1657012711]
 script = ExtResource("7_1ef74")
 
-[node name="Return" type="Node" parent="StateMachine"]
+[node name="Return" type="Node" parent="StateMachine" unique_id=872989879]
 script = ExtResource("8_7wpf5")
 
-[node name="Chase" type="Node" parent="StateMachine"]
+[node name="Chase" type="Node" parent="StateMachine" unique_id=1015358012]
 script = ExtResource("8_6sfd3")
 
-[node name="Attack" type="Node" parent="StateMachine"]
+[node name="Attack" type="Node" parent="StateMachine" unique_id=1901012224]
 script = ExtResource("8_j2r2h")
 
-[node name="Cooldown" type="Node" parent="StateMachine"]
+[node name="Cooldown" type="Node" parent="StateMachine" unique_id=1921737575]
 script = ExtResource("9_siouf")
 
-[node name="Dead" type="Node" parent="StateMachine"]
+[node name="Dead" type="Node" parent="StateMachine" unique_id=1752608339]
 script = ExtResource("9_v8frg")
 
-[node name="EnemyEar" parent="." instance=ExtResource("13_7wpf5")]
+[node name="EnemyEar" parent="." unique_id=2067856234 node_paths=PackedStringArray("enemy") instance=ExtResource("13_7wpf5")]
+enemy = NodePath("..")
 
-[node name="DetectionArea" type="Area2D" parent="."]
+[node name="DetectionArea" type="Area2D" parent="." unique_id=1000376350]
 collision_layer = 2
 collision_mask = 3
 
-[node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
+[node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea" unique_id=381983123]
 shape = SubResource("CircleShape2D_8lvt1")
 
-[node name="DirectionSign" type="Node2D" parent="."]
+[node name="DirectionSign" type="Node2D" parent="." unique_id=1689508126]
 
-[node name="Arrows" type="Sprite2D" parent="DirectionSign"]
+[node name="Arrows" type="Sprite2D" parent="DirectionSign" unique_id=59928760]
 position = Vector2(61, -2)
 texture = ExtResource("7_wavxh")
 
-[node name="HpBar" type="ProgressBar" parent="."]
+[node name="AlertLabel" type="Label" parent="." unique_id=1182700451]
+visible = false
+offset_left = -40.0
+offset_top = -110.0
+offset_right = 40.0
+offset_bottom = -70.0
+theme_override_font_sizes/font_size = 48
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HpBar" type="ProgressBar" parent="." unique_id=31283539]
 offset_left = -50.0
 offset_top = -65.0
 offset_right = 50.0
@@ -195,7 +207,7 @@ theme_override_styles/background = SubResource("StyleBoxFlat_wavxh")
 theme_override_styles/fill = SubResource("StyleBoxFlat_nr6f4")
 show_percentage = false
 
-[node name="AttackBar" type="ProgressBar" parent="."]
+[node name="AttackBar" type="ProgressBar" parent="." unique_id=824891349]
 offset_left = -50.0
 offset_top = -65.0
 offset_right = 50.0

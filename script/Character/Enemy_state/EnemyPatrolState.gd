@@ -39,9 +39,9 @@ func _on_physics_process(delta: float) -> void:
 	# 逻辑分支 2: 正在移动
 	else:
 		if enemy.has_noise_investigation():
-			enemy.set_navigation_target(enemy.get_noise_investigation_target())
+			enemy.set_navigation_target(enemy.get_last_sound_point())
 			var has_arrived_noise = enemy.process_navigation_movement(enemy.get_runtime_base_speed() * 0.9)
-			var near_noise_target = enemy.global_position.distance_to(enemy.get_noise_investigation_target()) < 16.0
+			var near_noise_target = enemy.global_position.distance_to(enemy.get_last_sound_point()) < 16.0
 			if has_arrived_noise or near_noise_target:
 				enemy.clear_noise_investigation()
 				_reset_stuck_check(true)

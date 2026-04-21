@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://do86tbomd2rgn"]
+[gd_scene format=3 uid="uid://do86tbomd2rgn"]
 
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="1_m2dim"]
 [ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://script/HUD/DayCycleUI.gd" id="2_01cbt"]
@@ -19,13 +19,13 @@ colors = PackedColorArray(0, 0, 0, 0.49803922, 1, 1, 1, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_opqiu"]
 gradient = SubResource("Gradient_ddb2m")
 
-[node name="GameHUD" type="CanvasLayer" node_paths=PackedStringArray("shared_ui", "home_ui", "survival_ui")]
+[node name="GameHUD" type="CanvasLayer" unique_id=1319252421 node_paths=PackedStringArray("shared_ui", "home_ui", "survival_ui")]
 script = ExtResource("1_m2dim")
 shared_ui = NodePath("SharedUI")
 home_ui = NodePath("HomeUI")
 survival_ui = NodePath("SurvivalUI")
 
-[node name="SharedUI" type="Control" parent="."]
+[node name="SharedUI" type="Control" parent="." unique_id=949294190]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,12 +33,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="InventoryUI" parent="SharedUI" instance=ExtResource("9_inv_ui")]
+[node name="InventoryUI" parent="SharedUI" unique_id=867504150 instance=ExtResource("9_inv_ui")]
 layout_mode = 1
 
-[node name="ERSLayer" parent="SharedUI" instance=ExtResource("2_d5vxq")]
+[node name="ERSLayer" parent="SharedUI" unique_id=82186348 instance=ExtResource("2_d5vxq")]
+visible = false
 
-[node name="AimSwitchButton" type="CheckButton" parent="SharedUI"]
+[node name="AimSwitchButton" type="CheckButton" parent="SharedUI" unique_id=1744267401]
 layout_mode = 0
 offset_left = 1079.0
 offset_top = 610.0
@@ -49,7 +50,7 @@ focus_mode = 0
 theme_override_styles/focus = SubResource("StyleBoxEmpty_mgbde")
 script = ExtResource("3_d5vxq")
 
-[node name="Label" type="Label" parent="SharedUI/AimSwitchButton"]
+[node name="Label" type="Label" parent="SharedUI/AimSwitchButton" unique_id=1749546920]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -64,50 +65,20 @@ scale = Vector2(0.34859496, 0.35398254)
 theme_override_font_sizes/font_size = 32
 text = "自动瞄准"
 
-[node name="NewDayButton" type="Button" parent="SharedUI"]
-layout_mode = 0
-offset_left = 921.0
-offset_top = 4.0
-offset_right = 1057.0
-offset_bottom = 57.0
-scale = Vector2(0.582989, 0.582989)
-focus_behavior_recursive = 1
-theme_override_font_sizes/font_size = 32
-text = "新的一天"
-
-[node name="HeightInput" type="SpinBox" parent="SharedUI/NewDayButton"]
-layout_mode = 0
-offset_left = -331.0526
-offset_right = -244.49011
-offset_bottom = 31.000004
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="WidthInput" type="SpinBox" parent="SharedUI/NewDayButton"]
-layout_mode = 0
-offset_left = -168.09917
-offset_top = 1.7152982
-offset_right = -81.53667
-offset_bottom = 32.715298
-scale = Vector2(1.7518933, 1.7518933)
-min_value = 5.0
-value = 5.0
-
-[node name="DebugStats" type="Label" parent="SharedUI"]
+[node name="DebugStats" type="Label" parent="SharedUI" unique_id=658115543]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("4_5qxkk")
 
-[node name="GoldLabel" type="Label" parent="SharedUI"]
+[node name="GoldLabel" type="Label" parent="SharedUI" unique_id=2087136372]
 layout_mode = 0
 offset_left = 1028.0
 offset_top = 7.0
 offset_right = 1092.0
 offset_bottom = 30.0
 
-[node name="InventoryDisplay" type="HBoxContainer" parent="SharedUI"]
+[node name="InventoryDisplay" type="HBoxContainer" parent="SharedUI" unique_id=1213390591]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 600.0
@@ -116,7 +87,7 @@ offset_bottom = 640.0
 script = ExtResource("7_inv")
 slot_prefab = ExtResource("8_slot")
 
-[node name="HungerPanel" type="VBoxContainer" parent="SharedUI"]
+[node name="HungerPanel" type="VBoxContainer" parent="SharedUI" unique_id=1124143542]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 555.0
@@ -124,16 +95,33 @@ offset_right = 300.0
 offset_bottom = 595.0
 theme_override_constants/separation = 4
 
-[node name="HungerLabel" type="Label" parent="SharedUI/HungerPanel"]
+[node name="HungerLabel" type="Label" parent="SharedUI/HungerPanel" unique_id=1778813209]
 layout_mode = 2
 text = "饥饿 100 / 100"
 
-[node name="HungerBar" type="ProgressBar" parent="SharedUI/HungerPanel"]
+[node name="HungerBar" type="ProgressBar" parent="SharedUI/HungerPanel" unique_id=758107076]
 layout_mode = 2
-max_value = 100.0
 value = 100.0
 
-[node name="SurvivalUI" type="Control" parent="."]
+[node name="NoisePanel" type="HBoxContainer" parent="SharedUI" unique_id=1357218169]
+layout_mode = 0
+offset_left = 410.0
+offset_top = 600.0
+offset_right = 849.525
+offset_bottom = 640.0
+theme_override_constants/separation = 10
+
+[node name="NoiseWaveLabel" type="Label" parent="SharedUI/NoisePanel" unique_id=621465216]
+layout_mode = 2
+size_flags_vertical = 0
+text = "声纹"
+
+[node name="NoiseBar" type="ProgressBar" parent="SharedUI/NoisePanel" unique_id=1148895897]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+
+[node name="SurvivalUI" type="Control" parent="." unique_id=1171074900]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -141,9 +129,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GameOverLayer" parent="SurvivalUI" instance=ExtResource("6_5qxkk")]
+[node name="GameOverLayer" parent="SurvivalUI" unique_id=2093176176 instance=ExtResource("6_5qxkk")]
 
-[node name="DayCyclePanel" type="Control" parent="SurvivalUI"]
+[node name="DayCyclePanel" type="Control" parent="SurvivalUI" unique_id=1176854388]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -155,7 +143,7 @@ grow_horizontal = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 
-[node name="Background" type="TextureRect" parent="SurvivalUI/DayCyclePanel"]
+[node name="Background" type="TextureRect" parent="SurvivalUI/DayCyclePanel" unique_id=637178331]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -164,7 +152,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_opqiu")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="SurvivalUI/DayCyclePanel/Background"]
+[node name="HBoxContainer" type="HBoxContainer" parent="SurvivalUI/DayCyclePanel/Background" unique_id=1860144999]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -175,7 +163,7 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 script = ExtResource("2_01cbt")
 
-[node name="HomeUI" type="Control" parent="."]
+[node name="HomeUI" type="Control" parent="." unique_id=1838689751]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0

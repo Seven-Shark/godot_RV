@@ -31,6 +31,22 @@ class_name Enemy
 @export var stuck_retry_time: float = 2.0 # 第一阶段：尝试换个随机点的时间
 ## 第二阶段：强制反向逃逸的时间 (累加在第一阶段后)
 @export var stuck_escape_time: float = 1.5 # 第二阶段：强制反向逃逸的时间 (累加在第一阶段后)
+## 通用导航卡住判定的最小位移阈值
+@export var nav_stuck_min_move_distance: float = 2.5 # 通用导航卡住判定的最小位移阈值
+## 通用导航触发绕行的时间阈值
+@export var nav_stuck_trigger_time: float = 0.35 # 通用导航触发绕行的时间阈值
+## 绕行阶段持续时间
+@export var nav_detour_duration: float = 0.28 # 绕行阶段持续时间
+## 绕行阶段侧向探测距离
+@export var nav_detour_probe_distance: float = 28.0 # 绕行阶段侧向探测距离
+## 绕行阶段最大侧向探测距离 (用于大体积障碍)
+@export var nav_detour_probe_max_distance: float = 120.0 # 绕行阶段最大侧向探测距离 (用于大体积障碍)
+## 绕行阶段前向混合权重
+@export var nav_detour_forward_weight: float = 0.35 # 绕行阶段前向混合权重
+## 绕行阶段最长持续时间上限
+@export var nav_detour_max_duration: float = 0.75 # 绕行阶段最长持续时间上限
+## 导航阻挡检测层级 (默认包含 Layer 3 物件与 Layer 5 空气墙)
+@export_flags_2d_physics var nav_block_mask: int = 20 # 导航阻挡检测层级
 
 @export_group("AI Settings")
 ## 攻击触发距离
@@ -55,6 +71,17 @@ class_name Enemy
 @export var show_patrol_area: bool = false # 显示巡逻范围调试信息
 ## 显示移动路径连线
 @export var show_path_line: bool = false # 显示移动路径连线
+@export_group("Alert Indicator")
+## 敌人脱离锁定后“省略号”提示持续时间
+@export var alert_lost_lock_duration: float = 1.2 # 敌人脱离锁定后“省略号”提示持续时间
+## 敌人头顶提示文本颜色
+@export var alert_text_color: Color = Color(1.0, 0.95, 0.6, 1.0) # 敌人头顶提示文本颜色
+## 是否在地图上显示最后发声点标记
+@export var show_last_sound_point_marker: bool = true # 是否在地图上显示最后发声点标记
+## 最后发声点标记颜色
+@export var last_sound_point_marker_color: Color = Color(0.25, 0.95, 1.0, 0.9) # 最后发声点标记颜色
+## 最后发声点标记半径
+@export var last_sound_point_marker_radius: float = 8.0 # 最后发声点标记半径
 const EAR_SCENE_PATH := "res://scenes/characterBase_scenes/EnemyEar.tscn"
 #endregion
 
@@ -154,7 +181,15 @@ var _base_charge_duration: float = 0.0 # 缓存的基础蓄力时间
 var _base_detection_scale: Vector2 = Vector2.ONE # 缓存的基础感知区域缩放倍数
 
 var is_noise_investigating: bool = false # 当前是否在执行噪音调查
-var noise_investigate_target: Vector2 = Vector2.ZERO # 当前噪音调查目标点
+var noise_investigate_target: Vector2 = Vector2.ZERO # 当前记录的最后发声点
+@onready var alert_label: Label = $AlertLabel # 敌人头顶状态提示文本
+var _alert_lost_lock_timer: float = 0.0 # 脱离锁定后的省略号计时器
+var _was_aggro_active: bool = false # 记录上一帧是否处于锁定状态
+var _nav_stuck_timer: float = 0.0 # 通用导航卡住计时器
+var _nav_prev_position: Vector2 = Vector2.ZERO # 通用导航上一帧位置
+var _nav_detour_timer: float = 0.0 # 通用导航绕行剩余时间
+var _nav_detour_direction: Vector2 = Vector2.ZERO # 通用导航绕行方向
+var _nav_detour_side_sign: int = 1 # 通用导航绕行左右方向交替符号
 #endregion
 
 #region 5. 生命周期与核心循环
@@ -164,6 +199,7 @@ func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	_setup_attack_nodes()
 	_ensure_ear_node()
+	_setup_alert_label()
 	_cache_base_phase_stats()
 	_bind_day_phase_events()
 	
@@ -182,6 +218,7 @@ func _ready() -> void:
 # 物理帧处理循环，处理状态驱动与物理结算
 func _physics_process(delta: float) -> void:
 	queue_redraw()
+	_update_alert_indicator(delta)
 	
 	if is_stunned:
 		velocity = Vector2.ZERO
@@ -198,6 +235,7 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	_update_target_logic(delta)
 	_update_aggro_system(delta)
+	_sync_last_sound_point_during_aggro()
 	
 	var env_force = _calculate_environment_forces() # 当前环境合力
 	velocity += env_force + knockback_velocity
@@ -230,6 +268,12 @@ func _draw() -> void:
 			if is_returning: line_color = Color.CYAN
 			elif is_instance_valid(current_target): line_color = Color.ORANGE_RED 
 			draw_line(Vector2.ZERO, target_local, line_color, 2.0)
+
+	if show_last_sound_point_marker and noise_investigate_target != Vector2.ZERO and not is_dead:
+		var sound_point_local = to_local(noise_investigate_target) # 最后发声点的本地坐标
+		var marker_radius = max(2.0, last_sound_point_marker_radius) # 防止半径过小不可见
+		draw_circle(sound_point_local, marker_radius, last_sound_point_marker_color)
+		draw_arc(sound_point_local, marker_radius + 4.0, 0.0, TAU, 32, last_sound_point_marker_color, 2.0)
 			
 	if enable_weakness and is_weakness_active and not is_stunned and not is_dead:
 		if current_weakness_stage < weakness_stages.size():
@@ -338,8 +382,13 @@ func set_navigation_target_to_patrol_point() -> void:
 func process_navigation_movement(speed: float) -> bool:
 	if not nav_agent: return true
 	if nav_agent.is_navigation_finished():
+		_reset_navigation_recovery_state()
 		velocity = Vector2.ZERO
 		return true
+	if _nav_detour_timer > 0.0:
+		_apply_navigation_detour_motion(speed)
+		_update_navigation_stuck_recovery(speed)
+		return false
 	# 关键：同步导航代理速度上限，避免 set_velocity 被默认 max_speed 限制导致“看起来没提速”
 	nav_agent.max_speed = max(1.0, speed)
 		
@@ -354,7 +403,104 @@ func process_navigation_movement(speed: float) -> bool:
 		nav_agent.set_velocity(new_velocity)
 	else:
 		velocity = new_velocity
+	_update_navigation_stuck_recovery(speed)
 	return false
+
+# 通用导航卡住检测：当位移持续过小则进入短时绕行
+func _update_navigation_stuck_recovery(speed: float) -> void:
+	if speed <= 1.0 or is_dead or is_stunned:
+		_reset_navigation_recovery_state()
+		return
+	if _nav_prev_position == Vector2.ZERO:
+		_nav_prev_position = global_position
+		return
+	var moved_distance = global_position.distance_to(_nav_prev_position) # 本帧位移距离
+	_nav_prev_position = global_position
+	if moved_distance >= nav_stuck_min_move_distance:
+		_nav_stuck_timer = 0.0
+		return
+	# 只有“前方路径被真实障碍阻挡”时才累计卡住时间，避免正常转向时左右抖动
+	if not _is_forward_path_blocked_for_navigation():
+		_nav_stuck_timer = 0.0
+		return
+	_nav_stuck_timer += get_physics_process_delta_time()
+	if _nav_stuck_timer >= nav_stuck_trigger_time:
+		_start_navigation_detour()
+		_nav_stuck_timer = 0.0
+
+# 启动短时侧向绕行，避免被 WorldEntity 或障碍物持续顶住
+func _start_navigation_detour() -> void:
+	var target_pos = nav_agent.target_position # 当前导航目标点
+	var to_target = target_pos - global_position # 朝向目标的向量
+	if to_target.length_squared() < 1.0:
+		return
+	var forward = to_target.normalized() # 前进方向
+	var base_side = Vector2(-forward.y, forward.x) # 基础侧向方向
+	var preferred_sign = _nav_detour_side_sign # 优先尝试的侧向符号
+	_nav_detour_side_sign *= -1
+	var base_probe = max(8.0, nav_detour_probe_distance) # 基础探测距离
+	var max_probe = max(base_probe, nav_detour_probe_max_distance) # 最大探测距离
+	var probe_factors = [1.0, 1.5, 2.0, 2.8, 3.6, 4.5] # 递增探测倍率
+	var selected_side = Vector2.ZERO # 选中的绕行侧向
+	var selected_probe_dist = 0.0 # 选中的探测距离
+	
+	for factor in probe_factors:
+		var probe_dist = min(max_probe, base_probe * factor)
+		for sign in [preferred_sign, -preferred_sign]:
+			var side = base_side * float(sign) # 当前尝试的侧向
+			var probe_end = global_position + side * probe_dist # 侧向探测终点
+			if _is_segment_blocked_for_navigation(global_position, probe_end):
+				continue
+			selected_side = side
+			selected_probe_dist = probe_dist
+			break
+		if selected_probe_dist > 0.0:
+			break
+	
+	if selected_probe_dist <= 0.0:
+		return
+	_nav_detour_direction = (selected_side + forward * max(0.0, nav_detour_forward_weight)).normalized()
+	var duration_scale = selected_probe_dist / max(1.0, base_probe) # 距离越大，绕行持续越久
+	_nav_detour_timer = min(nav_detour_max_duration, max(0.08, nav_detour_duration * duration_scale))
+
+# 应用短时绕行动作，让导航代理有机会绕过近身障碍
+func _apply_navigation_detour_motion(speed: float) -> void:
+	_nav_detour_timer = max(0.0, _nav_detour_timer - get_physics_process_delta_time())
+	var detour_velocity = _nav_detour_direction * max(1.0, speed) # 绕行速度
+	if sprite:
+		if detour_velocity.x > 0.1: sprite.scale.x = 1
+		elif detour_velocity.x < -0.1: sprite.scale.x = -1
+	if nav_agent and nav_agent.avoidance_enabled:
+		nav_agent.set_velocity(detour_velocity)
+	else:
+		velocity = detour_velocity
+
+# 重置通用导航恢复器内部状态
+func _reset_navigation_recovery_state() -> void:
+	_nav_stuck_timer = 0.0
+	_nav_prev_position = global_position
+	_nav_detour_timer = 0.0
+	_nav_detour_direction = Vector2.ZERO
+
+# 检测前方短距离路径是否被阻挡 (用于卡住判定前置条件)
+func _is_forward_path_blocked_for_navigation() -> bool:
+	if not nav_agent:
+		return false
+	var next_path_pos = nav_agent.get_next_path_position() # 当前路径上的下一个导航点
+	var to_next = next_path_pos - global_position # 指向下个导航点的向量
+	if to_next.length_squared() < 1.0:
+		return false
+	var probe_dist = min(max(8.0, nav_detour_probe_distance), to_next.length()) # 前方探测距离
+	var probe_end = global_position + to_next.normalized() * probe_dist # 前方探测终点
+	return _is_segment_blocked_for_navigation(global_position, probe_end)
+
+# 检测一段路径是否被导航障碍层阻挡
+func _is_segment_blocked_for_navigation(start: Vector2, target: Vector2) -> bool:
+	var space_state = get_world_2d().direct_space_state # 物理空间状态引用
+	var query = PhysicsRayQueryParameters2D.create(start, target, nav_block_mask) # 阻挡检测射线参数
+	query.exclude = [self] # 排除自身，避免射线命中自己的碰撞体导致误判
+	var result = space_state.intersect_ray(query) # 射线检测结果字典
+	return not result.is_empty()
 
 # 接收导航代理计算出的避障安全速度
 func _on_nav_velocity_computed(safe_velocity: Vector2) -> void:
@@ -470,6 +616,7 @@ func force_stop_aggro() -> void:
 	is_aggro_active = false
 	aggro_timer = 0.0
 	current_target = null
+	_reset_navigation_recovery_state()
 	if attack_visual: attack_visual.visible = false
 	if attack_area: attack_area.monitoring = false
 	if state_machine and state_machine.has_method("reset"): state_machine.reset()
@@ -510,11 +657,26 @@ func _update_aggro_system(delta: float) -> void:
 	if has_target:
 		if not is_aggro_active:
 			aggro_timer += delta
-			if aggro_timer >= aggro_trigger_time: is_aggro_active = true
+			if aggro_timer >= aggro_trigger_time:
+				is_aggro_active = true
+				is_noise_investigating = false
 		else: aggro_timer = aggro_lose_time
 	elif is_aggro_active:
 		aggro_timer -= delta
-		if aggro_timer <= 0: is_aggro_active = false; current_target = null 
+		if aggro_timer <= 0:
+			is_aggro_active = false
+			current_target = null
+			if noise_investigate_target != Vector2.ZERO:
+				is_noise_investigating = true
+				set_navigation_target(noise_investigate_target)
+
+# 索敌期间持续刷新最后发声点，避免脱锁后使用旧点位
+func _sync_last_sound_point_during_aggro() -> void:
+	if not is_aggro_active:
+		return
+	if not is_instance_valid(current_target) or current_target.is_dead:
+		return
+	noise_investigate_target = current_target.global_position
 #endregion
 
 #region 9. 昼夜环境控制
@@ -609,16 +771,54 @@ func _ensure_ear_node() -> void:
 	if ear_instance:
 		ear_instance.name = "EnemyEar"
 		add_child(ear_instance)
+		if ear_instance is EnemyEar:
+			ear_instance.enemy = self
+
+func _setup_alert_label() -> void:
+	if not alert_label:
+		return
+	alert_label.visible = false
+	alert_label.text = ""
+	alert_label.modulate = alert_text_color
+
+func _update_alert_indicator(delta: float) -> void:
+	if not alert_label:
+		return
+	if is_dead:
+		alert_label.visible = false
+		_alert_lost_lock_timer = 0.0
+		_was_aggro_active = false
+		return
+	
+	if _was_aggro_active and not is_aggro_active:
+		_alert_lost_lock_timer = alert_lost_lock_duration
+	_was_aggro_active = is_aggro_active
+	
+	if _alert_lost_lock_timer > 0.0:
+		_alert_lost_lock_timer = max(0.0, _alert_lost_lock_timer - delta)
+	
+	if is_aggro_active:
+		alert_label.text = "!"
+		alert_label.visible = true
+	elif is_noise_investigating:
+		alert_label.text = "?"
+		alert_label.visible = true
+	elif _alert_lost_lock_timer > 0.0:
+		alert_label.text = "..."
+		alert_label.visible = true
+	else:
+		alert_label.visible = false
 
 func receive_noise_signal(source_pos: Vector2, noise_value: float) -> void:
 	if is_dead or is_stunned:
 		return
-	if is_aggro_active or is_returning:
-		return
 	if noise_value <= 0.0:
 		return
-	is_noise_investigating = true
+	# 无论当前是否索敌，都先刷新“最后发声点”，避免脱锁后追旧点
 	noise_investigate_target = source_pos
+	if is_aggro_active or is_returning:
+		return
+	is_noise_investigating = true
 	set_navigation_target(noise_investigate_target)
 	if state_machine and state_machine.current_node_state_name.to_lower() != "patrol":
 		state_machine.transition_to("Patrol")
@@ -626,8 +826,11 @@ func receive_noise_signal(source_pos: Vector2, noise_value: float) -> void:
 func has_noise_investigation() -> bool:
 	return is_noise_investigating
 
-func get_noise_investigation_target() -> Vector2:
+func get_last_sound_point() -> Vector2:
 	return noise_investigate_target
+
+func get_noise_investigation_target() -> Vector2:
+	return get_last_sound_point()
 
 func clear_noise_investigation() -> void:
 	is_noise_investigating = false

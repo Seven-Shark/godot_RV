@@ -11,26 +11,42 @@ enum MapMode {
 }
 
 @export_group("HUD Configuration")
-@export var current_mode: MapMode = MapMode.HOME ## 在编辑器中设置当前场景模式
+## 在编辑器中设置当前场景模式 (HOME 或 SURVIVAL)
+@export var current_mode: MapMode = MapMode.HOME # 在编辑器中设置当前场景模式
 
 @export_group("UI Modules")
-@export var shared_ui: Control ## 共用 UI 容器 (包含金币、ERS、背包)
-@export var home_ui: Control ## 家园专有 UI 容器
-@export var survival_ui: Control ## 探险专有 UI 容器
+## 共用 UI 容器 (包含金币、ERS、背包等常驻组件)
+@export var shared_ui: Control # 共用 UI 容器
+## 家园场景专有的 UI 容器
+@export var home_ui: Control # 家园专有 UI 容器
+## 探险场景专有的 UI 容器
+@export var survival_ui: Control # 探险专有 UI 容器
 
 @export_group("Specific Elements")
-@onready var gold_label: Label = $SharedUI/GoldLabel
-@onready var day_cycle_ui: HBoxContainer = $SurvivalUI/DayCyclePanel/Background/HBoxContainer
-@onready var ers_manager: ERS_Manager = $SharedUI/ERSLayer ## [核心引用] 供传送门或其他脚本调用
-@onready var hunger_panel: Control = $SharedUI/HungerPanel
-@onready var hunger_label: Label = $SharedUI/HungerPanel/HungerLabel
-@onready var hunger_bar: ProgressBar = $SharedUI/HungerPanel/HungerBar
+## 显示玩家金币数量的标签
+@onready var gold_label: Label = $SharedUI/GoldLabel # 金币显示标签
+## 探险模式下的昼夜循环进度 UI 容器
+@onready var day_cycle_ui: HBoxContainer = $SurvivalUI/DayCyclePanel/Background/HBoxContainer # 昼夜循环面板
+## 环境重构系统管理器引用
+@onready var ers_manager: ERS_Manager = $SharedUI/ERSLayer # ERS 系统管理器
+## 玩家饥饿度 UI 根面板
+@onready var hunger_panel: Control = $SharedUI/HungerPanel # 饥饿度面板
+## 饥饿度数值文本标签
+@onready var hunger_label: Label = $SharedUI/HungerPanel/HungerLabel # 饥饿度标签
+## 饥饿度进度条
+@onready var hunger_bar: ProgressBar = $SharedUI/HungerPanel/HungerBar # 饥饿度进度条
+## 噪音值显示根面板
+@onready var noise_panel: Control = $SharedUI/NoisePanel # 噪音面板
+## 噪音强度进度条
+@onready var noise_bar: ProgressBar = $SharedUI/NoisePanel/NoiseBar # 噪音进度条
+
+var _player_stats: CharacterStatsComponent = null # 缓存玩家属性组件引用
+## UI 噪音进度条显示的最大上限值
+@export var noise_display_max_value: float = 100.0 # 噪音显示最大值
 #endregion
 
-var _player_stats: CharacterStatsComponent = null
-
-#region 2. 生命周期
-## [初始化] 配置模式显示并连接全局信号
+#region 2. 生命周期逻辑
+# 初始化 UI 状态，连接全局金币管理信号
 func _ready() -> void:
 	_apply_ui_mode()
 	
@@ -39,15 +55,20 @@ func _ready() -> void:
 		if not GameDataManager.gold_changed.is_connected(_on_gold_changed):
 			GameDataManager.gold_changed.connect(_on_gold_changed)
 		_on_gold_changed(GameDataManager.current_gold)
+	
 	_try_bind_hunger_source()
+	
 	if hunger_panel:
 		hunger_panel.visible = false
+	if noise_panel:
+		noise_panel.visible = false
 
+# 每帧检查玩家引用，确保属性信号连接成功
 func _process(_delta: float) -> void:
 	if _player_stats == null:
 		_try_bind_hunger_source()
 
-## [内部逻辑] 根据当前地图模式切换 UI 的可见性
+# 根据当前 MapMode 切换不同场景对应的 UI 面板可见性
 func _apply_ui_mode() -> void:
 	if shared_ui: shared_ui.visible = true
 	
@@ -60,44 +81,53 @@ func _apply_ui_mode() -> void:
 			if survival_ui: survival_ui.visible = true
 #endregion
 
-#region 3. 业务接口 (由 Director/Portal 调用)
-
-## [初始化] 接收导演配置并生成分段进度条 (仅探险模式)
+#region 3. 业务接口 (提供给 Director/Portal)
+# 接收昼夜配置数据并初始化探险模式的时间 UI 布局
 func setup_day_cycle_ui(phases: Array[DayLoopConfig]) -> void:
 	if current_mode == MapMode.SURVIVAL and day_cycle_ui and day_cycle_ui.has_method("setup_bars"):
 		day_cycle_ui.setup_bars(phases)
 
-## [每帧更新] 接收时间流逝并更新 UI 进度 (仅探险模式)
+# 实时更新昼夜循环 UI 的各个阶段进度显示
 func update_time_display(phase_idx: int, remain: float, total: float) -> void:
 	if current_mode == MapMode.SURVIVAL and day_cycle_ui and day_cycle_ui.has_method("update_progress"):
 		day_cycle_ui.update_progress(phase_idx, remain, total)
 
-## [接口] 暴露 ERS 开启方法 (方便外部统一通过 HUD 访问)
+# 开启环境重构系统界面，可选择是否免费重构
 func open_ers(is_free: bool = false) -> void:
 	if ers_manager and ers_manager.has_method("open_ers_shop"):
 		ers_manager.open_ers_shop(is_free)
 #endregion
 
-#region 4. 信号回调
-## [信号回调] 响应金币变化
-func _on_gold_changed(new_amount: int) -> void:
-	if gold_label:
-		gold_label.text = "Gold: %d" % new_amount
-
+#region 4. 内部数据绑定与信号回调
+# 尝试从场景组获取玩家并绑定其属性组件信号
 func _try_bind_hunger_source() -> void:
-	var player = get_tree().get_first_node_in_group("Player")
+	var player = get_tree().get_first_node_in_group("Player") # 从 Group 中查找玩家
 	if not player:
 		return
 	if not player.has_node("StatsComponent"):
 		return
-	var stats = player.get_node("StatsComponent") as CharacterStatsComponent
+	var stats = player.get_node("StatsComponent") as CharacterStatsComponent # 强转属性组件
 	if not stats:
 		return
+	
 	_player_stats = stats
+	
+	# 连接饥饿度与噪音变化信号
 	if not _player_stats.hunger_changed.is_connected(_on_hunger_changed):
 		_player_stats.hunger_changed.connect(_on_hunger_changed)
+	if not _player_stats.noise_changed.is_connected(_on_noise_changed):
+		_player_stats.noise_changed.connect(_on_noise_changed)
+	
+	# 初始化 UI 数值
 	_on_hunger_changed(_player_stats.current_hunger, _player_stats.max_hunger)
+	_on_noise_changed(_player_stats.current_noise_value, _player_stats.current_noise_radius)
 
+# 更新金币标签的显示内容
+func _on_gold_changed(new_amount: int) -> void:
+	if gold_label:
+		gold_label.text = "Gold: %d" % new_amount
+
+# 响应饥饿度变化，实时更新进度条与百分比标签
 func _on_hunger_changed(current: float, max_value: float) -> void:
 	if not hunger_panel or not hunger_label or not hunger_bar:
 		return
@@ -105,4 +135,12 @@ func _on_hunger_changed(current: float, max_value: float) -> void:
 	hunger_bar.max_value = max_value
 	hunger_bar.value = current
 	hunger_label.text = "饥饿 %.0f / %.0f" % [current, max_value]
+
+# 响应噪音值变化，更新噪音计 UI 进度与具体数值
+func _on_noise_changed(value: float, _radius: float) -> void:
+	if not noise_panel or not noise_bar :
+		return
+	noise_panel.visible = true
+	noise_bar.max_value = max(1.0, noise_display_max_value)
+	noise_bar.value = clamp(value, 0.0, noise_bar.max_value)
 #endregion

@@ -337,4 +337,14 @@ func toggle_aim_mode() -> void:
 		player_current_aim_mode = AimMode_Type.AUTO_NEAREST
 		if direction_Sign: direction_Sign.visible = false
 		print("当前模式：自动瞄准")
+
+## 提供给外界（如敌人听觉组件）获取当前噪音值
+func get_current_noise() -> float:
+	var stats_comp = get_node_or_null("StatsComponent") as CharacterStatsComponent
+	return stats_comp.current_noise_value if stats_comp else 0.0
+
+## 提供给外界获取当前噪音传播半径
+func get_noise_radius() -> float:
+	var stats_comp = get_node_or_null("StatsComponent") as CharacterStatsComponent
+	return stats_comp.current_noise_radius if stats_comp else 0.0
 #endregion

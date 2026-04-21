@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DayLoopConfig" load_steps=5 format=3 uid="uid://c0rjcad1ermqm"]
+[gd_resource type="Resource" script_class="DayLoopConfig" format=3 uid="uid://c0rjcad1ermqm"]
 
 [ext_resource type="Script" uid="uid://d0cw7kgo61sbo" path="res://script/Game_scenes/spawn_data.gd" id="1_xdo71"]
 [ext_resource type="Script" uid="uid://dqejo2qob8a4n" path="res://script/Game_scenes/DayLoopConfig.gd" id="2_as61g"]
