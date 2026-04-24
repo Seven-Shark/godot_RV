@@ -74,14 +74,14 @@ func _update_cooldowns(delta: float) -> void:
 
 ## 监听并处理玩家的攻击输入逻辑（发射重物、震荡波或引力波）
 func _handle_input(delta: float) -> void:
-	var is_firing_shock = GameInputEvents.is_main_attack_held()
+	var is_firing_shock = GameInputEvents.is_shockwave_attack_held()
 	var is_firing_gravity = GameInputEvents.is_special_attack_held()
 	
 	if held_object != null:
 		if hitbox.monitoring:
 			stop_gravity_firing()
 		
-		if GameInputEvents.is_main_attack_just_pressed():
+		if GameInputEvents.is_shockwave_attack_just_pressed():
 			_shoot_held_object()
 		return
 	

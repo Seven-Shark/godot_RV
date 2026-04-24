@@ -30,8 +30,8 @@ func _on_next_transitions() -> void:
 			print("引力攻击")
 			return
 		# 2. 检查普通攻击 (单次)
-		# 【修改】：使用 GameInputEvents 检测左键点击
-		elif GameInputEvents.is_main_attack_held():
+		# 【修改】：使用 GameInputEvents 检测震荡波键 (默认 F)
+		elif GameInputEvents.is_shockwave_attack_held():
 			transition.emit("weapon_attack")
 			print("震荡波")
 			return

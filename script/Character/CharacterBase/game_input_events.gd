@@ -51,6 +51,16 @@ static func is_special_attack_held() -> bool:
 static func is_special_attack_just_pressed() -> bool:
 	if not input_enabled: return false
 	return Input.is_action_just_pressed("mouse_right")
+
+## 检测震荡波按键 (默认 F) 是否按住
+static func is_shockwave_attack_held() -> bool:
+	if not input_enabled: return false
+	return Input.is_action_pressed("shockwave_attack")
+
+## 检测震荡波按键 (默认 F) 是否刚刚按下
+static func is_shockwave_attack_just_pressed() -> bool:
+	if not input_enabled: return false
+	return Input.is_action_just_pressed("shockwave_attack")
 #endregion
 
 #region 3. 武器切换 (Weapon Switch)
