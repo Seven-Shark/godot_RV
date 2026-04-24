@@ -26,7 +26,8 @@ GameManager="*res://script/Game_scenes/GameManager.gd"
 
 [display]
 
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
 
 [editor_plugins]
 
