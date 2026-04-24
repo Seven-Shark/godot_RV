@@ -73,6 +73,21 @@ static func is_lock_target_event(event: InputEvent) -> bool:
 	if event.is_action_pressed("lock_target"): return true
 	return false
 
+## 检测是否触发了【鼠标左键锁定点击】。
+## 约束：点击在 UI 上方时返回 false，避免影响 HUD 交互。
+static func is_mouse_lock_click_event(event: InputEvent, viewport: Viewport = null) -> bool:
+	if not input_enabled: return false
+	if not (event is InputEventMouseButton): return false
+
+	var mouse_event := event as InputEventMouseButton
+	if mouse_event.button_index != MOUSE_BUTTON_LEFT or not mouse_event.pressed:
+		return false
+
+	if viewport and viewport.has_method("gui_get_hovered_control"):
+		return viewport.gui_get_hovered_control() == null
+
+	return true
+
 ## 检测是否触发了【打开背包】 (默认 Tab 键)
 static func is_open_bag(event: InputEvent) -> bool:
 	if not input_enabled: return false

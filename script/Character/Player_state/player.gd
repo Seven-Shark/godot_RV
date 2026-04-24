@@ -64,21 +64,15 @@ func _input(event: InputEvent) -> void:
 		return
 
 	# 鼠标左键点击锁定：点到可锁定目标则锁定，点空白且当前已锁定则解锁
-	if event is InputEventMouseButton:
-		var mouse_event := event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
-			# 点击 UI 时不处理锁定逻辑，避免影响交互
-			var viewport := get_viewport()
-			if viewport and viewport.has_method("gui_get_hovered_control") and viewport.gui_get_hovered_control() != null:
-				return
-			var clicked_target := _get_click_lock_target()
-			if is_instance_valid(clicked_target):
-				hard_locked_target = clicked_target
-				current_target = clicked_target
-				print(">>> [Player] 鼠标锁定目标: ", hard_locked_target.name)
-			elif is_instance_valid(hard_locked_target):
-				hard_locked_target = null
-				print(">>> [Player] 鼠标点击空白，解除目标锁定")
+	if GameInputEvents.is_mouse_lock_click_event(event, get_viewport()):
+		var clicked_target := _get_click_lock_target()
+		if is_instance_valid(clicked_target):
+			hard_locked_target = clicked_target
+			current_target = clicked_target
+			print(">>> [Player] 鼠标锁定目标: ", hard_locked_target.name)
+		elif is_instance_valid(hard_locked_target):
+			hard_locked_target = null
+			print(">>> [Player] 鼠标点击空白，解除目标锁定")
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
@@ -286,12 +280,14 @@ func _get_click_lock_target() -> Node2D:
 	var best_target: Node2D = null
 	var best_dist_sq := INF
 
-	for hit in results:
-		var collider := hit.get("collider")
-		if collider == null:
+	for hit_data: Dictionary in results:
+		var collider_obj := hit_data.get("collider") as Object
+		if collider_obj == null:
 			continue
 
-		var candidate: Node = collider
+		var candidate := collider_obj as Node
+		if candidate == null:
+			continue
 		if not _is_lockable_target(candidate) and candidate.get_parent() != null:
 			candidate = candidate.get_parent()
 
