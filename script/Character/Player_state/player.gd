@@ -52,7 +52,7 @@ func _ready() -> void:
 		on_perform_attack.connect(_on_perform_auto_attack)
 
 func _input(event: InputEvent) -> void:
-	# 监听目标锁定指令 (E 键)
+	# 监听目标锁定指令 (Shift 键)
 	if GameInputEvents.is_lock_target_event(event):
 		if is_instance_valid(hard_locked_target):
 			hard_locked_target = null
@@ -61,6 +61,23 @@ func _input(event: InputEvent) -> void:
 			if is_instance_valid(current_target):
 				hard_locked_target = current_target
 				print(">>> [Player] 锁定目标: ", hard_locked_target.name)
+		return
+
+	# 鼠标左键点击锁定：点到可锁定目标则锁定，点空白且当前已锁定则解锁
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			# 点击 UI 时不处理锁定逻辑，避免影响交互
+			if get_viewport().gui_get_hovered_control() != null:
+				return
+			var clicked_target := _get_click_lock_target()
+			if is_instance_valid(clicked_target):
+				hard_locked_target = clicked_target
+				current_target = clicked_target
+				print(">>> [Player] 鼠标锁定目标: ", hard_locked_target.name)
+			elif is_instance_valid(hard_locked_target):
+				hard_locked_target = null
+				print(">>> [Player] 鼠标点击空白，解除目标锁定")
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
@@ -239,6 +256,52 @@ func _update_target_locking(new_target: Node2D) -> void:
 		current_target = new_target
 	elif not new_target and is_instance_valid(current_target):
 		current_target = null
+
+func _is_lockable_target(target: Node) -> bool:
+	if not is_instance_valid(target):
+		return false
+
+	if target is CharacterBase:
+		var character_target := target as CharacterBase
+		return target_types.has(character_target.character_type) and not character_target.is_dead
+
+	if target is WorldEntity:
+		var entity_target := target as WorldEntity
+		return target_entity_types.has(entity_target.entity_type)
+
+	return false
+
+func _get_click_lock_target() -> Node2D:
+	var space_state := get_world_2d().direct_space_state
+	if not space_state:
+		return null
+
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = get_global_mouse_position()
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+
+	var results := space_state.intersect_point(query, 16)
+	var best_target: Node2D = null
+	var best_dist_sq := INF
+
+	for hit in results:
+		var collider := hit.get("collider")
+		if collider == null:
+			continue
+
+		var candidate: Node = collider
+		if not _is_lockable_target(candidate) and candidate.get_parent() != null:
+			candidate = candidate.get_parent()
+
+		if candidate is Node2D and _is_lockable_target(candidate):
+			var candidate_2d := candidate as Node2D
+			var dist_sq := candidate_2d.global_position.distance_squared_to(global_position)
+			if dist_sq < best_dist_sq:
+				best_dist_sq = dist_sq
+				best_target = candidate_2d
+
+	return best_target
 #endregion
 
 #region 7. 视觉表现
