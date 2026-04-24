@@ -26,8 +26,10 @@ GameManager="*res://script/Game_scenes/GameManager.gd"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="viewport"
-window/stretch/aspect="keep"
+window/stretch/aspect="ignore"
 
 [editor_plugins]
 
