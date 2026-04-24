@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://b4b3ol4gbcxsq"]
+[gd_scene format=3 uid="uid://b4b3ol4gbcxsq"]
 
 [ext_resource type="Script" uid="uid://cfaic3i015q3o" path="res://script/Character/Player_state/player.gd" id="1_yv1sj"]
 [ext_resource type="Script" uid="uid://ds345jv82ev5g" path="res://script/Character/CharacterBase/character_stats_component.gd" id="2_kxg0l"]
@@ -241,7 +241,7 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0, 0, 0, 1)
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=914768805 node_paths=PackedStringArray("target_indicator", "attack_bar", "attack_hitbox", "sprite", "healthbar") groups=["Player"]]
 y_sort_enabled = true
 collision_mask = 407
 script = ExtResource("1_yv1sj")
@@ -252,7 +252,8 @@ target_types = Array[int]([0, 2])
 target_entity_types = Array[int]([0, 2, 3])
 damageable_character_types = Array[int]([2, 0])
 damageable_entity_types = Array[int]([0, 2, 3])
-attack_interval = 0.5
+attack_interval = 0.4
+first_attack_interval = 0.5
 attack_bar = NodePath("AttackBar")
 attack_knockback_force = 0.0
 attack_damage = 30
@@ -261,7 +262,7 @@ attack_hitbox = NodePath("AttackHitbox")
 sprite = NodePath("AnimatedSprite2D")
 healthbar = NodePath("HpBar")
 
-[node name="StatsComponent" type="Node2D" parent="." node_paths=PackedStringArray("healthbar")]
+[node name="StatsComponent" type="Node2D" parent="." unique_id=1545550416 node_paths=PackedStringArray("healthbar")]
 script = ExtResource("2_kxg0l")
 enable_hunger = true
 max_hunger = 500.0
@@ -271,91 +272,91 @@ weight_slowdown_factor = 0.1
 dash_duration = 0.1
 healthbar = NodePath("../HpBar")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=94194711]
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1570501751]
 sprite_frames = SubResource("SpriteFrames_vuht5")
 animation = &"Attack"
 autoplay = "Idle"
 frame = 3
 frame_progress = 1.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=761827369]
 scale = Vector2(0.8800007, 0.8800007)
 shape = SubResource("CapsuleShape2D_kxg0l")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=374746300]
 zoom = Vector2(0.8, 0.8)
 
-[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_node_state")]
+[node name="StateMachine" type="Node" parent="." unique_id=816396005 node_paths=PackedStringArray("initial_node_state")]
 script = ExtResource("6_w5jik")
 initial_node_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
+[node name="Idle" type="Node" parent="StateMachine" unique_id=398895770 node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("7_asxtk")
 player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Attack" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
+[node name="Attack" type="Node" parent="StateMachine" unique_id=1605329288 node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("9_xl87i")
 player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Walk" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
+[node name="Walk" type="Node" parent="StateMachine" unique_id=35862150 node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("8_p2gdj")
 player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="Dash" type="Node" parent="StateMachine" node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
+[node name="Dash" type="Node" parent="StateMachine" unique_id=1192415148 node_paths=PackedStringArray("player", "player_stats", "animated_sprite_2d")]
 script = ExtResource("9_2holh")
 player = NodePath("../..")
 player_stats = NodePath("../..")
 animated_sprite_2d = NodePath("../../AnimatedSprite2D")
 
-[node name="TargetIndicator" type="Sprite2D" parent="."]
+[node name="TargetIndicator" type="Sprite2D" parent="." unique_id=1138607236]
 visible = false
 z_index = 10
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("13_fmvqv")
 
-[node name="DirectionSign" type="Node2D" parent="."]
+[node name="DirectionSign" type="Node2D" parent="." unique_id=1253547863]
 
-[node name="Arrows" type="Sprite2D" parent="DirectionSign"]
+[node name="Arrows" type="Sprite2D" parent="DirectionSign" unique_id=2133983341]
 position = Vector2(61, -2)
 texture = ExtResource("10_w5jik")
 
-[node name="ResourceMagnet" type="Area2D" parent="."]
+[node name="ResourceMagnet" type="Area2D" parent="." unique_id=158305074]
 collision_layer = 0
 collision_mask = 8
 monitorable = false
 script = ExtResource("14_hdrb8")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ResourceMagnet"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ResourceMagnet" unique_id=912381511]
 shape = SubResource("CircleShape2D_hdrb8")
 debug_color = Color(0.9490501, 2.4065375e-06, 0.57773733, 0.41960785)
 
-[node name="AttackHitbox" type="Area2D" parent="."]
+[node name="AttackHitbox" type="Area2D" parent="." unique_id=258934195]
 collision_mask = 6
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox" unique_id=147177519]
 position = Vector2(58, -1.5)
 shape = SubResource("RectangleShape2D_xl87i")
 
-[node name="DetectionArea" type="Area2D" parent="."]
+[node name="DetectionArea" type="Area2D" parent="." unique_id=43498909]
 collision_mask = 7
 
-[node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea"]
+[node name="EnemyArea" type="CollisionShape2D" parent="DetectionArea" unique_id=73359373]
 shape = SubResource("CircleShape2D_8lvt1")
 
-[node name="Right_Hand" type="Node2D" parent="."]
+[node name="Right_Hand" type="Node2D" parent="." unique_id=1692741749]
 
-[node name="WeaponAdmin" parent="Right_Hand" instance=ExtResource("11_5je8t")]
+[node name="WeaponAdmin" parent="Right_Hand" unique_id=1821054035 instance=ExtResource("11_5je8t")]
 
-[node name="HpBar" type="ProgressBar" parent="."]
+[node name="HpBar" type="ProgressBar" parent="." unique_id=1511173611]
 offset_left = -50.0
 offset_top = -77.0
 offset_right = 50.0
@@ -364,7 +365,7 @@ theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
 theme_override_styles/fill = SubResource("StyleBoxFlat_kxg0l")
 show_percentage = false
 
-[node name="AttackBar" type="ProgressBar" parent="."]
+[node name="AttackBar" type="ProgressBar" parent="." unique_id=1507282619]
 offset_left = -50.0
 offset_top = -65.0
 offset_right = 50.0
@@ -373,9 +374,9 @@ theme_override_styles/background = SubResource("StyleBoxFlat_5je8t")
 theme_override_styles/fill = SubResource("StyleBoxFlat_xl87i")
 show_percentage = false
 
-[node name="BuildComponent" type="Node2D" parent="."]
+[node name="BuildComponent" type="Node2D" parent="." unique_id=1061887084]
 script = ExtResource("16_6f08j")
 
-[node name="BagCanvas" type="CanvasLayer" parent="."]
+[node name="BagCanvas" type="CanvasLayer" parent="." unique_id=572962666]
 
 [connection signal="on_dead" from="." to="." method="_on_on_dead"]

@@ -37,6 +37,8 @@ class_name Enemy
 @export var nav_stuck_trigger_time: float = 0.35 # 通用导航触发绕行的时间阈值
 ## 绕行阶段持续时间
 @export var nav_detour_duration: float = 0.28 # 绕行阶段持续时间
+## 侧向探测宽度（模拟敌人肩膀，防止侧边卡住）
+@export var nav_probe_side_offset: float = 18.0 # 侧向探测宽度（模拟敌人肩膀，防止侧边卡住）
 ## 绕行阶段侧向探测距离
 @export var nav_detour_probe_distance: float = 28.0 # 绕行阶段侧向探测距离
 ## 绕行阶段最大侧向探测距离 (用于大体积障碍)
@@ -47,6 +49,18 @@ class_name Enemy
 @export var nav_detour_max_duration: float = 0.75 # 绕行阶段最长持续时间上限
 ## 导航阻挡检测层级 (默认包含 Layer 3 物件与 Layer 5 空气墙)
 @export_flags_2d_physics var nav_block_mask: int = 20 # 导航阻挡检测层级
+## 主动滑行探测距离
+@export var nav_slide_probe_distance: float = 32.0 # 主动滑行探测距离
+## 切线滑行前向混合权重
+@export var nav_slide_forward_weight: float = 0.2 # 切线滑行前向混合权重
+## 判定“严重卡住”后切换临时绕路点的时间阈值
+@export var nav_hard_stuck_time: float = 1.1 # 判定“严重卡住”后切换临时绕路点的时间阈值
+## 临时绕路点最小半径
+@export var nav_bypass_radius_min: float = 80.0 # 临时绕路点最小半径
+## 临时绕路点最大半径
+@export var nav_bypass_radius_max: float = 260.0 # 临时绕路点最大半径
+## 判定到达临时绕路点的距离阈值
+@export var nav_bypass_reach_distance: float = 18.0 # 判定到达临时绕路点的距离阈值
 
 @export_group("AI Settings")
 ## 攻击触发距离
@@ -185,11 +199,15 @@ var noise_investigate_target: Vector2 = Vector2.ZERO # 当前记录的最后发�
 @onready var alert_label: Label = $AlertLabel # 敌人头顶状态提示文本
 var _alert_lost_lock_timer: float = 0.0 # 脱离锁定后的省略号计时器
 var _was_aggro_active: bool = false # 记录上一帧是否处于锁定状态
+
 var _nav_stuck_timer: float = 0.0 # 通用导航卡住计时器
 var _nav_prev_position: Vector2 = Vector2.ZERO # 通用导航上一帧位置
 var _nav_detour_timer: float = 0.0 # 通用导航绕行剩余时间
 var _nav_detour_direction: Vector2 = Vector2.ZERO # 通用导航绕行方向
 var _nav_detour_side_sign: int = 1 # 通用导航绕行左右方向交替符号
+var _nav_hard_stuck_timer: float = 0.0 # 严重卡住累计计时器
+var _nav_bypass_active: bool = false # 是否正在执行临时绕路
+var _nav_bypass_target: Vector2 = Vector2.ZERO # 当前临时绕路目标点
 #endregion
 
 #region 5. 生命周期与核心循环
@@ -373,38 +391,106 @@ func _trigger_weakness_stun() -> void:
 func set_navigation_target(target_pos: Vector2) -> void:
 	if nav_agent: nav_agent.target_position = target_pos
 
+# 获取追击态实际导航目标：优先临时绕路点，未激活时使用玩家位置
+func get_chase_navigation_target(chase_target_pos: Vector2) -> Vector2:
+	if _nav_bypass_active:
+		if global_position.distance_to(_nav_bypass_target) <= nav_bypass_reach_distance:
+			_nav_bypass_active = false
+			_nav_bypass_target = Vector2.ZERO
+		else:
+			return _nav_bypass_target
+	return chase_target_pos
+
 # 获取新巡逻点并设置为导航目标
 func set_navigation_target_to_patrol_point() -> void:
 	var next_point = get_next_patrol_point() # 获取的下一个巡逻点
 	set_navigation_target(next_point)
 
-# 处理导航移动计算，并根据结果返回是否到达
+# 处理导航移动计算，包含卡死检测与切线滑行
 func process_navigation_movement(speed: float) -> bool:
 	if not nav_agent: return true
 	if nav_agent.is_navigation_finished():
 		_reset_navigation_recovery_state()
 		velocity = Vector2.ZERO
 		return true
+
+	# 1. 如果正在执行短时绕行（Detour）
 	if _nav_detour_timer > 0.0:
 		_apply_navigation_detour_motion(speed)
 		_update_navigation_stuck_recovery(speed)
 		return false
-	# 关键：同步导航代理速度上限，避免 set_velocity 被默认 max_speed 限制导致“看起来没提速”
+
+	# 2. 获取常规寻路方向
 	nav_agent.max_speed = max(1.0, speed)
-		
-	var next_path_pos = nav_agent.get_next_path_position() # 路径上的下一个位置
-	var new_velocity = (next_path_pos - global_position).normalized() * speed # 基础移速向量
+	var next_path_pos = nav_agent.get_next_path_position() # 下一个寻路路径点
+	var forward_dir = (next_path_pos - global_position).normalized() # 前进方向向量
+
+	# 3. [核心] 障碍物滑行检测 (针对圆形障碍物优化)
+	var blocked_hit = _get_forward_navigation_block_hit(forward_dir) # 探测前方是否有物理阻挡
+	if not blocked_hit.is_empty():
+		# 如果探测到阻挡，构建切线速度，强制敌人“滑过去”
+		var slide_velocity = _build_obstacle_slide_velocity(forward_dir, speed, blocked_hit) 
+		if slide_velocity.length_squared() > 1.0:
+			_apply_movement_velocity(slide_velocity)
+			_update_navigation_stuck_recovery(speed) # 滑行中依然监控是否位移
+			return false
 	
+	# 4. 正常寻路移动
+	_apply_movement_velocity(forward_dir * speed)
+	_update_navigation_stuck_recovery(speed)
+	return false
+
+# 内部方法：应用速度并处理视觉转向
+func _apply_movement_velocity(new_velocity: Vector2) -> void:
 	if sprite:
 		if new_velocity.x > 0.1: sprite.scale.x = 1
 		elif new_velocity.x < -0.1: sprite.scale.x = -1
 	
 	if nav_agent.avoidance_enabled:
-		nav_agent.set_velocity(new_velocity)
+		nav_agent.set_velocity(new_velocity) # 走避障流程
 	else:
-		velocity = new_velocity
-	_update_navigation_stuck_recovery(speed)
-	return false
+		velocity = new_velocity # 直接赋值
+
+# 建立滑行速度向量：利用障碍物法线计算切线方向
+func _build_obstacle_slide_velocity(forward_dir: Vector2, speed: float, hit: Dictionary) -> Vector2:
+	var hit_normal = hit.get("normal", Vector2.ZERO) as Vector2 # 障碍物表面法线
+	if hit_normal == Vector2.ZERO: return Vector2.ZERO
+	
+	# 计算切线方向（即沿着圆形边缘的方向）
+	var tangent_dir = Vector2(-hit_normal.y, hit_normal.x) # 基础左切线
+	
+	# 决定往左滑还是往右滑（取与前进方向夹角更小的那个）
+	if forward_dir.dot(tangent_dir) < 0:
+		tangent_dir = -tangent_dir
+	
+	# 混合前向力和切向力，形成“贴着圆弧滑行”的效果
+	var slide_dir = (tangent_dir + forward_dir * 0.3).normalized()
+	return slide_dir * speed
+
+# 多射线前向探测：模拟敌人宽度，防止侧滑卡死
+func _get_forward_navigation_block_hit(forward_dir: Vector2) -> Dictionary:
+	var space_state = get_world_2d().direct_space_state # 物理状态引用
+	var side_vec = Vector2(-forward_dir.y, forward_dir.x) * nav_probe_side_offset # 侧向偏移向量
+	
+	# 三向探测：左、中、右
+	var probes = [
+		global_position, 
+		global_position + side_vec, 
+		global_position - side_vec
+	]
+	
+	for start_pos in probes:
+		var query = PhysicsRayQueryParameters2D.create(
+			start_pos, 
+			start_pos + forward_dir * nav_slide_probe_distance, 
+			nav_block_mask
+		)
+		query.exclude = [self]
+		var result = space_state.intersect_ray(query)
+		if not result.is_empty():
+			return result # 返回最先撞到的障碍信息
+			
+	return {}
 
 # 通用导航卡住检测：当位移持续过小则进入短时绕行
 func _update_navigation_stuck_recovery(speed: float) -> void:
@@ -418,15 +504,22 @@ func _update_navigation_stuck_recovery(speed: float) -> void:
 	_nav_prev_position = global_position
 	if moved_distance >= nav_stuck_min_move_distance:
 		_nav_stuck_timer = 0.0
+		_nav_hard_stuck_timer = 0.0
 		return
-	# 只有“前方路径被真实障碍阻挡”时才累计卡住时间，避免正常转向时左右抖动
+	
+	# 只有“前方路径被真实障碍阻挡”时才累计卡住时间
 	if not _is_forward_path_blocked_for_navigation():
 		_nav_stuck_timer = 0.0
+		_nav_hard_stuck_timer = 0.0
 		return
 	_nav_stuck_timer += get_physics_process_delta_time()
+	_nav_hard_stuck_timer += get_physics_process_delta_time()
 	if _nav_stuck_timer >= nav_stuck_trigger_time:
 		_start_navigation_detour()
 		_nav_stuck_timer = 0.0
+	if _nav_hard_stuck_timer >= nav_hard_stuck_time:
+		_start_navigation_bypass_target()
+		_nav_hard_stuck_timer = 0.0
 
 # 启动短时侧向绕行，避免被 WorldEntity 或障碍物持续顶住
 func _start_navigation_detour() -> void:
@@ -440,7 +533,7 @@ func _start_navigation_detour() -> void:
 	_nav_detour_side_sign *= -1
 	var base_probe = max(8.0, nav_detour_probe_distance) # 基础探测距离
 	var max_probe = max(base_probe, nav_detour_probe_max_distance) # 最大探测距离
-	var probe_factors = [1.0, 1.5, 2.0, 2.8, 3.6, 4.5] # 递增探测倍率
+	var probe_factors = [1.0, 1.5, 2.0, 2.8, 3.6, 4.5, 6.0, 8.0] # 递增探测倍率 (支持大圈绕行)
 	var selected_side = Vector2.ZERO # 选中的绕行侧向
 	var selected_probe_dist = 0.0 # 选中的探测距离
 	
@@ -467,20 +560,48 @@ func _start_navigation_detour() -> void:
 func _apply_navigation_detour_motion(speed: float) -> void:
 	_nav_detour_timer = max(0.0, _nav_detour_timer - get_physics_process_delta_time())
 	var detour_velocity = _nav_detour_direction * max(1.0, speed) # 绕行速度
-	if sprite:
-		if detour_velocity.x > 0.1: sprite.scale.x = 1
-		elif detour_velocity.x < -0.1: sprite.scale.x = -1
-	if nav_agent and nav_agent.avoidance_enabled:
-		nav_agent.set_velocity(detour_velocity)
-	else:
-		velocity = detour_velocity
+	_apply_movement_velocity(detour_velocity)
+
+# 严重卡住时生成临时绕路目标点，避免在相邻障碍夹角内反复顶住
+func _start_navigation_bypass_target() -> void:
+	if not nav_agent:
+		return
+	var final_target = nav_agent.target_position # 最终目标点 (通常是玩家位置)
+	var to_target = final_target - global_position # 指向最终目标的方向向量
+	if to_target.length_squared() < 1.0:
+		return
+	var forward = to_target.normalized() # 追击前进方向
+	var side = Vector2(-forward.y, forward.x) # 侧向基向量
+	var radii = [nav_bypass_radius_min, (nav_bypass_radius_min + nav_bypass_radius_max) * 0.5, nav_bypass_radius_max] # 递进半径
+	var angle_degrees = [35.0, -35.0, 60.0, -60.0, 85.0, -85.0, 120.0, -120.0] # 角度候选
+	
+	for radius in radii:
+		var safe_radius = max(16.0, radius)
+		for deg in angle_degrees:
+			var dir = (forward.rotated(deg_to_rad(deg)) + side * 0.05).normalized() # 绕路方向候选
+			var candidate = global_position + dir * safe_radius # 绕路点候选
+			var map_rid = get_world_2d().get_navigation_map() # 导航地图 ID
+			if NavigationServer2D.map_get_iteration_id(map_rid) == 0:
+				continue
+			var nav_point = NavigationServer2D.map_get_closest_point(map_rid, candidate) # 导航网格对齐点
+			if nav_point.distance_to(candidate) > 20.0:
+				continue
+			if _is_segment_blocked_for_navigation(global_position, nav_point):
+				continue
+			_nav_bypass_target = nav_point
+			_nav_bypass_active = true
+			_nav_detour_timer = 0.0
+			return
 
 # 重置通用导航恢复器内部状态
 func _reset_navigation_recovery_state() -> void:
 	_nav_stuck_timer = 0.0
+	_nav_hard_stuck_timer = 0.0
 	_nav_prev_position = global_position
 	_nav_detour_timer = 0.0
 	_nav_detour_direction = Vector2.ZERO
+	_nav_bypass_active = false
+	_nav_bypass_target = Vector2.ZERO
 
 # 检测前方短距离路径是否被阻挡 (用于卡住判定前置条件)
 func _is_forward_path_blocked_for_navigation() -> bool:
@@ -498,7 +619,7 @@ func _is_forward_path_blocked_for_navigation() -> bool:
 func _is_segment_blocked_for_navigation(start: Vector2, target: Vector2) -> bool:
 	var space_state = get_world_2d().direct_space_state # 物理空间状态引用
 	var query = PhysicsRayQueryParameters2D.create(start, target, nav_block_mask) # 阻挡检测射线参数
-	query.exclude = [self] # 排除自身，避免射线命中自己的碰撞体导致误判
+	query.exclude = [self] # 排除自身
 	var result = space_state.intersect_ray(query) # 射线检测结果字典
 	return not result.is_empty()
 
@@ -702,7 +823,7 @@ func _bind_day_phase_events() -> void:
 		return
 	if director.has_signal("phase_changed") and not director.phase_changed.is_connected(_on_phase_changed):
 		director.phase_changed.connect(_on_phase_changed)
-	# 关键：敌人生成时立即套用“当前阶段”的倍率（否则要等到下一次 phase_changed 才会生效）
+	
 	var phases = director.get("day_phases")
 	var index_raw = director.get("current_phase_index")
 	if phases is Array and index_raw != null:
@@ -757,6 +878,7 @@ func _apply_phase_profile(move_mul: float, attack_mul: float, patrol_mul: float,
 	if detection_Area:
 		detection_Area.scale = _base_detection_scale * _phase_perception_mul
 
+# 确保动态加载并实例化敌人的听觉组件节点
 func _ensure_ear_node() -> void:
 	if get_node_or_null("EnemyEar"):
 		return
@@ -774,6 +896,7 @@ func _ensure_ear_node() -> void:
 		if ear_instance is EnemyEar:
 			ear_instance.enemy = self
 
+# 初始化头顶的各种状态提示 UI (警觉/脱锁等)
 func _setup_alert_label() -> void:
 	if not alert_label:
 		return
@@ -781,6 +904,7 @@ func _setup_alert_label() -> void:
 	alert_label.text = ""
 	alert_label.modulate = alert_text_color
 
+# 实时更新敌人的头顶标示符，以表现当前的 AI 锁定和警觉状态
 func _update_alert_indicator(delta: float) -> void:
 	if not alert_label:
 		return
@@ -809,6 +933,7 @@ func _update_alert_indicator(delta: float) -> void:
 	else:
 		alert_label.visible = false
 
+# 接收从 EnemyEar 或其他系统传来的噪音信号
 func receive_noise_signal(source_pos: Vector2, noise_value: float) -> void:
 	if is_dead or is_stunned:
 		return
@@ -823,15 +948,19 @@ func receive_noise_signal(source_pos: Vector2, noise_value: float) -> void:
 	if state_machine and state_machine.current_node_state_name.to_lower() != "patrol":
 		state_machine.transition_to("Patrol")
 
+# 返回当前是否正在调查噪音
 func has_noise_investigation() -> bool:
 	return is_noise_investigating
 
+# 返回最后记录的噪音发声点坐标
 func get_last_sound_point() -> Vector2:
 	return noise_investigate_target
 
+# 返回当前需要调查的具体坐标目标
 func get_noise_investigation_target() -> Vector2:
 	return get_last_sound_point()
 
+# 清除当前记录的噪音调查状态与坐标
 func clear_noise_investigation() -> void:
 	is_noise_investigating = false
 	noise_investigate_target = Vector2.ZERO
@@ -889,5 +1018,9 @@ func _calculate_environment_forces() -> Vector2:
 
 # 强制重置敌人的整体物理及行为状态
 func reset_status() -> void:
-	super.reset_status(); force_stop_aggro(); is_returning = false; clear_noise_investigation()
+	super.reset_status()
+	force_stop_aggro()
+	is_returning = false
+	clear_noise_investigation()
+	_reset_navigation_recovery_state()
 #endregion

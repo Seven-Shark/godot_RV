@@ -24,7 +24,8 @@ func _on_physics_process(_delta: float) -> void:
 		return
 
 	# 1. 更新导航目标
-	enemy.set_navigation_target(enemy.current_target.global_position)
+	var chase_target = enemy.get_chase_navigation_target(enemy.current_target.global_position)
+	enemy.set_navigation_target(chase_target)
 	
 	# 2. 执行移动 (追逐速度快一点)
 	var chase_speed = 100.0

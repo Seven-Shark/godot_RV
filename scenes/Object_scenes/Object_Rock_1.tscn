@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cn0w8aotdshpt"]
+[gd_scene format=3 uid="uid://cn0w8aotdshpt"]
 
 [ext_resource type="Script" uid="uid://ckn862fe7ahix" path="res://script/Object/WorldEntity.gd" id="1_a166e"]
 [ext_resource type="Script" uid="uid://bqxi33g2h11le" path="res://script/Game_scenes/LootData.gd" id="2_cou0u"]
@@ -15,7 +15,7 @@ metadata/_custom_type_script = "uid://bqxi33g2h11le"
 [sub_resource type="CircleShape2D" id="CircleShape2D_w3ld1"]
 radius = 38.0
 
-[node name="Object_Rock_1" type="RigidBody2D"]
+[node name="Object_Rock_1" type="RigidBody2D" unique_id=1048729472]
 y_sort_enabled = true
 collision_layer = 4
 collision_mask = 23
@@ -29,20 +29,25 @@ entity_type = 2
 material_type = 1
 loot_table = Array[ExtResource("2_cou0u")]([SubResource("Resource_cou0u")])
 
-[node name="StatsComponent" type="Node2D" parent="."]
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="." unique_id=2041761000]
+position = Vector2(0, -30)
+radius = 30.0
+avoidance_layers = 4
+
+[node name="StatsComponent" type="Node2D" parent="." unique_id=1569378265]
 script = ExtResource("4_hqu3u")
 max_health = 80.0
 
-[node name="VisualController" type="Node2D" parent="."]
+[node name="VisualController" type="Node2D" parent="." unique_id=2029922757]
 script = ExtResource("4_p63w7")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1033858313]
 scale = Vector2(2, 2)
 texture = ExtResource("5_w3ld1")
 offset = Vector2(0, -19)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=743269583]
 position = Vector2(0, -30)
 shape = SubResource("CircleShape2D_w3ld1")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=232331617]

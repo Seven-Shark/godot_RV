@@ -32,15 +32,19 @@ static func is_dash_input() -> bool:
 #endregion
 
 #region 2. 攻击输入 (Attack)
-## 检测主攻击键 (左键) 是否刚刚按下
+## 检测主攻击键是否刚刚按下
+## 约束：鼠标左键已保留给“点击锁定”，此处不再读取 mouse_left
 static func is_main_attack_just_pressed() -> bool:
 	if not input_enabled: return false
-	return Input.is_action_just_pressed("mouse_left")
+	if not InputMap.has_action("main_attack"): return false
+	return Input.is_action_just_pressed("main_attack")
 
-## 检测主攻击键 (左键) 是否按住
+## 检测主攻击键是否按住
+## 约束：鼠标左键已保留给“点击锁定”，此处不再读取 mouse_left
 static func is_main_attack_held() -> bool:
 	if not input_enabled: return false
-	return Input.is_action_pressed("mouse_left")
+	if not InputMap.has_action("main_attack"): return false
+	return Input.is_action_pressed("main_attack")
 
 ## 检测特殊攻击键 (右键) 是否按住
 static func is_special_attack_held() -> bool:
@@ -84,7 +88,7 @@ static func is_lock_target_event(event: InputEvent) -> bool:
 	return false
 
 ## 检测是否触发了【鼠标左键锁定点击】。
-## 约束：点击在 UI 上方时返回 false，避免影响 HUD 交互。
+## 约束：当前项目 HUD 存在全屏 Control，不能用 hovered_control 过滤，否则会导致场景锁定失效。
 static func is_mouse_lock_click_event(event: InputEvent, viewport: Viewport = null) -> bool:
 	if not input_enabled: return false
 	if not (event is InputEventMouseButton): return false
@@ -92,10 +96,6 @@ static func is_mouse_lock_click_event(event: InputEvent, viewport: Viewport = nu
 	var mouse_event := event as InputEventMouseButton
 	if mouse_event.button_index != MOUSE_BUTTON_LEFT or not mouse_event.pressed:
 		return false
-
-	if viewport and viewport.has_method("gui_get_hovered_control"):
-		return viewport.gui_get_hovered_control() == null
-
 	return true
 
 ## 检测是否触发了【打开背包】 (默认 Tab 键)

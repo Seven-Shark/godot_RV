@@ -41,6 +41,7 @@ enum AimMode_Type {
 
 var player_current_aim_mode: AimMode_Type = AimMode_Type.AUTO_NEAREST ## 当前玩家处于的瞄准模式
 var hard_locked_target: Node2D = null ## 当前被玩家强行锁定的目标
+var _manual_unlock_block_until_ms: int = 0 ## 手动解锁后的自动索敌屏蔽截止时间戳
 #endregion
 
 #region 4. 生命周期与输入
@@ -52,15 +53,13 @@ func _ready() -> void:
 		on_perform_attack.connect(_on_perform_auto_attack)
 
 func _input(event: InputEvent) -> void:
-	# 监听目标锁定指令 (Shift 键)
+	# 监听目标锁定指令 (Shift 键)：仅在已锁定时用于解除锁定
 	if GameInputEvents.is_lock_target_event(event):
 		if is_instance_valid(hard_locked_target):
 			hard_locked_target = null
+			current_target = null
+			_manual_unlock_block_until_ms = Time.get_ticks_msec() + 300
 			print(">>> [Player] 解除目标锁定")
-		else:
-			if is_instance_valid(current_target):
-				hard_locked_target = current_target
-				print(">>> [Player] 锁定目标: ", hard_locked_target.name)
 		return
 
 	# 鼠标左键点击锁定：点到可锁定目标则锁定，点空白且当前已锁定则解锁
@@ -72,6 +71,8 @@ func _input(event: InputEvent) -> void:
 			print(">>> [Player] 鼠标锁定目标: ", hard_locked_target.name)
 		elif is_instance_valid(hard_locked_target):
 			hard_locked_target = null
+			current_target = null
+			_manual_unlock_block_until_ms = Time.get_ticks_msec() + 300
 			print(">>> [Player] 鼠标点击空白，解除目标锁定")
 
 func _physics_process(delta: float) -> void:
@@ -207,6 +208,10 @@ func _get_target_by_mode(mouse_pos: Vector2) -> Node2D:
 			return hard_locked_target
 		else:
 			hard_locked_target = null
+
+	# 手动解锁后的短窗口内，禁止自动最近目标立刻“回吸”旧目标
+	if Time.get_ticks_msec() < _manual_unlock_block_until_ms:
+		return null
 	
 	match player_current_aim_mode:
 		AimMode_Type.AUTO_NEAREST:
@@ -293,12 +298,29 @@ func _get_click_lock_target() -> Node2D:
 
 		if candidate is Node2D and _is_lockable_target(candidate):
 			var candidate_2d := candidate as Node2D
+			# 角色目标需要额外命中“精灵可视区域”，避免被其他大碰撞体误选中
+			if candidate_2d is CharacterBase:
+				var character_target := candidate_2d as CharacterBase
+				if not _is_mouse_over_character_sprite(character_target):
+					continue
 			var dist_sq := candidate_2d.global_position.distance_squared_to(global_position)
 			if dist_sq < best_dist_sq:
 				best_dist_sq = dist_sq
 				best_target = candidate_2d
 
 	return best_target
+
+# 鼠标是否落在角色精灵矩形内（用于点击锁定精确命中）
+func _is_mouse_over_character_sprite(target: CharacterBase) -> bool:
+	if not is_instance_valid(target) or not is_instance_valid(target.sprite):
+		return false
+	if not target.sprite.visible:
+		return false
+	if not target.sprite.has_method("get_rect"):
+		return false
+	var local_mouse = target.sprite.get_global_transform_with_canvas().affine_inverse() * get_global_mouse_position()
+	var sprite_rect: Rect2 = target.sprite.get_rect()
+	return sprite_rect.has_point(local_mouse)
 #endregion
 
 #region 7. 视觉表现
