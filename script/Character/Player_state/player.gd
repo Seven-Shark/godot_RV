@@ -68,7 +68,8 @@ func _input(event: InputEvent) -> void:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
 			# 点击 UI 时不处理锁定逻辑，避免影响交互
-			if get_viewport().gui_get_hovered_control() != null:
+			var viewport := get_viewport()
+			if viewport and viewport.has_method("gui_get_hovered_control") and viewport.gui_get_hovered_control() != null:
 				return
 			var clicked_target := _get_click_lock_target()
 			if is_instance_valid(clicked_target):
@@ -281,7 +282,7 @@ func _get_click_lock_target() -> Node2D:
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 
-	var results := space_state.intersect_point(query, 16)
+	var results := space_state.intersect_point(query)
 	var best_target: Node2D = null
 	var best_dist_sq := INF
 
