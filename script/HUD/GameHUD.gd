@@ -37,8 +37,11 @@ enum MapMode {
 @onready var noise_panel: Control = $SharedUI/NoisePanel # 噪音面板
 ## 噪音强度进度条
 @onready var noise_bar: ProgressBar = $SharedUI/NoisePanel/NoiseBar # 噪音进度条
+## ERS 保底地图选择界面
+@onready var ers_map_selection_ui: ERSMapSelectionUI = $SharedUI/ERSMapSelectionUI # ERS 地图选择界面实例
 
 var _player_stats: CharacterStatsComponent = null # 缓存玩家属性组件引用
+var _shared_ui_visibility_cache: Dictionary = {} # ERS 打开前共享 HUD 的可见性缓存
 ## UI 噪音进度条显示的最大上限值
 @export var noise_display_max_value: float = 100.0 # 噪音显示最大值
 #endregion
@@ -46,7 +49,9 @@ var _player_stats: CharacterStatsComponent = null # 缓存玩家属性组件引�
 #region 2. 生命周期逻辑
 # 初始化 UI 状态，连接全局金币管理信号
 func _ready() -> void:
+	add_to_group("GameHUD")
 	_apply_ui_mode()
+	_bind_ers_ui_signals()
 	
 	# 连接全局数据信号
 	if Engine.has_singleton("GameDataManager") or get_node_or_null("/root/GameDataManager"):
@@ -80,6 +85,13 @@ func _apply_ui_mode() -> void:
 #endregion
 
 #region 3. 业务接口 (提供给 Director/Portal)
+# 打开 ERS 保底地图选择界面
+func open_ers_map_selection() -> bool:
+	if not ers_map_selection_ui:
+		return false
+	ers_map_selection_ui.open_ui()
+	return true
+
 # 接收昼夜配置数据并初始化探险模式的时间 UI 布局
 func setup_day_cycle_ui(phases: Array[DayLoopConfig]) -> void:
 	if current_mode == MapMode.SURVIVAL and day_cycle_ui and day_cycle_ui.has_method("setup_bars"):
@@ -93,6 +105,40 @@ func update_time_display(phase_idx: int, remain: float, total: float) -> void:
 #endregion
 
 #region 4. 内部数据绑定与信号回调
+func _bind_ers_ui_signals() -> void:
+	if not ers_map_selection_ui:
+		return
+	if not ers_map_selection_ui.ui_opened.is_connected(_on_ers_ui_opened):
+		ers_map_selection_ui.ui_opened.connect(_on_ers_ui_opened)
+	if not ers_map_selection_ui.ui_closed.is_connected(_on_ers_ui_closed):
+		ers_map_selection_ui.ui_closed.connect(_on_ers_ui_closed)
+
+func _on_ers_ui_opened() -> void:
+	_set_character_hud_visible(false)
+
+func _on_ers_ui_closed() -> void:
+	_set_character_hud_visible(true)
+
+func _set_character_hud_visible(visible: bool) -> void:
+	if not shared_ui or not ers_map_selection_ui:
+		return
+
+	if not visible:
+		_shared_ui_visibility_cache.clear()
+		for child in shared_ui.get_children():
+			if child == ers_map_selection_ui:
+				continue
+			if child is CanvasItem:
+				_shared_ui_visibility_cache[child] = child.visible
+				child.visible = false
+		ers_map_selection_ui.visible = true
+		return
+
+	for child in _shared_ui_visibility_cache.keys():
+		if child is CanvasItem:
+			child.visible = bool(_shared_ui_visibility_cache[child])
+	_shared_ui_visibility_cache.clear()
+
 # 尝试从场景组获取玩家并绑定其属性组件信号
 func _try_bind_hunger_source() -> void:
 	var player = get_tree().get_first_node_in_group("Player") # 从 Group 中查找玩家

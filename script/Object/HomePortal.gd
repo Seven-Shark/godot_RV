@@ -28,10 +28,15 @@ func _ready() -> void:
 
 #region 4. 交互邏輯
 func _input(event: InputEvent) -> void:
-	# 玩家在範圍內按下交互鍵後，直接前往探險場景
+	# 玩家在範圍內按下交互鍵後，先打開 ERS 保底地圖選擇界面
 	if is_player_in_range and GameInputEvents.is_interact_event(event):
 		_toggle_interaction_ui(false) # 隱藏提示文字避免穿模
-		print(">>> [Portal] 準備前往探險... 掉血率: ", target_map_decay_rate)
+		var hud := get_tree().get_first_node_in_group("GameHUD") as GameHUD
+		if hud and hud.open_ers_map_selection():
+			print(">>> [Portal] 已打開 ERS 保底地圖選擇界面")
+			return
+		# 兜底：若 HUD 未就绪，回退到直接前往探險，避免流程卡死
+		print(">>> [Portal] HUD 未就緒，回退直進探險。掉血率: ", target_map_decay_rate)
 		GameManager.goto_survival_scene([], target_map_decay_rate)
 #endregion
 

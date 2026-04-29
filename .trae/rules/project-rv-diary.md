@@ -11,6 +11,22 @@
 
 ## 📋 最近更新
  
+### 📅 2026-04-29 开发总结
+
+**今日核心进展**：
+- 新增 ERS 保底地图选择界面（含顶部状态栏、4 张候选地图卡、食物补给区、地图详情区与强行进入确认弹窗）。
+- 打通“家园传送门交互 -> ERS 地图选择 -> 确认后进入探险”的完整流程，并落地 Debuff 缺口计算与地图参数保存。
+
+**主要修改模块**：
+- ERS 地图选择 UI 模块：新增地图数据资源、卡片组件、主界面与交互逻辑。
+- HUD 模块：挂载 ERS 地图选择界面并开放对外打开接口。
+- 传送门与全局管理模块：接入地图选择入口，新增待进入地图与 Debuff 缓存字段。
+
+**待解决问题**：
+- 后续可将“食物/残响”数据从占位逻辑切换为正式经济系统字段，并接入真实 Debuff 列表。
+
+---
+
 ### 📅 2026-04-21 开发总结
 
 **今日核心进展**：
@@ -29,6 +45,33 @@
 ---
 
 ## 📝 详细修改记录
+
+### 2026-04-29
+
+#### [16:48] ERS 保底地图选择界面 - 新增
+**需求描述**：根据设计文档新增“明日保底地图选择”界面，并接入传送门到探险的完整进入链路。
+
+**开发内容**：
+- 新增 `MapChoiceData` 资源结构、`MapChoiceCard` 卡片场景与脚本，支持等级颜色、选中高亮、饱食不足提示与保底标记展示。
+- 新增 `ERSMapSelectionUI` 主界面场景与脚本，包含顶部状态栏、4 张候选卡、食物补给区、选中地图详情区和强行进入二次确认弹窗。
+- 实现“至少 1 张 B 级保底 + 按天数权重随机”的地图候选生成、Debuff 缺口计算、确认进入后地图参数和 Debuff 数量写入 `GameManager`。
+- 将 `Game_Hud` 挂载新界面，`GameHUD` 暴露 `open_ers_map_selection()` 接口，`HomePortal` 交互改为优先打开该界面并保留兜底直进探险。
+
+**开发方式**：
+- 采用“独立卡片组件 + 主界面控制器”分层实现，复用现有 `GameManager` 场景切换流程，降低对既有状态机和场景结构的侵入。
+
+**涉及文件**：
+- `script/HUD/MapChoiceData.gd`（新增）
+- `script/HUD/MapChoiceCard.gd`（新增）
+- `script/HUD/ERSMapSelectionUI.gd`（新增）
+- `scenes/HUD_Scene/MapChoiceCard.tscn`（新增）
+- `scenes/HUD_Scene/ERSMapSelectionUI.tscn`（新增）
+- `scenes/HUD_Scene/Game_Hud.tscn`（优化）
+- `script/HUD/GameHUD.gd`（优化）
+- `script/Object/HomePortal.gd`（优化）
+- `script/Game_scenes/GameManager.gd`（优化）
+
+---
 
 ### 2026-04-21
 
@@ -212,7 +255,8 @@
 |---------|---------|------|---------|
 | 敌人 AI（听觉/索敌/绕行） | `script/Character/Enemy_state/enemy.gd` | 开发中 | 2026-04-21 |
 | 敌人巡逻状态 | `script/Character/Enemy_state/EnemyPatrolState.gd` | 开发中 | 2026-04-21 |
-| HUD 主界面 | `script/HUD/GameHUD.gd` | 开发中 | 2026-04-21 |
+| HUD 主界面 | `script/HUD/GameHUD.gd` | 开发中 | 2026-04-29 |
+| ERS 地图选择 UI | `script/HUD/ERSMapSelectionUI.gd` | 新增 | 2026-04-29 |
 
 ---
 
@@ -338,4 +382,4 @@ project/
 
 ---
 
-**最后更新**：2026-04-21 15:25
+**最后更新**：2026-04-29 16:48

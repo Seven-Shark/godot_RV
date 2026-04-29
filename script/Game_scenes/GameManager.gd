@@ -14,6 +14,8 @@ const SURVIVAL_SCENE_PATH = "uid://jpvsf2xi82bq"
 #region 2. 全局游戏数据与节点
 var current_day: int = 1 ## 当前生存的天数/轮次
 var pending_ers_objects: Array[PackedScene] = [] ## 准备带入探险地图的物件
+var pending_map_choice_data: Dictionary = {} ## 下一次探险选中的地图参数
+var pending_debuff_count: int = 0 ## 下一次探险将携带的 Debuff 数量
 
 # ==========================================
 # [新增] 记录当前选择的地图规则（掉血速率）

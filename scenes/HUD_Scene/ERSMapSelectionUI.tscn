@@ -1,0 +1,184 @@
+[gd_scene format=3 uid="uid://dun8o06qb1slc"]
+
+[ext_resource type="Script" uid="uid://dd7gnrlkhuu7y" path="res://script/HUD/ERSMapSelectionUI.gd" id="1_ui_script"]
+[ext_resource type="PackedScene" path="res://scenes/HUD_Scene/MapChoiceCard.tscn" id="2_card_scene"]
+
+[node name="ERSMapSelectionUI" type="Control" unique_id=1315415070]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_ui_script")
+map_card_scene = ExtResource("2_card_scene")
+
+[node name="Root" type="Control" parent="." unique_id=1457138694]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="Root" unique_id=1385190195]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0666667, 0.0784314, 0.109804, 0.92)
+
+[node name="TopStatusBar" type="HBoxContainer" parent="Root" unique_id=167398819]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 20.0
+offset_right = -30.0
+offset_bottom = 64.0
+grow_horizontal = 2
+theme_override_constants/separation = 16
+
+[node name="DayLabel" type="Label" parent="Root/TopStatusBar" unique_id=779308875]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "第 1 天 夜晚"
+
+[node name="SatietyBar" type="ProgressBar" parent="Root/TopStatusBar" unique_id=1004466621]
+custom_minimum_size = Vector2(240, 28)
+layout_mode = 2
+value = 50.0
+
+[node name="SatietyLabel" type="Label" parent="Root/TopStatusBar" unique_id=1400659821]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "饱食度：50 / 100"
+
+[node name="FoodLabel" type="Label" parent="Root/TopStatusBar" unique_id=1298694360]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "食物：0"
+
+[node name="EchoLabel" type="Label" parent="Root/TopStatusBar" unique_id=1518588017]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "残响：0"
+
+[node name="TitleLabel" type="Label" parent="Root" unique_id=794511005]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 76.0
+offset_right = -30.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 30
+text = "明日广播：请选择一个保底地图"
+horizontal_alignment = 1
+
+[node name="MapCardContainer" type="HBoxContainer" parent="Root" unique_id=1829426238]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 135.0
+offset_right = -30.0
+offset_bottom = -250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BottomRow" type="HBoxContainer" parent="Root" unique_id=747220101]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -230.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="FoodPanel" type="PanelContainer" parent="Root/BottomRow" unique_id=622632719]
+custom_minimum_size = Vector2(420, 210)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/BottomRow/FoodPanel" unique_id=1259882418]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FoodTitle" type="Label" parent="Root/BottomRow/FoodPanel/VBox" unique_id=498545417]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "食物补给"
+
+[node name="FoodCountLabel" type="Label" parent="Root/BottomRow/FoodPanel/VBox" unique_id=1795774433]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "食物数量：0"
+
+[node name="EatFoodButton" type="Button" parent="Root/BottomRow/FoodPanel/VBox" unique_id=763034034]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "食用 1 个食物"
+
+[node name="SelectedMapPanel" type="PanelContainer" parent="Root/BottomRow" unique_id=381586337]
+custom_minimum_size = Vector2(720, 210)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="Root/BottomRow/SelectedMapPanel" unique_id=1068795475]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SelectedMapNameLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=225653468]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "选中地图：未选择"
+
+[node name="RequiredSatietyLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=1208529624]
+layout_mode = 2
+text = "饱食度需求：-"
+
+[node name="CurrentSatietyLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=829016969]
+layout_mode = 2
+text = "当前饱食度：-"
+
+[node name="EntryStatusLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=843982599]
+layout_mode = 2
+text = "状态：请选择地图"
+
+[node name="DebuffWarningLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=1254049669]
+modulate = Color(1, 0.356863, 0.356863, 1)
+layout_mode = 2
+
+[node name="RewardListLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=239369401]
+layout_mode = 2
+text = "可能获得：-"
+autowrap_mode = 2
+
+[node name="RiskListLabel" type="Label" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=87428964]
+layout_mode = 2
+text = "风险：-"
+autowrap_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="Root/BottomRow/SelectedMapPanel/VBox" unique_id=464460724]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+disabled = true
+text = "请选择地图"
+
+[node name="ForceEnterDialog" type="ConfirmationDialog" parent="Root" unique_id=471073871]
+title = "强行进入确认"
+ok_button_text = "强行进入"
+cancel_button_text = "取消"
