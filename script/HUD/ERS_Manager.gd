@@ -15,6 +15,7 @@ signal items_confirmed(purchased_objects: Array[PackedScene])
 @export var card_container: HBoxContainer ## 存放卡牌按钮的容器
 @export var confirm_button: Button ## 确认/进入下一天按钮
 @export var wallet_label: Label ## 显示金币的文本
+@export var card_item_scene: PackedScene ## 卡牌实例化预制体（含 TextureRect 与文本布局）
 
 @export_group("Data Asset")
 @export var available_cards: Array[ERS_CardData] = [] ## 全体卡池配置
@@ -75,20 +76,24 @@ func _generate_random_cards() -> void:
 
 ## [私有方法] 实例化单张卡牌按钮
 func _create_card_ui(data: ERS_CardData) -> void:
-	var btn = Button.new()
-	# 确保按钮在暂停模式下也能点击
-	btn.process_mode = Node.PROCESS_MODE_ALWAYS
+	if not card_item_scene:
+		push_warning("ERS 卡牌预制体未配置，无法实例化卡片。")
+		return
 	
-	btn.text = "%s\n价格: %d" % [data.card_name, data.price]
-	btn.icon = data.icon
-	btn.custom_minimum_size = Vector2(180, 240)
-	btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+	var card_item = card_item_scene.instantiate() as Button
+	if not card_item:
+		push_warning("ERS 卡牌预制体实例化失败，节点根类型需要是 Button。")
+		return
+	
+	# 确保按钮在暂停模式下也能点击
+	card_item.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	if card_item.has_method("setup_card"):
+		card_item.call("setup_card", data)
 	
 	# 绑定购买匿名函数
-	btn.pressed.connect(func(): _on_card_clicked(data, btn))
-	
-	card_container.add_child(btn)
+	card_item.pressed.connect(func(): _on_card_clicked(data, card_item))
+	card_container.add_child(card_item)
 
 ## [私有方法] 处理点击卡牌后的购买逻辑
 func _on_card_clicked(data: ERS_CardData, btn_node: Button) -> void:
@@ -102,7 +107,10 @@ func _on_card_clicked(data: ERS_CardData, btn_node: Button) -> void:
 		
 		# 禁用并隐藏，保持布局
 		btn_node.disabled = true
-		btn_node.modulate.a = 0.3 # 变淡表示已买
+		if btn_node.has_method("set_purchased_visual"):
+			btn_node.call("set_purchased_visual", true)
+		else:
+			btn_node.modulate.a = 0.3 # 变淡表示已买
 	else:
 		# 购买失败反馈
 		_play_fail_effect(btn_node)

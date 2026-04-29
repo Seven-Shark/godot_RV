@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://dtko6665cb4fy" path="res://script/HUD/GameHUD.gd" id="1_m2dim"]
 [ext_resource type="Script" uid="uid://bl7pykbg0cc1v" path="res://script/HUD/DayCycleUI.gd" id="2_01cbt"]
-[ext_resource type="PackedScene" uid="uid://cai3wyp5g0qmg" path="res://scenes/HUD_Scene/ERSLayer.tscn" id="2_d5vxq"]
 [ext_resource type="Script" uid="uid://c8vt5uai14c14" path="res://script/HUD/aim_switch_button.gd" id="3_d5vxq"]
 [ext_resource type="Script" uid="uid://camn6i6plohlo" path="res://script/HUD/debug_stats.gd" id="4_5qxkk"]
 [ext_resource type="PackedScene" uid="uid://dgj08vxh4yo14" path="res://scenes/HUD_Scene/Game_Over_Layer.tscn" id="6_5qxkk"]
@@ -35,9 +34,6 @@ grow_vertical = 2
 
 [node name="InventoryUI" parent="SharedUI" unique_id=867504150 instance=ExtResource("9_inv_ui")]
 layout_mode = 1
-
-[node name="ERSLayer" parent="SharedUI" unique_id=82186348 instance=ExtResource("2_d5vxq")]
-visible = false
 
 [node name="AimSwitchButton" type="CheckButton" parent="SharedUI" unique_id=1744267401]
 layout_mode = 0

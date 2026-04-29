@@ -169,6 +169,43 @@
 
 ---
 
+#### [15:05] ERS 卡片渲染链路 - 优化
+**需求描述**：将 ERS 卡片改为场景实例化渲染，确保 `TextureRect` 的缩放配置可稳定生效。
+
+**开发内容**：
+- 新增 `ERS_CardItem` 卡片预制场景，统一承载图标、名称、描述、价格四段 UI。
+- 新增卡片节点脚本接口：`setup_card()` 与 `set_purchased_visual()`，用于数据绑定和购买态表现。
+- `ERS_Manager` 改为通过 `PackedScene` 实例化卡片，不再使用临时 `Button.icon` 拼装方式。
+- 在 `ERSLayer` 绑定 `card_item_scene`，让抽卡流程直接生成卡片实例。
+
+**开发方式**：
+- 采用“场景模板 + 数据注入”方式替代运行时纯代码拼 UI，避免布局与拉伸参数被动态结构绕开。
+
+**涉及文件**：
+- `script/HUD/ERS_Manager.gd`（优化）
+- `script/HUD/ERS_CardItem.gd`（新增）
+- `scenes/HUD_Scene/ERS_CardItem.tscn`（新增）
+- `scenes/HUD_Scene/ERSLayer.tscn`（优化）
+
+---
+
+#### [15:25] ERS 引用清理 - 删除
+**需求描述**：移除项目中对 ERS 界面的脚本依赖，为后续重做 ERS 功能清空入口链路。
+
+**开发内容**：
+- 删除 `GameHUD` 中对 `ERSLayer/ERS_Manager` 的节点引用与 `open_ers()` 对外接口。
+- 删除 `HomePortal` 中 ERS 查找、信号连接、商店打开逻辑，改为交互后直接进入探险场景。
+- 保留传送门原有交互提示与探险参数传递流程，避免影响基础传送体验。
+
+**开发方式**：
+- 仅移除脚本层 ERS 依赖，不做场景重构，先保证运行时不再触发 ERS 相关引用错误。
+
+**涉及文件**：
+- `script/HUD/GameHUD.gd`（删除）
+- `script/Object/HomePortal.gd`（删除）
+
+---
+
 ## 📊 模块索引
 
 | 模块名称 | 主要脚本 | 状态 | 最后更新 |
@@ -301,4 +338,4 @@ project/
 
 ---
 
-**最后更新**：2026-04-21 14:30
+**最后更新**：2026-04-21 15:25

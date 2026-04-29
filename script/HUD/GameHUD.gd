@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name GameHUD
 
 ## 游戏主界面 HUD (GameHUD)
-## 职责：管理全局 UI 模块（金币、时间、ERS、背包等），并根据场景模式自动切换显示状态。
+## 职责：管理全局 UI 模块（金币、时间、背包等），并根据场景模式自动切换显示状态。
 
 #region 1. 模式定义与节点引用
 enum MapMode {
@@ -15,7 +15,7 @@ enum MapMode {
 @export var current_mode: MapMode = MapMode.HOME # 在编辑器中设置当前场景模式
 
 @export_group("UI Modules")
-## 共用 UI 容器 (包含金币、ERS、背包等常驻组件)
+## 共用 UI 容器 (包含金币、背包等常驻组件)
 @export var shared_ui: Control # 共用 UI 容器
 ## 家园场景专有的 UI 容器
 @export var home_ui: Control # 家园专有 UI 容器
@@ -27,8 +27,6 @@ enum MapMode {
 @onready var gold_label: Label = $SharedUI/GoldLabel # 金币显示标签
 ## 探险模式下的昼夜循环进度 UI 容器
 @onready var day_cycle_ui: HBoxContainer = $SurvivalUI/DayCyclePanel/Background/HBoxContainer # 昼夜循环面板
-## 环境重构系统管理器引用
-@onready var ers_manager: ERS_Manager = $SharedUI/ERSLayer # ERS 系统管理器
 ## 玩家饥饿度 UI 根面板
 @onready var hunger_panel: Control = $SharedUI/HungerPanel # 饥饿度面板
 ## 饥饿度数值文本标签
@@ -92,10 +90,6 @@ func update_time_display(phase_idx: int, remain: float, total: float) -> void:
 	if current_mode == MapMode.SURVIVAL and day_cycle_ui and day_cycle_ui.has_method("update_progress"):
 		day_cycle_ui.update_progress(phase_idx, remain, total)
 
-# 开启环境重构系统界面，可选择是否免费重构
-func open_ers(is_free: bool = false) -> void:
-	if ers_manager and ers_manager.has_method("open_ers_shop"):
-		ers_manager.open_ers_shop(is_free)
 #endregion
 
 #region 4. 内部数据绑定与信号回调
