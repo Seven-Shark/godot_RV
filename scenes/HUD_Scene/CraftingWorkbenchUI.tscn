@@ -1,0 +1,300 @@
+[gd_scene format=3 uid="uid://b8h4uwmoyba2o"]
+
+[ext_resource type="Script" uid="uid://87gf2yu4ej62" path="res://script/HUD/CraftingWorkbenchUI.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ld6fa"]
+bg_color = Color(0.8151441, 0.5208105, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0uiy7"]
+bg_color = Color(0.004019165, 0.004019165, 0.0038480829, 0.8745098)
+
+[node name="CraftingWorkbenchUI" type="Control" unique_id=1074166171]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1525879863]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.055, 0.05, 0.94)
+
+[node name="Root" type="MarginContainer" parent="." unique_id=2047490082]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="MainPanel" type="PanelContainer" parent="Root" unique_id=663578456]
+layout_mode = 2
+
+[node name="MainLayout" type="VBoxContainer" parent="Root/MainPanel" unique_id=396760499]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="HeaderBar" type="HBoxContainer" parent="Root/MainPanel/MainLayout" unique_id=1542446053]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ModeSwitchButton" type="Button" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=564029775]
+custom_minimum_size = Vector2(150, 34)
+layout_mode = 2
+focus_mode = 0
+text = "购买地图元素"
+
+[node name="TitleLabel" type="Label" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=876620297]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 26
+text = "通用合成台"
+horizontal_alignment = 1
+
+[node name="GoldLabel" type="Label" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=1764615195]
+custom_minimum_size = Vector2(150, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "金币：0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WorkbenchPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=473891223]
+custom_minimum_size = Vector2(0, 230)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.42
+
+[node name="WorkbenchLayout" type="HBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel" unique_id=394122038]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BasePanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=1350469584]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.8
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BaseTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=2005067520]
+layout_mode = 2
+text = "基底"
+horizontal_alignment = 1
+
+[node name="BaseSlot" type="Button" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=2071466168]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+focus_mode = 0
+text = "选择基底"
+clip_text = true
+
+[node name="MaterialPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=494658905]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 8
+
+[node name="MaterialTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=1372684768]
+layout_mode = 2
+text = "材料"
+horizontal_alignment = 1
+
+[node name="MaterialGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=522830763]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
+
+[node name="ResultPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=2001705872]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+theme_override_constants/separation = 8
+
+[node name="ResultTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel" unique_id=1322507497]
+layout_mode = 2
+text = "最终属性"
+horizontal_alignment = 1
+
+[node name="ResultScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel" unique_id=1150589574]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ResultList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel/ResultScroll" unique_id=1368726219]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="StorePanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=1203670280]
+visible = false
+custom_minimum_size = Vector2(0, 230)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.42
+
+[node name="StoreLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/StorePanel" unique_id=1220269947]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StoreTitle" type="Label" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout" unique_id=1871503647]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "卡包商品"
+horizontal_alignment = 1
+
+[node name="PackScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout" unique_id=987173155]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 0
+
+[node name="PackRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout/PackScroll" unique_id=1491467933]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CraftButtonMargin" type="MarginContainer" parent="Root/MainPanel/MainLayout" unique_id=500108163]
+layout_mode = 2
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="CraftButtonRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftButtonMargin" unique_id=797504453]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="CraftButton" type="Button" parent="Root/MainPanel/MainLayout/CraftButtonMargin/CraftButtonRow" unique_id=1081168841]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+focus_mode = 0
+text = "合成"
+
+[node name="StatusLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftButtonMargin/CraftButtonRow" unique_id=1864646034]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+text = "请先从背包选择一个可作为基底的物品。"
+vertical_alignment = 1
+
+[node name="InventoryPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=1414465569]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InventoryLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/InventoryPanel" unique_id=133273064]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TabContainer" type="HBoxContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout" unique_id=2016949060]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="InventoryScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout" unique_id=253088665]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InventoryGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout/InventoryScroll" unique_id=434296247]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 10
+
+[node name="TooltipPanel" type="PanelContainer" parent="." unique_id=1439513960]
+visible = false
+clip_contents = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 252.0
+offset_bottom = 152.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ld6fa")
+
+[node name="TooltipBox" type="VBoxContainer" parent="TooltipPanel" unique_id=2026946541]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="TooltipPanel/TooltipBox" unique_id=1319935088]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "物品名称"
+
+[node name="TypeLabel" type="Label" parent="TooltipPanel/TooltipBox" unique_id=40518150]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "类型"
+
+[node name="DescLabel" type="Label" parent="TooltipPanel/TooltipBox" unique_id=1495889098]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "说明"
+autowrap_mode = 3
+max_lines_visible = 3
+
+[node name="PropsLabel" type="Label" parent="TooltipPanel/TooltipBox" unique_id=687476846]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "属性"
+autowrap_mode = 3
+max_lines_visible = 4
+
+[node name="FlyTextLayer" type="Control" parent="." unique_id=329812175]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="OpenPackOverlay" type="PanelContainer" parent="." unique_id=570700172]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0uiy7")
+
+[node name="OpenPackCenter" type="CenterContainer" parent="OpenPackOverlay" unique_id=953222086]
+layout_mode = 2
+
+[node name="OpenPackBox" type="VBoxContainer" parent="OpenPackOverlay/OpenPackCenter" unique_id=358476115]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="OpenPackTitle" type="Label" parent="OpenPackOverlay/OpenPackCenter/OpenPackBox" unique_id=1435343147]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "获得地图元素"
+horizontal_alignment = 1
+
+[node name="OpenPackResultGrid" type="GridContainer" parent="OpenPackOverlay/OpenPackCenter/OpenPackBox" unique_id=20121833]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 6
+
+[node name="CloseHintLabel" type="Label" parent="OpenPackOverlay/OpenPackCenter/OpenPackBox" unique_id=895056444]
+layout_mode = 2
+text = "点击任意位置关闭界面"
+horizontal_alignment = 1
