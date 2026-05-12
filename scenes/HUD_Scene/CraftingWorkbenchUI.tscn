@@ -34,26 +34,49 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_bottom = 24
 
 [node name="MainPanel" type="PanelContainer" parent="Root" unique_id=663578456]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="MainLayout" type="VBoxContainer" parent="Root/MainPanel" unique_id=396760499]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 3
 
 [node name="HeaderBar" type="HBoxContainer" parent="Root/MainPanel/MainLayout" unique_id=1542446053]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ModeSwitchButton" type="Button" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=564029775]
-custom_minimum_size = Vector2(150, 34)
+[node name="ScreenTabBar" type="HBoxContainer" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=564029775]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PrepTabButton" type="Button" parent="Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar" unique_id=1697246807]
+custom_minimum_size = Vector2(96, 34)
 layout_mode = 2
 focus_mode = 0
-text = "购买地图元素"
+toggle_mode = true
+text = "准备界面"
+
+[node name="CraftTabButton" type="Button" parent="Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar" unique_id=1300040095]
+custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "合成界面"
+
+[node name="ShopTabButton" type="Button" parent="Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar" unique_id=243999498]
+custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "商店界面"
 
 [node name="TitleLabel" type="Label" parent="Root/MainPanel/MainLayout/HeaderBar" unique_id=876620297]
 layout_mode = 2
@@ -70,31 +93,246 @@ text = "金币：0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="WorkbenchPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=473891223]
-custom_minimum_size = Vector2(0, 230)
+[node name="CraftContent" type="HBoxContainer" parent="Root/MainPanel/MainLayout" unique_id=1053796863]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.42
+theme_override_constants/separation = 8
 
-[node name="WorkbenchLayout" type="HBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel" unique_id=394122038]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="BasePanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=1350469584]
-custom_minimum_size = Vector2(180, 0)
+[node name="PrepInfoPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=614444260]
+visible = false
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 size_flags_stretch_ratio = 0.8
+theme_override_constants/separation = 8
+
+[node name="CharacterInfoPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel" unique_id=1342335841]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.22
+
+[node name="CharacterInfoScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel/CharacterInfoPanel" unique_id=515011894]
+layout_mode = 2
+
+[node name="CharacterInfoList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel/CharacterInfoPanel/CharacterInfoScroll" unique_id=1636864188]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="MapInfoPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel" unique_id=491869525]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MapInfoScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel/MapInfoPanel" unique_id=962222111]
+layout_mode = 2
+
+[node name="MapInfoList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel/MapInfoPanel/MapInfoScroll" unique_id=2046682471]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PrepPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=1204600219]
+visible = false
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.2
+
+[node name="PrepLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel" unique_id=1796165810]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CharacterLoadoutPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout" unique_id=154204166]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.1
+
+[node name="CharacterLoadoutLayout" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel" unique_id=2084900878]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="LeftEquipSlots" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout" unique_id=1823048488]
+layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="BaseTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=2005067520]
+[node name="HelmetSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/LeftEquipSlots" unique_id=1515738176]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "头盔"
+
+[node name="ArmorSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/LeftEquipSlots" unique_id=577298605]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "护甲"
+
+[node name="PantsSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/LeftEquipSlots" unique_id=1414430960]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "裤子"
+
+[node name="ShoesSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/LeftEquipSlots" unique_id=1678648040]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "鞋子"
+
+[node name="CharacterCenter" type="CenterContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout" unique_id=601250560]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CharacterCenterLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/CharacterCenter" unique_id=1795302064]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CharacterVisualSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/CharacterCenter/CharacterCenterLayout" unique_id=1196953965]
+custom_minimum_size = Vector2(150, 220)
+layout_mode = 2
+focus_mode = 0
+disabled = true
+text = "角色"
+
+[node name="PrepGoldLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/CharacterCenter/CharacterCenterLayout" unique_id=212398412]
+layout_mode = 2
+text = "金币：0"
+horizontal_alignment = 1
+
+[node name="HungerLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/CharacterCenter/CharacterCenterLayout" unique_id=521871057]
+layout_mode = 2
+text = "饱食度：100/100"
+horizontal_alignment = 1
+
+[node name="HungerBar" type="ProgressBar" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/CharacterCenter/CharacterCenterLayout" unique_id=1627474478]
+custom_minimum_size = Vector2(150, 18)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="RightEquipSlots" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout" unique_id=714131833]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="WeaponSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/RightEquipSlots" unique_id=1913534147]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "武器"
+
+[node name="AccessorySlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/RightEquipSlots" unique_id=2136569048]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "饰品"
+
+[node name="Tool1Slot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/RightEquipSlots" unique_id=1499872824]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "道具1"
+
+[node name="Tool2Slot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/CharacterLoadoutPanel/CharacterLoadoutLayout/RightEquipSlots" unique_id=1914347659]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+focus_mode = 0
+text = "道具2"
+
+[node name="MapPrepPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout" unique_id=93003305]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9
+
+[node name="MapPrepLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/MapPrepPanel" unique_id=1819395462]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="PrepMapSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/MapPrepPanel/MapPrepLayout" unique_id=913459413]
+custom_minimum_size = Vector2(180, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+text = "选择明日地图"
+
+[node name="MapWarningLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/MapPrepPanel/MapPrepLayout" unique_id=590708944]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NextDayButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/PrepPanel/PrepLayout/MapPrepPanel/MapPrepLayout" unique_id=1559930283]
+custom_minimum_size = Vector2(220, 46)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+text = "前往下一天"
+
+[node name="ResultPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=2001705872]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="ResultLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/ResultPanel" unique_id=1745169960]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="ResultTitle" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/ResultPanel/ResultLayout" unique_id=1322507497]
+layout_mode = 2
+text = "合成列表"
+horizontal_alignment = 1
+
+[node name="ResultScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/ResultPanel/ResultLayout" unique_id=1150589574]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ResultList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/ResultPanel/ResultLayout/ResultScroll" unique_id=1368726219]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="WorkbenchPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=473891223]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.2
+
+[node name="WorkbenchLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel" unique_id=394122038]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="BasePanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout" unique_id=1350469584]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 5.0
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="BaseTitle" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=2005067520]
 layout_mode = 2
 text = "基底"
 horizontal_alignment = 1
 
-[node name="BaseSlot" type="Button" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=2071466168]
-custom_minimum_size = Vector2(120, 120)
+[node name="BaseSlotRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=1891557273]
+layout_mode = 2
+theme_override_constants/separation = 25
+alignment = 1
+
+[node name="BaseSlot" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow" unique_id=2071466168]
+custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -102,118 +340,184 @@ focus_mode = 0
 text = "选择基底"
 clip_text = true
 
-[node name="MaterialPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=494658905]
-custom_minimum_size = Vector2(480, 0)
+[node name="BaseResultPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow" unique_id=525333591]
+custom_minimum_size = Vector2(220, 220)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 2.0
-theme_override_constants/separation = 8
+size_flags_vertical = 3
 
-[node name="MaterialTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=1372684768]
+[node name="BaseResultLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow/BaseResultPanel" unique_id=1593178681]
 layout_mode = 2
-text = "材料"
-horizontal_alignment = 1
+size_flags_vertical = 3
+theme_override_constants/separation = 6
 
-[node name="MaterialGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=522830763]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 6
-
-[node name="ResultPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout" unique_id=2001705872]
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.1
-theme_override_constants/separation = 8
-
-[node name="ResultTitle" type="Label" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel" unique_id=1322507497]
+[node name="BaseResultTitle" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow/BaseResultPanel/BaseResultLayout" unique_id=1784827595]
 layout_mode = 2
 text = "最终属性"
 horizontal_alignment = 1
 
-[node name="ResultScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel" unique_id=1150589574]
+[node name="BaseResultScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow/BaseResultPanel/BaseResultLayout" unique_id=137920173]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ResultList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/WorkbenchPanel/WorkbenchLayout/ResultPanel/ResultScroll" unique_id=1368726219]
+[node name="BaseResultList" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow/BaseResultPanel/BaseResultLayout/BaseResultScroll" unique_id=388818037]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="StorePanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=1203670280]
+[node name="UpgradeButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel/BaseSlotRow" unique_id=2092851162]
 visible = false
-custom_minimum_size = Vector2(0, 230)
+custom_minimum_size = Vector2(65, 34)
+layout_mode = 2
+focus_mode = 0
+text = "升级"
+
+[node name="Control" type="Control" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/BasePanel" unique_id=1006214360]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.42
 
-[node name="StoreLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/StorePanel" unique_id=1220269947]
+[node name="MaterialPanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout" unique_id=494658905]
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 4
 
-[node name="StoreTitle" type="Label" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout" unique_id=1871503647]
+[node name="MaterialTitle" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=1372684768]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "卡包商品"
+text = "材料"
 horizontal_alignment = 1
 
-[node name="PackScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout" unique_id=987173155]
+[node name="MaterialGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/MaterialPanel" unique_id=522830763]
 layout_mode = 2
-size_flags_vertical = 3
-vertical_scroll_mode = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
 
-[node name="PackRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/StorePanel/StoreLayout/PackScroll" unique_id=1491467933]
+[node name="CraftButtonMargin" type="MarginContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout" unique_id=500108163]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="CraftButtonMargin" type="MarginContainer" parent="Root/MainPanel/MainLayout" unique_id=500108163]
-layout_mode = 2
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_bottom = 0
-
-[node name="CraftButtonRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftButtonMargin" unique_id=797504453]
+[node name="CraftButtonRow" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/CraftButtonMargin" unique_id=797504453]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="CraftButton" type="Button" parent="Root/MainPanel/MainLayout/CraftButtonMargin/CraftButtonRow" unique_id=1081168841]
+[node name="CraftButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/WorkbenchPanel/WorkbenchLayout/CraftButtonMargin/CraftButtonRow" unique_id=1081168841]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 focus_mode = 0
 text = "合成"
 
-[node name="StatusLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftButtonMargin/CraftButtonRow" unique_id=1864646034]
-custom_minimum_size = Vector2(360, 0)
+[node name="StorePanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=1203670280]
+visible = false
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
-text = "请先从背包选择一个可作为基底的物品。"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="StoreLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel" unique_id=1220269947]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="StoreHeader" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout" unique_id=766855573]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StoreTitle" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreHeader" unique_id=1871503647]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "卡包商品"
+horizontal_alignment = 1
+
+[node name="ShopGoldLabel" type="Label" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreHeader" unique_id=1882614002]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "金币：0"
+horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="InventoryPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout" unique_id=1414465569]
+[node name="CardRowsScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout" unique_id=664973079]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="InventoryLayout" type="VBoxContainer" parent="Root/MainPanel/MainLayout/InventoryPanel" unique_id=133273064]
+[node name="CardRows" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/CardRowsScroll" unique_id=255886625]
 layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StoreActionBar" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout" unique_id=1145909089]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StartNextDayButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreActionBar" unique_id=565231814]
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+focus_mode = 0
+disabled = true
+text = "开始下一天"
+
+[node name="StoreActionSpacer" type="Control" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreActionBar" unique_id=396452348]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DeleteToolButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreActionBar" unique_id=1754286436]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+focus_mode = 0
+text = "删除：0"
+
+[node name="UpgradeToolButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/StorePanel/StoreLayout/StoreActionBar" unique_id=1238202055]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+focus_mode = 0
+text = "升级：0"
+
+[node name="InventoryPanel" type="PanelContainer" parent="Root/MainPanel/MainLayout/CraftContent" unique_id=1414465569]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.92
+
+[node name="InventoryLayout" type="HBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel" unique_id=133273064]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 4
 
-[node name="TabContainer" type="HBoxContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout" unique_id=2016949060]
-custom_minimum_size = Vector2(0, 20)
+[node name="InventoryScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel/InventoryLayout" unique_id=253088665]
 layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="InventoryScroll" type="ScrollContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout" unique_id=253088665]
-layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="InventoryGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/InventoryPanel/InventoryLayout/InventoryScroll" unique_id=434296247]
+[node name="InventoryGrid" type="GridContainer" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel/InventoryLayout/InventoryScroll" unique_id=434296247]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
-columns = 10
+columns = 3
+
+[node name="InventorySidePanel" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel/InventoryLayout" unique_id=853681002]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SortInventoryButton" type="Button" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel/InventoryLayout/InventorySidePanel" unique_id=403626943]
+custom_minimum_size = Vector2(50, 34)
+layout_mode = 2
+focus_mode = 0
+text = "整理"
+
+[node name="TabContainer" type="VBoxContainer" parent="Root/MainPanel/MainLayout/CraftContent/InventoryPanel/InventoryLayout/InventorySidePanel" unique_id=2016949060]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="TooltipPanel" type="PanelContainer" parent="." unique_id=1439513960]
 visible = false
@@ -298,3 +602,130 @@ columns = 6
 layout_mode = 2
 text = "点击任意位置关闭界面"
 horizontal_alignment = 1
+
+[node name="RemoveMaterialOverlay" type="PanelContainer" parent="." unique_id=122471613]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RemoveMaterialCenter" type="CenterContainer" parent="RemoveMaterialOverlay" unique_id=1787602354]
+layout_mode = 2
+
+[node name="RemoveMaterialBox" type="VBoxContainer" parent="RemoveMaterialOverlay/RemoveMaterialCenter" unique_id=662405019]
+custom_minimum_size = Vector2(320, 160)
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="RemoveMaterialTitle" type="Label" parent="RemoveMaterialOverlay/RemoveMaterialCenter/RemoveMaterialBox" unique_id=1952088665]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "卸下镶嵌材料？"
+horizontal_alignment = 1
+
+[node name="RemoveMaterialButtonRow" type="HBoxContainer" parent="RemoveMaterialOverlay/RemoveMaterialCenter/RemoveMaterialBox" unique_id=1710949838]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="RemoveMaterialConfirmButton" type="Button" parent="RemoveMaterialOverlay/RemoveMaterialCenter/RemoveMaterialBox/RemoveMaterialButtonRow" unique_id=2000080995]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "确认"
+
+[node name="RemoveMaterialCancelButton" type="Button" parent="RemoveMaterialOverlay/RemoveMaterialCenter/RemoveMaterialBox/RemoveMaterialButtonRow" unique_id=1751789072]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "取消"
+
+[node name="NextDayConfirmOverlay" type="PanelContainer" parent="." unique_id=227801687]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NextDayConfirmCenter" type="CenterContainer" parent="NextDayConfirmOverlay" unique_id=2088007529]
+layout_mode = 2
+
+[node name="NextDayConfirmBox" type="VBoxContainer" parent="NextDayConfirmOverlay/NextDayConfirmCenter" unique_id=641570749]
+custom_minimum_size = Vector2(420, 190)
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="NextDayConfirmTitle" type="Label" parent="NextDayConfirmOverlay/NextDayConfirmCenter/NextDayConfirmBox" unique_id=1086496997]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "饱食度不足"
+horizontal_alignment = 1
+
+[node name="NextDayConfirmDesc" type="Label" parent="NextDayConfirmOverlay/NextDayConfirmCenter/NextDayConfirmBox" unique_id=2124653828]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NextDayConfirmButtonRow" type="HBoxContainer" parent="NextDayConfirmOverlay/NextDayConfirmCenter/NextDayConfirmBox" unique_id=1824460172]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="NextDayConfirmButton" type="Button" parent="NextDayConfirmOverlay/NextDayConfirmCenter/NextDayConfirmBox/NextDayConfirmButtonRow" unique_id=1614048706]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "确认"
+
+[node name="NextDayCancelButton" type="Button" parent="NextDayConfirmOverlay/NextDayConfirmCenter/NextDayConfirmBox/NextDayConfirmButtonRow" unique_id=1357132687]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "取消"
+
+[node name="UpgradeOverlay" type="PanelContainer" parent="." unique_id=1656457096]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UpgradeCenter" type="CenterContainer" parent="UpgradeOverlay" unique_id=299681491]
+layout_mode = 2
+
+[node name="UpgradeBox" type="VBoxContainer" parent="UpgradeOverlay/UpgradeCenter" unique_id=1820651334]
+custom_minimum_size = Vector2(420, 220)
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="UpgradeTitle" type="Label" parent="UpgradeOverlay/UpgradeCenter/UpgradeBox" unique_id=1829542810]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "选择升级消耗材料"
+horizontal_alignment = 1
+
+[node name="UpgradeCostRow" type="HBoxContainer" parent="UpgradeOverlay/UpgradeCenter/UpgradeBox" unique_id=1345086418]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="UpgradeButtonRow" type="HBoxContainer" parent="UpgradeOverlay/UpgradeCenter/UpgradeBox" unique_id=1053550980]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="UpgradeConfirmButton" type="Button" parent="UpgradeOverlay/UpgradeCenter/UpgradeBox/UpgradeButtonRow" unique_id=409599111]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "确认"
+
+[node name="UpgradeCancelButton" type="Button" parent="UpgradeOverlay/UpgradeCenter/UpgradeBox/UpgradeButtonRow" unique_id=1849416014]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "取消"
