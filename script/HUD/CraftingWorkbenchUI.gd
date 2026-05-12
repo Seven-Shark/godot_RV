@@ -104,6 +104,11 @@ const CATEGORY_FOOD := "food"
 const MODE_PREP := "prep"
 const MODE_CRAFT := "craft"
 const MODE_SHOP := "shop"
+const MODE_BUILD := "build"
+const BUILD_TAB_BUILT := "built"
+const BUILD_TAB_UNBUILT := "unbuilt"
+const FACILITY_TYPE_WORK := "work"
+const FACILITY_TYPE_ENHANCE := "enhance"
 const PREP_EQUIP_SLOTS := ["helmet", "armor", "pants", "shoes", "weapon", "accessory", "tool_1", "tool_2"]
 const MAP_BASE_CATEGORY := "map_base"
 const MAP_PACK_ORDER := ["map_base", "terrain", "water", "site", "plant", "mineral", "food", "creature", "hazard"]
@@ -186,6 +191,8 @@ const MAP_ELEMENTS_CSV_PATH := "res://script/Data/CSVs/MapElements.txt"
 @onready var prep_tab_button: Button = $Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar/PrepTabButton
 @onready var craft_tab_button: Button = $Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar/CraftTabButton
 @onready var shop_tab_button: Button = $Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar/ShopTabButton
+@onready var screen_tab_bar: HBoxContainer = $Root/MainPanel/MainLayout/HeaderBar/ScreenTabBar
+@onready var craft_content: HBoxContainer = $Root/MainPanel/MainLayout/CraftContent
 @onready var title_label: Label = $Root/MainPanel/MainLayout/HeaderBar/TitleLabel
 @onready var gold_label: Label = $Root/MainPanel/MainLayout/HeaderBar/GoldLabel
 @onready var prep_info_panel: VBoxContainer = $Root/MainPanel/MainLayout/CraftContent/PrepInfoPanel
@@ -292,12 +299,28 @@ var selected_blueprint: Dictionary = {}
 var food_menu: PopupMenu
 var pending_food_item: Dictionary = {}
 var base_is_new_craft_result: bool = false
+var build_tab_button: Button
+var build_panel: PanelContainer
+var build_tab_built_button: Button
+var build_tab_unbuilt_button: Button
+var build_content_list: VBoxContainer
+var build_confirm_overlay: PanelContainer
+var build_confirm_title: Label
+var build_confirm_desc: Label
+var build_confirm_detail_container: HBoxContainer
+var build_confirm_button: Button
+var build_cancel_button: Button
+var current_build_tab: String = BUILD_TAB_UNBUILT
+var facility_catalog: Array = []
+var built_facilities: Array = []
+var pending_build_facility: Dictionary = {}
 #endregion
 
 #region 3. 生命周期与核心逻辑
 # 初始化界面状态、文本、信号、主题和测试背包数据。
 func _ready() -> void:
 	rng.randomize()
+	_ensure_building_ui()
 	tooltip_panel.visible = false
 	tooltip_panel.z_index = 100
 	open_pack_overlay.z_index = 20
@@ -309,6 +332,7 @@ func _ready() -> void:
 	remove_material_overlay.visible = false
 	next_day_confirm_overlay.visible = false
 	upgrade_overlay.visible = false
+	build_confirm_overlay.visible = false
 	_apply_ui_theme()
 	title_label.text = _text("prep_title")
 	store_title.text = "明日翻牌"
@@ -321,6 +345,7 @@ func _ready() -> void:
 	prep_tab_button.text = _text("prep_tab")
 	craft_tab_button.text = _text("craft_tab")
 	shop_tab_button.text = _text("shop_tab")
+	build_tab_button.text = "建造界面"
 	flip_start_next_day_button.text = "开始下一天"
 	character_visual_slot.text = _text("character_empty")
 	prep_map_slot.text = _text("map_empty")
@@ -335,9 +360,14 @@ func _ready() -> void:
 	upgrade_title.text = _text("upgrade_title")
 	upgrade_confirm_button.text = _text("confirm")
 	upgrade_cancel_button.text = _text("cancel")
+	build_confirm_button.text = _text("confirm")
+	build_cancel_button.text = _text("cancel")
 	prep_tab_button.pressed.connect(_set_mode.bind(MODE_PREP))
 	craft_tab_button.pressed.connect(_set_mode.bind(MODE_CRAFT))
 	shop_tab_button.pressed.connect(_set_mode.bind(MODE_SHOP))
+	build_tab_button.pressed.connect(_set_mode.bind(MODE_BUILD))
+	build_tab_built_button.pressed.connect(_set_build_tab.bind(BUILD_TAB_BUILT))
+	build_tab_unbuilt_button.pressed.connect(_set_build_tab.bind(BUILD_TAB_UNBUILT))
 	base_slot.pressed.connect(_on_base_slot_pressed)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	prep_map_slot.pressed.connect(_on_prep_map_slot_pressed)
@@ -356,11 +386,14 @@ func _ready() -> void:
 	next_day_cancel_button.pressed.connect(_hide_next_day_confirm_dialog)
 	upgrade_confirm_button.pressed.connect(_on_upgrade_confirm_pressed)
 	upgrade_cancel_button.pressed.connect(_hide_upgrade_dialog)
+	build_confirm_button.pressed.connect(_on_build_confirm_pressed)
+	build_cancel_button.pressed.connect(_hide_build_confirm_dialog)
 	food_menu = PopupMenu.new()
 	add_child(food_menu)
 	food_menu.id_pressed.connect(_on_food_menu_id_pressed)
 	_build_tabs()
 	blueprint_recipes = _make_test_blueprint_recipes()
+	facility_catalog = _make_test_facility_catalog()
 	_update_gold_label()
 	_apply_mode()
 	if use_config_items:
@@ -624,6 +657,8 @@ func _on_inventory_slot_pressed(item_data: Dictionary) -> void:
 	if current_mode == MODE_PREP:
 		_on_prep_inventory_slot_pressed(item_data)
 		return
+	if current_mode == MODE_BUILD:
+		return
 	if current_mode == MODE_SHOP:
 		return
 	if not selected_blueprint.is_empty():
@@ -715,12 +750,14 @@ func _apply_mode() -> void:
 	var is_prep: bool = current_mode == MODE_PREP
 	var is_craft: bool = current_mode == MODE_CRAFT
 	var is_shop: bool = current_mode == MODE_SHOP
+	var is_build: bool = current_mode == MODE_BUILD
 	prep_info_panel.visible = is_prep
 	prep_panel.visible = is_prep
 	result_panel.visible = is_craft
 	workbench_panel.visible = is_craft
 	store_panel.visible = is_shop
-	inventory_panel.visible = not is_shop
+	build_panel.visible = is_build
+	inventory_panel.visible = not is_shop and not is_build
 	craft_button_margin.visible = is_craft
 	gold_label.visible = is_craft
 	prep_gold_label.visible = is_prep
@@ -728,15 +765,20 @@ func _apply_mode() -> void:
 	prep_tab_button.button_pressed = is_prep
 	craft_tab_button.button_pressed = is_craft
 	shop_tab_button.button_pressed = is_shop
-	_refresh_screen_tab_colors(is_prep, is_craft, is_shop)
+	build_tab_button.button_pressed = is_build
+	_refresh_screen_tab_colors(is_prep, is_craft, is_shop, is_build)
 	if is_prep:
 		title_label.text = _text("prep_title")
 	elif is_shop:
 		title_label.text = "明日翻牌"
+	elif is_build:
+		title_label.text = "营地建造"
 	else:
 		title_label.text = _text("title")
 	if is_shop:
 		_refresh_flip_cards()
+	if is_build:
+		_refresh_building_panel()
 	_refresh_prep_all()
 
 # 响应卡包滚动界面输入事件，并执行对应界面逻辑。
@@ -801,6 +843,102 @@ func _on_upgrade_confirm_pressed() -> void:
 
 #region 4. 辅助方法
 # 创建材料槽位所需的控件或数据。
+func _ensure_building_ui() -> void:
+	if is_instance_valid(build_panel):
+		return
+	build_tab_button = Button.new()
+	build_tab_button.name = "BuildTabButton"
+	build_tab_button.custom_minimum_size = Vector2(96, 34)
+	build_tab_button.focus_mode = Control.FOCUS_NONE
+	build_tab_button.toggle_mode = true
+	screen_tab_bar.add_child(build_tab_button)
+	build_panel = PanelContainer.new()
+	build_panel.name = "BuildPanel"
+	build_panel.visible = false
+	build_panel.custom_minimum_size = Vector2(520, 0)
+	build_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	build_panel.size_flags_stretch_ratio = 2.0
+	craft_content.add_child(build_panel)
+	var build_layout: VBoxContainer = VBoxContainer.new()
+	build_layout.name = "BuildLayout"
+	build_layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	build_layout.add_theme_constant_override("separation", 8)
+	build_panel.add_child(build_layout)
+	var sub_tab_bar: HBoxContainer = HBoxContainer.new()
+	sub_tab_bar.name = "BuildSubTabBar"
+	sub_tab_bar.add_theme_constant_override("separation", 8)
+	build_layout.add_child(sub_tab_bar)
+	build_tab_built_button = _make_build_subtab_button("已建造")
+	sub_tab_bar.add_child(build_tab_built_button)
+	build_tab_unbuilt_button = _make_build_subtab_button("未建造")
+	sub_tab_bar.add_child(build_tab_unbuilt_button)
+	var build_scroll: ScrollContainer = ScrollContainer.new()
+	build_scroll.name = "BuildScroll"
+	build_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	build_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	build_layout.add_child(build_scroll)
+	build_content_list = VBoxContainer.new()
+	build_content_list.name = "BuildContentList"
+	build_content_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_content_list.add_theme_constant_override("separation", 10)
+	build_scroll.add_child(build_content_list)
+	_ensure_build_confirm_overlay()
+
+func _make_build_subtab_button(label_text: String) -> Button:
+	var button: Button = Button.new()
+	button.text = label_text
+	button.toggle_mode = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.custom_minimum_size = Vector2(120, 36)
+	return button
+
+func _ensure_build_confirm_overlay() -> void:
+	build_confirm_overlay = PanelContainer.new()
+	build_confirm_overlay.name = "BuildConfirmOverlay"
+	build_confirm_overlay.visible = false
+	build_confirm_overlay.z_index = 25
+	build_confirm_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	build_confirm_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(build_confirm_overlay)
+	var confirm_center: CenterContainer = CenterContainer.new()
+	confirm_center.name = "BuildConfirmCenter"
+	build_confirm_overlay.add_child(confirm_center)
+	var confirm_box: VBoxContainer = VBoxContainer.new()
+	confirm_box.name = "BuildConfirmBox"
+	confirm_box.custom_minimum_size = Vector2(460, 220)
+	confirm_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	confirm_box.add_theme_constant_override("separation", 14)
+	confirm_center.add_child(confirm_box)
+	build_confirm_title = Label.new()
+	build_confirm_title.name = "BuildConfirmTitle"
+	build_confirm_title.add_theme_font_size_override("font_size", 20)
+	build_confirm_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	confirm_box.add_child(build_confirm_title)
+	build_confirm_desc = Label.new()
+	build_confirm_desc.name = "BuildConfirmDesc"
+	build_confirm_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	build_confirm_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	confirm_box.add_child(build_confirm_desc)
+	build_confirm_detail_container = HBoxContainer.new()
+	build_confirm_detail_container.name = "BuildConfirmDetail"
+	build_confirm_detail_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	build_confirm_detail_container.add_theme_constant_override("separation", 16)
+	confirm_box.add_child(build_confirm_detail_container)
+	var button_row: HBoxContainer = HBoxContainer.new()
+	button_row.name = "BuildConfirmButtonRow"
+	button_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	button_row.add_theme_constant_override("separation", 12)
+	confirm_box.add_child(button_row)
+	build_confirm_button = Button.new()
+	build_confirm_button.custom_minimum_size = Vector2(120, 34)
+	button_row.add_child(build_confirm_button)
+	build_cancel_button = Button.new()
+	build_cancel_button.custom_minimum_size = Vector2(120, 34)
+	button_row.add_child(build_cancel_button)
+
 func _build_material_slots(slot_count: int) -> void:
 	for child in material_grid.get_children():
 		child.queue_free()
@@ -850,6 +988,8 @@ func _apply_ui_theme() -> void:
 	_apply_panel_style(inventory_panel, Color(0.14, 0.12, 0.19), Color(0.43, 0.32, 0.62), 2)
 	_apply_panel_style(tooltip_panel, Color(0.79, 0.55, 0.18), Color(0.98, 0.84, 0.42), 2)
 	_apply_panel_style(next_day_confirm_overlay, Color(0.08, 0.06, 0.05, 0.86), Color(0.80, 0.38, 0.18), 2)
+	_apply_panel_style(build_panel, Color(0.11, 0.16, 0.18), Color(0.35, 0.62, 0.66), 3)
+	_apply_panel_style(build_confirm_overlay, Color(0.05, 0.07, 0.08, 0.88), Color(0.35, 0.62, 0.66), 2)
 	title_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.58))
 	gold_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.26))
 	prep_gold_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.26))
@@ -860,6 +1000,10 @@ func _apply_ui_theme() -> void:
 	_apply_button_style(next_day_button, Color(0.22, 0.50, 0.25), Color(0.48, 0.80, 0.42), Color(0.32, 0.64, 0.32), Color(0.12, 0.20, 0.14))
 	_apply_button_style(upgrade_button, Color(0.42, 0.29, 0.10), Color(0.82, 0.62, 0.24), Color(0.55, 0.38, 0.14), Color(0.22, 0.18, 0.12))
 	_apply_button_style(sort_inventory_button, Color(0.20, 0.24, 0.34), Color(0.46, 0.54, 0.78), Color(0.26, 0.32, 0.45), Color(0.13, 0.15, 0.20))
+	_apply_button_style(build_tab_built_button, Color(0.16, 0.25, 0.27), Color(0.34, 0.62, 0.66), Color(0.22, 0.34, 0.36), Color(0.10, 0.12, 0.13))
+	_apply_button_style(build_tab_unbuilt_button, Color(0.16, 0.25, 0.27), Color(0.34, 0.62, 0.66), Color(0.22, 0.34, 0.36), Color(0.10, 0.12, 0.13))
+	_apply_button_style(build_confirm_button, Color(0.22, 0.50, 0.25), Color(0.48, 0.80, 0.42), Color(0.32, 0.64, 0.32), Color(0.12, 0.20, 0.14))
+	_apply_button_style(build_cancel_button, Color(0.34, 0.22, 0.20), Color(0.68, 0.42, 0.36), Color(0.45, 0.28, 0.24), Color(0.14, 0.12, 0.12))
 	_apply_button_style(character_visual_slot, Color(0.17, 0.19, 0.22), Color(0.45, 0.50, 0.56), Color(0.20, 0.24, 0.28), Color(0.12, 0.13, 0.15))
 	_apply_button_style(prep_map_slot, Color(0.13, 0.24, 0.15), Color(0.42, 0.68, 0.36), Color(0.20, 0.34, 0.20), Color(0.10, 0.16, 0.10))
 	_apply_equip_slot_button_style(helmet_slot)
@@ -924,10 +1068,11 @@ func _apply_tool_slot_button_style(button: Button) -> void:
 	_apply_button_style(button, Color(0.14, 0.20, 0.16), Color(0.36, 0.58, 0.40), Color(0.20, 0.30, 0.22), Color(0.10, 0.12, 0.10))
 
 # 刷新界面页签颜色的界面显示或状态。
-func _refresh_screen_tab_colors(is_prep: bool, is_craft: bool, is_shop: bool) -> void:
+func _refresh_screen_tab_colors(is_prep: bool, is_craft: bool, is_shop: bool, is_build: bool) -> void:
 	_apply_screen_tab_style(prep_tab_button, is_prep, Color(0.60, 0.38, 0.16), Color(0.80, 0.58, 0.26))
 	_apply_screen_tab_style(craft_tab_button, is_craft, Color(0.60, 0.38, 0.16), Color(0.80, 0.58, 0.26))
 	_apply_screen_tab_style(shop_tab_button, is_shop, Color(0.20, 0.46, 0.26), Color(0.36, 0.70, 0.40))
+	_apply_screen_tab_style(build_tab_button, is_build, Color(0.18, 0.48, 0.52), Color(0.38, 0.74, 0.78))
 
 # 应用界面页签样式样式或状态。
 func _apply_screen_tab_style(button: Button, selected: bool, selected_color: Color, selected_border: Color) -> void:
@@ -950,6 +1095,7 @@ func _refresh_all() -> void:
 	_refresh_result_list()
 	_refresh_blueprint_list()
 	_refresh_flip_cards()
+	_refresh_building_panel()
 	_refresh_inventory()
 	_refresh_tabs()
 	_update_craft_button()
@@ -1024,6 +1170,481 @@ func _on_prep_map_slot_pressed() -> void:
 	_refresh_inventory()
 
 # 响应下一天点击事件，并执行对应界面逻辑。
+func _make_test_facility_catalog() -> Array:
+	return [
+		{
+			"id": "food_room",
+			"name": "食物制造间",
+			"level": 1,
+			"facility_type": FACILITY_TYPE_WORK,
+			"type_name": "工作建筑",
+			"description": "每回合提供基础食物收益，缓解进入明日地图前的饱食度压力。",
+			"icon_path": "res://Resource/Tiny Swords (Free Pack)/Buildings/Blue Buildings/House1.png",
+			"build_days": 1,
+			"requirements": [
+				{"id": "mat_wood", "name": "木材", "count": 2},
+				{"id": "mat_cloth", "name": "粗布", "count": 1}
+			],
+			"effect_text": "每回合：食物 +1"
+		},
+		{
+			"id": "wood_processor",
+			"name": "木材加工厂",
+			"level": 1,
+			"facility_type": FACILITY_TYPE_WORK,
+			"type_name": "工作建筑",
+			"description": "每回合把营地杂料整理成可用于设施扩建的木材。",
+			"icon_path": "res://Resource/Tiny Swords (Free Pack)/Buildings/Blue Buildings/House2.png",
+			"build_days": 1,
+			"requirements": [
+				{"id": "mat_wood", "name": "木材", "count": 3},
+				{"id": "mat_iron", "name": "铁钉", "count": 1}
+			],
+			"effect_text": "每回合：木材 +1"
+		},
+		{
+			"id": "weather_tower",
+			"name": "气象塔",
+			"level": 2,
+			"facility_type": FACILITY_TYPE_ENHANCE,
+			"type_name": "增强建筑",
+			"description": "把雷雨、浓雾、强风等天气牌加入明日牌库。",
+			"icon_path": "res://Resource/Tiny Swords (Free Pack)/Buildings/Blue Buildings/Tower.png",
+			"build_days": 2,
+			"requirements": [
+				{"id": "mat_wood", "name": "木材", "count": 4},
+				{"id": "mat_iron", "name": "铁钉", "count": 2}
+			],
+			"effect_text": "一次性：天气牌进入明日牌库"
+		},
+		{
+			"id": "geology_meter",
+			"name": "地质仪",
+			"level": 2,
+			"facility_type": FACILITY_TYPE_ENHANCE,
+			"type_name": "增强建筑",
+			"description": "把火山、裂隙、矿脉暴露等地形牌加入明日牌库。",
+			"icon_path": "res://Resource/Tiny Swords (Free Pack)/Buildings/Blue Buildings/Monastery.png",
+			"build_days": 2,
+			"requirements": [
+				{"id": "mat_iron", "name": "铁钉", "count": 3},
+				{"id": "mat_wood", "name": "木材", "count": 2}
+			],
+			"effect_text": "一次性：地形牌进入明日牌库"
+		},
+		{
+			"id": "observation_table",
+			"name": "观测牌桌",
+			"level": 3,
+			"facility_type": FACILITY_TYPE_ENHANCE,
+			"type_name": "增强建筑",
+			"description": "每天可以查看一张盖着的明日牌类型，让继续翻牌变成可规划风险。",
+			"icon_path": "res://Resource/Tiny Swords (Free Pack)/Buildings/Blue Buildings/Archery.png",
+			"build_days": 3,
+			"requirements": [
+				{"id": "mat_wood", "name": "木材", "count": 5},
+				{"id": "mat_cloth", "name": "粗布", "count": 3},
+				{"id": "mat_herb", "name": "草药", "count": 1}
+			],
+			"effect_text": "一次性解锁：查看盖牌类型"
+		}
+	]
+
+func _set_build_tab(tab_id: String) -> void:
+	current_build_tab = tab_id
+	_refresh_building_panel()
+
+func _refresh_building_panel() -> void:
+	if not is_instance_valid(build_content_list):
+		return
+	build_tab_built_button.button_pressed = current_build_tab == BUILD_TAB_BUILT
+	build_tab_unbuilt_button.button_pressed = current_build_tab == BUILD_TAB_UNBUILT
+	for child in build_content_list.get_children():
+		child.queue_free()
+	if current_build_tab == BUILD_TAB_BUILT:
+		_refresh_built_facilities()
+	else:
+		_refresh_unbuilt_facilities()
+
+func _refresh_built_facilities() -> void:
+	var work_row: HFlowContainer = _add_build_card_group("工作建筑")
+	var has_work: bool = _add_built_facility_cards(FACILITY_TYPE_WORK, work_row)
+	if not has_work:
+		_add_empty_build_line_to(work_row, "暂无工作建筑")
+	var enhance_row: HFlowContainer = _add_build_card_group("增强建筑")
+	var has_enhance: bool = _add_built_facility_cards(FACILITY_TYPE_ENHANCE, enhance_row)
+	if not has_enhance:
+		_add_empty_build_line_to(enhance_row, "暂无增强建筑")
+
+func _add_built_facility_cards(facility_type: String, row: HFlowContainer) -> bool:
+	var has_any: bool = false
+	for state_value in built_facilities:
+		if not (state_value is Dictionary):
+			continue
+		var state: Dictionary = state_value as Dictionary
+		var facility: Dictionary = _get_facility_by_id(str(state.get("id", "")))
+		if facility.is_empty() or str(facility.get("facility_type", "")) != facility_type:
+			continue
+		row.add_child(_make_built_facility_card(facility, state))
+		has_any = true
+	return has_any
+
+func _refresh_unbuilt_facilities() -> void:
+	var facilities: Array = _get_unbuilt_facilities_sorted()
+	var current_group: String = ""
+	var current_row: HFlowContainer = null
+	for facility_value in facilities:
+		var facility: Dictionary = facility_value as Dictionary
+		var group_name: String = "Lv.%d  %s" % [int(facility.get("level", 1)), str(facility.get("type_name", "-"))]
+		if group_name != current_group:
+			current_group = group_name
+			current_row = _add_build_card_group(current_group)
+		if current_row:
+			current_row.add_child(_make_unbuilt_facility_card(facility))
+	if facilities.is_empty():
+		_add_empty_build_line("所有建筑均已建造或正在建造")
+
+func _get_unbuilt_facilities_sorted() -> Array:
+	var result: Array = []
+	for facility_value in facility_catalog:
+		if not (facility_value is Dictionary):
+			continue
+		var facility: Dictionary = facility_value as Dictionary
+		if _has_facility_state(str(facility.get("id", ""))):
+			continue
+		result.append(facility)
+	result.sort_custom(_sort_unbuilt_facility)
+	return result
+
+func _sort_unbuilt_facility(a: Dictionary, b: Dictionary) -> bool:
+	var level_a: int = int(a.get("level", 1))
+	var level_b: int = int(b.get("level", 1))
+	if level_a != level_b:
+		return level_a < level_b
+	var type_a: int = _get_facility_type_sort(str(a.get("facility_type", "")))
+	var type_b: int = _get_facility_type_sort(str(b.get("facility_type", "")))
+	if type_a != type_b:
+		return type_a < type_b
+	var can_a: bool = _can_start_facility_build(a)
+	var can_b: bool = _can_start_facility_build(b)
+	if can_a != can_b:
+		return can_a
+	return str(a.get("name", "")) < str(b.get("name", ""))
+
+func _get_facility_type_sort(facility_type: String) -> int:
+	if facility_type == FACILITY_TYPE_WORK:
+		return 10
+	if facility_type == FACILITY_TYPE_ENHANCE:
+		return 20
+	return 99
+
+func _make_unbuilt_facility_card(facility: Dictionary) -> PanelContainer:
+	var can_build: bool = _can_start_facility_build(facility)
+	var panel: PanelContainer = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(188, 250)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP if can_build else Control.MOUSE_FILTER_IGNORE
+	_bind_facility_tooltip(panel, facility)
+	if can_build:
+		_apply_panel_style(panel, Color(0.13, 0.30, 0.17), Color(0.42, 0.74, 0.40), 2)
+		panel.gui_input.connect(_on_unbuilt_facility_card_input.bind(facility))
+	else:
+		_apply_panel_style(panel, Color(0.16, 0.17, 0.18), Color(0.36, 0.38, 0.42), 1)
+	var info_box: VBoxContainer = VBoxContainer.new()
+	info_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_box.add_theme_constant_override("separation", 6)
+	panel.add_child(info_box)
+	var title: Label = Label.new()
+	title.text = str(facility.get("name", "-"))
+	title.add_theme_font_size_override("font_size", 17)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.add_theme_color_override("font_color", Color(0.92, 0.95, 0.86) if can_build else Color(0.72, 0.74, 0.74))
+	info_box.add_child(title)
+	var icon_rect: TextureRect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(128, 92)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture = _get_facility_icon(facility)
+	info_box.add_child(icon_rect)
+	var spacer: Control = Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_box.add_child(spacer)
+	var material_box: HFlowContainer = HFlowContainer.new()
+	material_box.custom_minimum_size = Vector2(0, 58)
+	material_box.add_theme_constant_override("h_separation", 6)
+	material_box.add_theme_constant_override("v_separation", 6)
+	info_box.add_child(material_box)
+	for requirement_value in _get_facility_requirements_sorted(facility):
+		var requirement: Dictionary = requirement_value as Dictionary
+		var item_id: String = str(requirement.get("id", ""))
+		var have_count: int = _get_inventory_count_by_id(item_id)
+		var need_count: int = int(requirement.get("count", 0))
+		material_box.add_child(_make_facility_material_badge(requirement, have_count >= need_count))
+	var time_label: Label = Label.new()
+	time_label.text = "%d天后" % int(facility.get("build_days", 1))
+	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	time_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.34))
+	info_box.add_child(time_label)
+	return panel
+
+func _on_unbuilt_facility_card_input(event: InputEvent, facility: Dictionary) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			_show_build_confirm_dialog(facility)
+
+func _make_facility_material_badge(requirement: Dictionary, is_enough: bool) -> PanelContainer:
+	var badge: PanelContainer = PanelContainer.new()
+	badge.custom_minimum_size = Vector2(52, 52)
+	var bg_color: Color = Color(0.12, 0.24, 0.15) if is_enough else Color(0.24, 0.13, 0.12)
+	var border_color: Color = Color(0.38, 0.72, 0.35) if is_enough else Color(0.72, 0.32, 0.28)
+	_apply_panel_style(badge, bg_color, border_color, 1)
+	var box: VBoxContainer = VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 1)
+	badge.add_child(box)
+	var icon_label: Label = Label.new()
+	icon_label.text = _get_material_icon_text(str(requirement.get("id", "")), str(requirement.get("name", "")))
+	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_label.add_theme_font_size_override("font_size", 16)
+	box.add_child(icon_label)
+	var count_label: Label = Label.new()
+	count_label.text = "x%d" % int(requirement.get("count", 0))
+	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	count_label.add_theme_color_override("font_color", Color(0.86, 0.90, 0.82))
+	box.add_child(count_label)
+	return badge
+
+func _get_facility_icon(facility: Dictionary) -> Texture2D:
+	var icon_path: String = str(facility.get("icon_path", ""))
+	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
+		return null
+	return load(icon_path) as Texture2D
+
+func _get_material_icon_text(item_id: String, item_name: String) -> String:
+	if item_id.contains("wood"):
+		return "木"
+	if item_id.contains("iron"):
+		return "铁"
+	if item_id.contains("cloth"):
+		return "布"
+	if item_id.contains("herb"):
+		return "草"
+	if item_name.is_empty():
+		return "材"
+	return item_name.substr(0, 1)
+
+func _bind_facility_tooltip(slot: Control, facility: Dictionary) -> void:
+	_bind_tooltip(slot, _make_facility_tooltip_data(facility))
+
+func _make_facility_tooltip_data(facility: Dictionary) -> Dictionary:
+	return {
+		"id": str(facility.get("id", "")),
+		"name": "%s  Lv.%d" % [str(facility.get("name", "-")), int(facility.get("level", 1))],
+		"category": CATEGORY_MATERIAL,
+		"description": str(facility.get("description", "")),
+		"quality": "common",
+		"props": {
+			"类型": str(facility.get("type_name", "-")),
+			"建造时间": "%d天后" % int(facility.get("build_days", 1)),
+			"效果": str(facility.get("effect_text", "")),
+			"材料": _format_facility_requirements(facility)
+		}
+	}
+
+func _make_built_facility_card(facility: Dictionary, state: Dictionary) -> PanelContainer:
+	var panel: PanelContainer = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(188, 230)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_bind_facility_tooltip(panel, facility)
+	var is_building: bool = int(state.get("remaining_days", 0)) > 0
+	var bg: Color = Color(0.18, 0.16, 0.12) if is_building else Color(0.12, 0.20, 0.16)
+	var border: Color = Color(0.74, 0.55, 0.24) if is_building else Color(0.36, 0.70, 0.40)
+	_apply_panel_style(panel, bg, border, 2)
+	var box: VBoxContainer = VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 6)
+	panel.add_child(box)
+	var title: Label = Label.new()
+	title.add_theme_font_size_override("font_size", 17)
+	title.text = str(facility.get("name", "-"))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(title)
+	var icon_rect: TextureRect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(128, 92)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture = _get_facility_icon(facility)
+	box.add_child(icon_rect)
+	var spacer: Control = Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(spacer)
+	var state_label: Label = Label.new()
+	if is_building:
+		state_label.text = "建造中：剩余%d天" % int(state.get("remaining_days", 0))
+		state_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.34))
+	else:
+		state_label.text = "已生效"
+		state_label.add_theme_color_override("font_color", Color(0.60, 0.95, 0.58))
+	state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(state_label)
+	return panel
+
+func _format_unbuilt_facility_text(facility: Dictionary) -> String:
+	var lines: Array[String] = []
+	lines.append("%s  Lv.%d  [%s]" % [str(facility.get("name", "-")), int(facility.get("level", 1)), str(facility.get("type_name", "-"))])
+	lines.append(str(facility.get("description", "")))
+	lines.append(str(facility.get("effect_text", "")))
+	lines.append("时间：%d天后" % int(facility.get("build_days", 1)))
+	lines.append("材料：%s" % _format_facility_requirements(facility))
+	return "\n".join(lines)
+
+func _format_facility_requirements(facility: Dictionary) -> String:
+	var parts: Array[String] = []
+	for requirement_value in _get_facility_requirements_sorted(facility):
+		var requirement: Dictionary = requirement_value as Dictionary
+		var item_id: String = str(requirement.get("id", ""))
+		var have_count: int = _get_inventory_count_by_id(item_id)
+		var need_count: int = int(requirement.get("count", 0))
+		parts.append("%s %d(当前)/%d(所需)" % [str(requirement.get("name", item_id)), have_count, need_count])
+	return "，".join(parts)
+
+func _show_build_confirm_dialog(facility: Dictionary) -> void:
+	if not _can_start_facility_build(facility):
+		return
+	pending_build_facility = facility.duplicate(true)
+	build_confirm_title.text = "确认建造：%s" % str(facility.get("name", "-"))
+	build_confirm_desc.text = "将消耗：%s\n建造时间：%d天后" % [_format_facility_requirements(facility), int(facility.get("build_days", 1))]
+	build_confirm_overlay.visible = true
+
+func _hide_build_confirm_dialog() -> void:
+	pending_build_facility.clear()
+	build_confirm_overlay.visible = false
+
+func _on_build_confirm_pressed() -> void:
+	if pending_build_facility.is_empty():
+		_hide_build_confirm_dialog()
+		return
+	if not _can_start_facility_build(pending_build_facility):
+		_hide_build_confirm_dialog()
+		_refresh_building_panel()
+		return
+	for requirement_value in _get_facility_requirements(pending_build_facility):
+		var requirement: Dictionary = requirement_value as Dictionary
+		_take_item_count_from_inventory(str(requirement.get("id", "")), int(requirement.get("count", 0)))
+	built_facilities.append({
+		"id": str(pending_build_facility.get("id", "")),
+		"remaining_days": max(1, int(pending_build_facility.get("build_days", 1))),
+		"is_active": false
+	})
+	_hide_build_confirm_dialog()
+	current_build_tab = BUILD_TAB_BUILT
+	_refresh_all()
+
+func _advance_facility_build_days() -> void:
+	for state_value in built_facilities:
+		if not (state_value is Dictionary):
+			continue
+		var state: Dictionary = state_value as Dictionary
+		var remaining_days: int = int(state.get("remaining_days", 0))
+		if remaining_days <= 0:
+			continue
+		remaining_days -= 1
+		state["remaining_days"] = remaining_days
+		if remaining_days <= 0:
+			state["is_active"] = true
+
+func _can_start_facility_build(facility: Dictionary) -> bool:
+	for requirement_value in _get_facility_requirements(facility):
+		var requirement: Dictionary = requirement_value as Dictionary
+		if _get_inventory_count_by_id(str(requirement.get("id", ""))) < int(requirement.get("count", 0)):
+			return false
+	return true
+
+func _get_facility_requirements(facility: Dictionary) -> Array:
+	var result: Array = []
+	var requirements: Array = facility.get("requirements", []) as Array
+	for requirement_value in requirements:
+		if requirement_value is Dictionary:
+			result.append(requirement_value as Dictionary)
+	return result
+
+func _get_facility_requirements_sorted(facility: Dictionary) -> Array:
+	var result: Array = _get_facility_requirements(facility)
+	result.sort_custom(_sort_facility_requirement)
+	return result
+
+func _sort_facility_requirement(a: Dictionary, b: Dictionary) -> bool:
+	var have_a: int = _get_inventory_count_by_id(str(a.get("id", "")))
+	var need_a: int = int(a.get("count", 0))
+	var have_b: int = _get_inventory_count_by_id(str(b.get("id", "")))
+	var need_b: int = int(b.get("count", 0))
+	var enough_a: bool = have_a >= need_a
+	var enough_b: bool = have_b >= need_b
+	if enough_a != enough_b:
+		return enough_a
+	return str(a.get("name", a.get("id", ""))) < str(b.get("name", b.get("id", "")))
+
+func _has_facility_state(facility_id: String) -> bool:
+	for state_value in built_facilities:
+		if state_value is Dictionary and str((state_value as Dictionary).get("id", "")) == facility_id:
+			return true
+	return false
+
+func _get_facility_by_id(facility_id: String) -> Dictionary:
+	for facility_value in facility_catalog:
+		if facility_value is Dictionary and str((facility_value as Dictionary).get("id", "")) == facility_id:
+			return facility_value as Dictionary
+	return {}
+
+func _add_build_section(title_text: String) -> void:
+	var label: Label = Label.new()
+	label.text = title_text
+	label.add_theme_font_size_override("font_size", 19)
+	label.add_theme_color_override("font_color", Color(0.92, 0.86, 0.68))
+	build_content_list.add_child(label)
+
+func _add_build_card_group(title_text: String) -> HFlowContainer:
+	var group_box: VBoxContainer = VBoxContainer.new()
+	group_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	group_box.add_theme_constant_override("separation", 8)
+	build_content_list.add_child(group_box)
+	var label: Label = Label.new()
+	label.text = title_text
+	label.add_theme_font_size_override("font_size", 19)
+	label.add_theme_color_override("font_color", Color(0.92, 0.86, 0.68))
+	group_box.add_child(label)
+	var row: HFlowContainer = HFlowContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("h_separation", 12)
+	row.add_theme_constant_override("v_separation", 12)
+	group_box.add_child(row)
+	return row
+
+func _add_empty_build_line(text_value: String) -> void:
+	var label: Label = Label.new()
+	label.text = text_value
+	label.add_theme_color_override("font_color", Color(0.62, 0.66, 0.68))
+	build_content_list.add_child(label)
+
+func _add_empty_build_line_to(parent: Control, text_value: String) -> void:
+	var label: Label = Label.new()
+	label.custom_minimum_size = Vector2(220, 72)
+	label.text = text_value
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", Color(0.62, 0.66, 0.68))
+	parent.add_child(label)
+
 func _on_next_day_pressed() -> void:
 	if next_day_button.disabled:
 		return
@@ -1039,7 +1660,9 @@ func _on_next_day_confirm_pressed() -> void:
 
 # 执行下一天入口表现，并扣除地图饱食度消耗。
 func _finish_next_day_entry() -> void:
+	_advance_facility_build_days()
 	hunger = max(0, hunger - _get_prep_map_hunger_cost())
+	_refresh_building_panel()
 	_refresh_prep_all()
 	_show_center_prompt(_text("next_day_ready"))
 
@@ -1820,7 +2443,10 @@ func _on_flip_start_next_day_pressed() -> void:
 	if not _has_open_map_card():
 		_show_center_prompt("必须先翻开至少一张地图牌。")
 		return
+	if not flip_next_day_requested:
+		_advance_facility_build_days()
 	flip_next_day_requested = true
+	_refresh_building_panel()
 	_show_center_prompt("下一天选择已确认，后续接入回合流程。")
 
 # 读取指定位置的翻牌数据。
