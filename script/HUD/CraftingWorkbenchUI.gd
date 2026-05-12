@@ -1407,11 +1407,13 @@ func _make_facility_material_badge(requirement: Dictionary, is_enough: bool) -> 
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 1)
 	badge.add_child(box)
-	var icon_label: Label = Label.new()
-	icon_label.text = _get_material_icon_text(str(requirement.get("id", "")), str(requirement.get("name", "")))
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_label.add_theme_font_size_override("font_size", 16)
-	box.add_child(icon_label)
+	var material_icon: TextureRect = TextureRect.new()
+	material_icon.custom_minimum_size = Vector2(24, 24)
+	material_icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	material_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	material_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	material_icon.texture = _get_material_icon(requirement)
+	box.add_child(material_icon)
 	var count_label: Label = Label.new()
 	count_label.text = "x%d" % int(requirement.get("count", 0))
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1424,6 +1426,25 @@ func _get_facility_icon(facility: Dictionary) -> Texture2D:
 	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
 		return null
 	return load(icon_path) as Texture2D
+
+func _get_material_icon(requirement: Dictionary) -> Texture2D:
+	var icon_path: String = str(requirement.get("icon_path", ""))
+	if icon_path.is_empty():
+		icon_path = _get_default_material_icon_path(str(requirement.get("id", "")))
+	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
+		return null
+	return load(icon_path) as Texture2D
+
+func _get_default_material_icon_path(item_id: String) -> String:
+	if item_id.contains("wood"):
+		return "res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/log.png"
+	if item_id.contains("iron"):
+		return "res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/iron_bar.png"
+	if item_id.contains("cloth"):
+		return "res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/tools/fabric.png"
+	if item_id.contains("herb"):
+		return "res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/grass.png"
+	return "res://Resource/4216_rpg_icons_16x16/rpg_icons_16x16/icons/resources_and_food/stone.png"
 
 func _get_material_icon_text(item_id: String, item_name: String) -> String:
 	if item_id.contains("wood"):
@@ -1518,16 +1539,51 @@ func _format_facility_requirements(facility: Dictionary) -> String:
 		parts.append("%s %d(当前)/%d(所需)" % [str(requirement.get("name", item_id)), have_count, need_count])
 	return "，".join(parts)
 
+func _refresh_build_confirm_detail(facility: Dictionary) -> void:
+	for child in build_confirm_detail_container.get_children():
+		child.queue_free()
+	var building_box: VBoxContainer = VBoxContainer.new()
+	building_box.custom_minimum_size = Vector2(150, 150)
+	building_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	building_box.add_theme_constant_override("separation", 6)
+	build_confirm_detail_container.add_child(building_box)
+	var icon_rect: TextureRect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(128, 92)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture = _get_facility_icon(facility)
+	building_box.add_child(icon_rect)
+	var name_label: Label = Label.new()
+	name_label.text = str(facility.get("name", "-"))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.add_theme_font_size_override("font_size", 17)
+	building_box.add_child(name_label)
+	var materials_box: HFlowContainer = HFlowContainer.new()
+	materials_box.custom_minimum_size = Vector2(248, 120)
+	materials_box.add_theme_constant_override("h_separation", 8)
+	materials_box.add_theme_constant_override("v_separation", 8)
+	build_confirm_detail_container.add_child(materials_box)
+	for requirement_value in _get_facility_requirements_sorted(facility):
+		var requirement: Dictionary = requirement_value as Dictionary
+		var have_count: int = _get_inventory_count_by_id(str(requirement.get("id", "")))
+		var need_count: int = int(requirement.get("count", 0))
+		materials_box.add_child(_make_facility_material_badge(requirement, have_count >= need_count))
+
 func _show_build_confirm_dialog(facility: Dictionary) -> void:
 	if not _can_start_facility_build(facility):
 		return
 	pending_build_facility = facility.duplicate(true)
-	build_confirm_title.text = "确认建造：%s" % str(facility.get("name", "-"))
-	build_confirm_desc.text = "将消耗：%s\n建造时间：%d天后" % [_format_facility_requirements(facility), int(facility.get("build_days", 1))]
+	build_confirm_title.text = "确认建造"
+	build_confirm_desc.text = "建造时间：%d天后" % int(facility.get("build_days", 1))
+	_refresh_build_confirm_detail(facility)
 	build_confirm_overlay.visible = true
 
 func _hide_build_confirm_dialog() -> void:
 	pending_build_facility.clear()
+	for child in build_confirm_detail_container.get_children():
+		child.queue_free()
 	build_confirm_overlay.visible = false
 
 func _on_build_confirm_pressed() -> void:
